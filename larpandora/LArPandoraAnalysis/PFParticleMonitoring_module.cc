@@ -548,23 +548,20 @@ void PFParticleMonitoring::analyze(const art::Event &evt)
     MCParticlesToHits trueParticlesToHits;
     HitsToMCParticles trueHitsToParticles;
 
-    if (!evt.isRealData())
+    LArPandoraHelper::CollectMCParticles(evt, m_geantModuleLabel, trueParticleVector);
+    LArPandoraHelper::CollectMCParticles(evt, m_geantModuleLabel, truthToParticles, particlesToTruth);
+
+    LArPandoraHelper::BuildMCParticleHitMaps(evt, m_geantModuleLabel, hitVector, trueParticlesToHits, trueHitsToParticles,
+        (m_useDaughterMCParticles ? (m_addDaughterMCParticles ? LArPandoraHelper::kAddDaughters : LArPandoraHelper::kUseDaughters) : LArPandoraHelper::kIgnoreDaughters));
+
+    if (trueHitsToParticles.empty())
     {
-        LArPandoraHelper::CollectMCParticles(evt, m_geantModuleLabel, trueParticleVector);
-        LArPandoraHelper::CollectMCParticles(evt, m_geantModuleLabel, truthToParticles, particlesToTruth);
+        if (m_backtrackerLabel.empty())
+            throw cet::exception("LArPandora") << " PFParticleMonitoring::analyze - no sim channels found, backtracker module must be set in FHiCL " << std::endl;
 
-        LArPandoraHelper::BuildMCParticleHitMaps(evt, m_geantModuleLabel, hitVector, trueParticlesToHits, trueHitsToParticles,
+        LArPandoraHelper::BuildMCParticleHitMaps(evt, m_geantModuleLabel, m_hitfinderLabel, m_backtrackerLabel,
+            trueParticlesToHits, trueHitsToParticles,
             (m_useDaughterMCParticles ? (m_addDaughterMCParticles ? LArPandoraHelper::kAddDaughters : LArPandoraHelper::kUseDaughters) : LArPandoraHelper::kIgnoreDaughters));
-
-        if (trueHitsToParticles.empty())
-        {
-            if (m_backtrackerLabel.empty())
-                throw cet::exception("LArPandora") << " PFParticleMonitoring::analyze - no sim channels found, backtracker module must be set in FHiCL " << std::endl;
-
-            LArPandoraHelper::BuildMCParticleHitMaps(evt, m_geantModuleLabel, m_hitfinderLabel, m_backtrackerLabel,
-                trueParticlesToHits, trueHitsToParticles,
-                (m_useDaughterMCParticles ? (m_addDaughterMCParticles ? LArPandoraHelper::kAddDaughters : LArPandoraHelper::kUseDaughters) : LArPandoraHelper::kIgnoreDaughters));
-        }
     }
 
     if (m_printDebug)
