@@ -1,5 +1,7 @@
-include_directories( $ENV{PANDORA_INC} )
-include_directories( $ENV{LARPANDORACONTENT_INC} )
+include_directories( ${PandoraSDK_INCLUDE_DIRS} )
+include_directories( ${PandoraMonitoring_INCLUDE_DIRS} )
+include_directories( ${EIGEN3_INCLUDE_DIRS} )
+include_directories( ${LArPandoraContent_INCLUDE_DIRS} )
 
 add_subdirectory(LArPandoraShower)
 
@@ -16,8 +18,8 @@ art_make(
                         larreco_RecoAlg
                         larreco_ClusterFinder
                         larreco_Calorimetry
-                        ${PANDORASDK}
-                        ${PANDORAMONITORING}
+                        ${PandoraSDK_LIBRARIES}
+                        ${PandoraMonitoring_LIBRARIES}
                         LArPandoraContent
                         larpandora_LArPandoraInterface
                         nusimdata_SimulationBase
@@ -34,10 +36,10 @@ art_make(
                         ${MF_MESSAGELOGGER}
                         ${FHICLCPP}
                         cetlib cetlib_except
-                        ${Boost_SYSTEM_LIBRARY}
-                        ${Boost_FILESYSTEM_LIBRARY}
+                        Boost::system
+                        Boost::filesystem
                         ROOT::Geom
-                        ${ROOT_BASIC_LIB_LIST}
+                        ${ROOT_LIBRARIES}
                         ROOT::GenVector
                         MODULE_LIBRARIES larpandora_LArPandoraEventBuilding
           )
@@ -46,4 +48,3 @@ art_make(
 
 install_headers()
 install_fhicl()
-install_source()

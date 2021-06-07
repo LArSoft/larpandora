@@ -1,5 +1,7 @@
-include_directories( $ENV{PANDORA_INC} )
-include_directories( $ENV{LARPANDORACONTENT_INC} )
+include_directories( ${PandoraSDK_INCLUDE_DIRS} )
+include_directories( ${PandoraMonitoring_INCLUDE_DIRS} )
+include_directories( ${EIGEN3_INCLUDE_DIRS} )
+include_directories( ${LArPandoraContent_INCLUDE_DIRS} )
 
 set(CORE_LIB_LIST
     larcorealg_Geometry
