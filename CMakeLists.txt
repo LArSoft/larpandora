@@ -8,7 +8,7 @@
 
 cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
-project(larpandora 09.05.10 LANGUAGES CXX)
+project(larpandora VERSION 09.05.10 LANGUAGES CXX)
 
 find_package(cetmodules REQUIRED)
 find_package(canvas_root_io)
