@@ -4,7 +4,7 @@ art_make(LIB_LIBRARIES
   canvas
   fhiclcpp::fhiclcpp fhiclcpp::types
   cetlib_except
-  messagefacility::MFMessageLogger
+  messagefacility::MF_MessageLogger
   ${ART_FRAMEWORK_CORE}
   ${ART_FRAMEWORK_PRINCIPAL}
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
