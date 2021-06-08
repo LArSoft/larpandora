@@ -2,9 +2,9 @@ art_make(LIB_LIBRARIES
   larcorealg_Geometry
   ${ROOT_BASIC_LIB_LIST}
   canvas
-  ${FHICLCPP}
+  fhiclcpp::fhiclcpp fhiclcpp::types
   cetlib_except
-  ${MF_MESSAGELOGGER}
+  messagefacility::MFMessageLogger
   ${ART_FRAMEWORK_CORE}
   ${ART_FRAMEWORK_PRINCIPAL}
   ${ART_FRAMEWORK_SERVICES_REGISTRY}
