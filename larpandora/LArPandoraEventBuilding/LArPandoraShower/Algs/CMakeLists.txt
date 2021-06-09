@@ -5,11 +5,11 @@ art_make(LIB_LIBRARIES
   fhiclcpp::fhiclcpp fhiclcpp::types
   cetlib_except
   messagefacility::MF_MessageLogger
-  ${ART_FRAMEWORK_CORE}
-  ${ART_FRAMEWORK_PRINCIPAL}
-  ${ART_FRAMEWORK_SERVICES_REGISTRY}
-  ${ART_ROOT_IO_TFILE_SUPPORT}
-  ${ART_ROOT_IO_TFILESERVICE_SERVICE}
+  art::Framwork_Core
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  art_root_io::tfile_support
+  art_root_io::TFileService_service
   art_Persistency_Provenance
   art_Utilities
   nusimdata_SimulationBase
