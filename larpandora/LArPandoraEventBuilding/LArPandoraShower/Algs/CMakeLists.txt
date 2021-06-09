@@ -5,7 +5,7 @@ art_make(LIB_LIBRARIES
   fhiclcpp::fhiclcpp fhiclcpp::types
   cetlib_except
   messagefacility::MF_MessageLogger
-  art::Framwork_Core
+  art::Framework_Core
   art::Framework_Principal
   art::Framework_Services_Registry
   art_root_io::tfile_support

@@ -22,7 +22,7 @@ set(CORE_LIB_LIST
     ${PANDORAMONITORING}
     LArPandoraContent
     nusimdata_SimulationBase
-    art::Framwork_Core
+    art::Framework_Core
     art::Framework_Principal
     art::Framework_Services_Registry
     art::Framework_Services_Registry art::Framework_Services_FileServiceInterfaces
