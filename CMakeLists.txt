@@ -40,7 +40,7 @@ find_ups_product( art )
 find_ups_product(art_root_io)
 find_ups_product( pandora )
 find_ups_product( larpandoracontent )
-find_ups_product( postgresql )
+find_package( postgresql )
 find_ups_product( eigen )
 
 # macros for dictionary and simple_plugin
