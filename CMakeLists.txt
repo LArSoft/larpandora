@@ -39,9 +39,9 @@ find_ups_product( nug4)
 find_ups_product( art )
 find_ups_product(art_root_io)
 find_ups_product( pandora )
-find_ups_product( larpandoracontent )
 find_package( postgresql )
 find_ups_product( eigen )
+find_package(LArPandoraContent REQUIRED)
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)
@@ -54,6 +54,11 @@ cet_find_library( PANDORAMONITORING NAMES PandoraMonitoring PATHS ENV PANDORA_LI
 # find larpandoracontent headers if building at the same time
 #message(STATUS "larpandora: checking for MRB_SOURCE")
 set( mrb_source $ENV{MRB_SOURCE} )
+
+message("LARPANDORACONTENT_INC '${LARPANDORACONTENT_INC}' LArPandoraContent_INCLUDE_DIRS '${LArPandoraContent_INCLUDE_DIRS}'")
+if( NOT LARPANDORACONTENT_INC )
+set(LARPANDORACONTENT_INC "${LArPandoraContent_INCLUDE_DIRS}")
+endif()
 
 if( LARPANDORACONTENT_INC )
   #message(STATUS "larpandora: found LARPANDORACONTENT_INC: $ENV{LARPANDORACONTENT_INC}")
