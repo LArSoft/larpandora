@@ -36,7 +36,11 @@ set(CORE_LIB_LIST
     fhiclcpp::fhiclcpp fhiclcpp::types
     cetlib cetlib_except
     ROOT::Geom
-    ${ROOT_BASIC_LIB_LIST})
+    ROOT::Hist
+    ROOT::Physics
+    ROOT::MathCore
+    ROOT::Core
+    )
 
 option(PANDORA_LIBTORCH "Flag for building with Pandora's LibTorch-aware algorithms" ON)
 if( ${PANDORA_LIBTORCH} AND DEFINED ENV{LIBTORCH_DIR})

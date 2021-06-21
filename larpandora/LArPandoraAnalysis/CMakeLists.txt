@@ -11,8 +11,9 @@ art_make(
                         art::Framework_Core
                         art::Framework_Principal
                         art::Framework_Services_Registry
-                        art::Framework_Services_Registry art::Framework_Services_FileServiceInterfaces
-                        art_root_io::tfile_support ROOT::Core
+                        art::Framework_Services_Registry
+                        art::Framework_Services_FileServiceInterfaces
+                        art_root_io::tfile_support
                         art_root_io::TFileService_service
                         art_Persistency_Common
                         art_Persistency_Provenance
@@ -22,7 +23,11 @@ art_make(
 
                         fhiclcpp::fhiclcpp fhiclcpp::types
                         cetlib cetlib_except
-                        ${ROOT_LIBRARIES}
+                        ROOT::Hist
+                        ROOT::Physics
+                        ROOT::MathCore
+                        ROOT::Tree
+                        ROOT::Core
            MODULE_LIBRARIES larpandora_LArPandoraInterface
           )
 

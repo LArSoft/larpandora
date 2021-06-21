@@ -42,6 +42,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <numeric>
 
 namespace lar_pandora {
 

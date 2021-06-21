@@ -4,6 +4,8 @@
  *  @brief  Helper functions for providing inputs to pandora
  */
 
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
