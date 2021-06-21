@@ -48,6 +48,7 @@ art_make(
                 ROOT::Physics
                 ROOT::MathCore
                 ROOT::Hist
+                ROOT::Tree
                 ROOT::Core
                 ROOT::GenVector
                 MODULE_LIBRARIES larpandora_LArPandoraEventBuilding

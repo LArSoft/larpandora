@@ -39,6 +39,7 @@ set(CORE_LIB_LIST
     ROOT::Hist
     ROOT::Physics
     ROOT::MathCore
+    ROOT::Tree
     ROOT::Core
     )
 
