@@ -43,7 +43,12 @@ art_make(
                 Boost::system
                 Boost::filesystem
                 ROOT::Geom
-                ${ROOT_LIBRARIES}
+                ROOT::Graf3d
+                ROOT::Gpad
+                ROOT::Physics
+                ROOT::MathCore
+                ROOT::Hist
+                ROOT::Core
                 ROOT::GenVector
                 MODULE_LIBRARIES larpandora_LArPandoraEventBuilding
           )
