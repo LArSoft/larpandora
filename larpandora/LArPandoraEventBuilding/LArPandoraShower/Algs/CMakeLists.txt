@@ -1,6 +1,9 @@
 art_make(LIB_LIBRARIES
   larcorealg_Geometry
-  ${ROOT_BASIC_LIB_LIST}
+  ROOT::Physics
+  ROOT::MathCore
+  ROOT::Hist
+  ROOT::Core
   canvas
   fhiclcpp::fhiclcpp fhiclcpp::types
   cetlib_except
