@@ -1,5 +1,6 @@
 art_make(LIB_LIBRARIES
   larcorealg_Geometry
+  ROOT::Gpad
   ROOT::Physics
   ROOT::MathCore
   ROOT::Hist
