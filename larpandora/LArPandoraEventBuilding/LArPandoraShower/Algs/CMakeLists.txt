@@ -5,6 +5,7 @@ art_make(LIB_LIBRARIES
   ROOT::Physics
   ROOT::MathCore
   ROOT::Hist
+  ROOT::Tree
   ROOT::Core
   canvas
   fhiclcpp::fhiclcpp fhiclcpp::types
