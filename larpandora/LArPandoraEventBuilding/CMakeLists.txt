@@ -1,3 +1,4 @@
+include_guard(GLOBAL)
 include_directories( ${PandoraSDK_INCLUDE_DIRS} )
 include_directories( ${PandoraMonitoring_INCLUDE_DIRS} )
 include_directories( ${EIGEN3_INCLUDE_DIRS} )
