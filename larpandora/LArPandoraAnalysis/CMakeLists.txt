@@ -20,8 +20,8 @@ art_make(
                         art_Utilities
                         canvas
                         messagefacility::MF_MessageLogger
-
-                        fhiclcpp::fhiclcpp fhiclcpp::types
+                        fhiclcpp::fhiclcpp 
+                        fhiclcpp::types
                         cetlib cetlib_except
                         ROOT::Hist
                         ROOT::Physics
