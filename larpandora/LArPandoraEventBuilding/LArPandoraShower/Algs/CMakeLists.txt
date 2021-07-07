@@ -1,15 +1,21 @@
 art_make(LIB_LIBRARIES
   larcorealg_Geometry
-  ${ROOT_BASIC_LIB_LIST}
+  ROOT::Graf3d
+  ROOT::Gpad
+  ROOT::Physics
+  ROOT::MathCore
+  ROOT::Hist
+  ROOT::Tree
+  ROOT::Core
   canvas
-  ${FHICLCPP}
+  fhiclcpp::fhiclcpp fhiclcpp::types
   cetlib_except
-  ${MF_MESSAGELOGGER}
-  ${ART_FRAMEWORK_CORE}
-  ${ART_FRAMEWORK_PRINCIPAL}
-  ${ART_FRAMEWORK_SERVICES_REGISTRY}
-  ${ART_ROOT_IO_TFILE_SUPPORT}
-  ${ART_ROOT_IO_TFILESERVICE_SERVICE}
+  messagefacility::MF_MessageLogger
+  art::Framework_Core
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  art_root_io::tfile_support
+  art_root_io::TFileService_service
   art_Persistency_Provenance
   art_Utilities
   nusimdata_SimulationBase

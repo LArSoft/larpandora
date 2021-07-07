@@ -1,5 +1,7 @@
-include_directories( $ENV{PANDORA_INC} )
-include_directories( $ENV{LARPANDORACONTENT_INC} )
+include_directories( ${PandoraSDK_INCLUDE_DIRS} )
+include_directories( ${PandoraMonitoring_INCLUDE_DIRS} )
+include_directories( ${EIGEN3_INCLUDE_DIRS} )
+include_directories( ${LArPandoraContent_INCLUDE_DIRS} )
 
 set(CORE_LIB_LIST
     larcorealg_Geometry
@@ -20,21 +22,26 @@ set(CORE_LIB_LIST
     ${PANDORAMONITORING}
     LArPandoraContent
     nusimdata_SimulationBase
-    ${ART_FRAMEWORK_CORE}
-    ${ART_FRAMEWORK_PRINCIPAL}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
-    ${ART_FRAMEWORK_SERVICES_BASIC}
-    ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
-    ${ART_ROOT_IO_TFILESERVICE_SERVICE}
+    art::Framework_Core
+    art::Framework_Principal
+    art::Framework_Services_Registry
+    art::Framework_Services_Registry art::Framework_Services_FileServiceInterfaces
+    art_root_io::tfile_support ROOT::Core
+    art_root_io::TFileService_service
     art_Persistency_Common
     art_Persistency_Provenance
     art_Utilities
     canvas
-    ${MF_MESSAGELOGGER}
-    ${FHICLCPP}
+    messagefacility::MF_MessageLogger
+    fhiclcpp::fhiclcpp fhiclcpp::types
     cetlib cetlib_except
     ROOT::Geom
-    ${ROOT_BASIC_LIB_LIST})
+    ROOT::Hist
+    ROOT::Physics
+    ROOT::MathCore
+    ROOT::Tree
+    ROOT::Core
+    )
 
 option(PANDORA_LIBTORCH "Flag for building with Pandora's LibTorch-aware algorithms" ON)
 if( ${PANDORA_LIBTORCH} AND DEFINED ENV{LIBTORCH_DIR})

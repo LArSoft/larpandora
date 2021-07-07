@@ -6,14 +6,15 @@
 #  buildtool [-I /install/path] -bt[i] -jN
 # ======================================================================
 
-cmake_minimum_required (VERSION 3.12...3.18 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
-project(larpandora LANGUAGES CXX)
+project(larpandora VERSION 09.05.10 LANGUAGES CXX)
 
-# cetbuildtools contains our cmake modules
-find_package(cetbuildtools REQUIRED)
+set(larpandora_FW_DIR fw)
 
-list(APPEND CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules $ENV{ART_DIR}/Modules)
+find_package(cetmodules REQUIRED)
+find_package(canvas_root_io)
+find_package(art)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -40,9 +41,9 @@ find_ups_product( nug4)
 find_ups_product( art )
 find_ups_product(art_root_io)
 find_ups_product( pandora )
-find_ups_product( larpandoracontent )
-find_ups_product( postgresql )
+find_package( postgresql )
 find_ups_product( eigen )
+find_package(LArPandoraContent REQUIRED)
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)
@@ -55,6 +56,11 @@ cet_find_library( PANDORAMONITORING NAMES PandoraMonitoring PATHS ENV PANDORA_LI
 # find larpandoracontent headers if building at the same time
 #message(STATUS "larpandora: checking for MRB_SOURCE")
 set( mrb_source $ENV{MRB_SOURCE} )
+
+message("LARPANDORACONTENT_INC '${LARPANDORACONTENT_INC}' LArPandoraContent_INCLUDE_DIRS '${LArPandoraContent_INCLUDE_DIRS}'")
+if( NOT LARPANDORACONTENT_INC )
+set(LARPANDORACONTENT_INC "${LArPandoraContent_INCLUDE_DIRS}")
+endif()
 
 if( LARPANDORACONTENT_INC )
   #message(STATUS "larpandora: found LARPANDORACONTENT_INC: $ENV{LARPANDORACONTENT_INC}")
@@ -74,7 +80,9 @@ endif()
 add_subdirectory(larpandora)
 
 # ups - table and config files
+if(WANT_UPS)
 add_subdirectory(ups)
+endif()
 
 # packaging utility
 include(UseCPack)
