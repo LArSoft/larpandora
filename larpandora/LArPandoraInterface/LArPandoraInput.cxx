@@ -680,7 +680,7 @@ namespace lar_pandora {
         else
         {
             mcParticleParameters.m_process = lar_content::MC_PROC_UNKNOWN;
-            mf::LogWarning("LArPandora") << "CreatePandoraMCParticles - found an unkown process" << std::endl;
+            mf::LogWarning("LArPandora") << "CreatePandoraMCParticles - found an unknown process" << std::endl;
         }
         mcParticleParameters.m_energy = E;
         mcParticleParameters.m_particleId = particle->PdgCode();
@@ -944,6 +944,7 @@ namespace lar_pandora {
   void
   LArPandoraInput::FillMCProcessMap(MCProcessMap &processMap)
   {
+    // QGSP_BERT and EM standard physics list mappings
     processMap["unknown"] = lar_content::MC_PROC_UNKNOWN;
     processMap["primary"] = lar_content::MC_PROC_PRIMARY;
     processMap["compt"] = lar_content::MC_PROC_COMPT;
@@ -967,6 +968,31 @@ namespace lar_pandora {
     processMap["pi+Inelastic"] = lar_content::MC_PROC_PI_PLUS_INELASTIC;
     processMap["CHIPSNuclearCaptureAtRest"] = lar_content::MC_PROC_CHIPS_NUCLEAR_CAPTURE_AT_REST;
     processMap["pi-Inelastic"] = lar_content::MC_PROC_PI_MINUS_INELASTIC;
+    processMap["Transportation"] = lar_content::MC_PROC_TRANSPORTATION;
+    processMap["Rayl"] = lar_content::MC_PROC_RAYLEIGH;
+    processMap["hBrems"] = lar_content::MC_PROC_HAD_BREM;
+    processMap["hPairProd"] = lar_content::MC_PROC_HAD_PAIR_PROD;
+    processMap["ionIoni"] = lar_content::MC_PROC_ION_IONI;
+    processMap["nKiller"] = lar_content::MC_PROC_NEUTRON_KILLER;
+    processMap["ionInelastic"] = lar_content::MC_PROC_ION_INELASTIC;
+    processMap["He3Inelastic"] = lar_content::MC_PROC_HE3_INELASTIC;
+    processMap["alphaInelastic"] = lar_content::MC_PROC_ALPHA_INELASTIC;
+    processMap["anti_He3Inelastic"] = lar_content::MC_PROC_ANTI_HE3_INELASTIC;
+    processMap["anti_alphaInelastic"] = lar_content::MC_PROC_ANTI_ALPHA_INELASTIC;
+    processMap["hFritiofCaptureAtRest"] = lar_content::MC_PROC_HAD_FRITIOF_CAPTURE_AT_REST;
+    processMap["anti_deuteronInelastic"] = lar_content::MC_PROC_ANTI_DEUTERON_INELASTIC;
+    processMap["anti_neutronInelastic"] = lar_content::MC_PROC_ANTI_NEUTRON_INELASTIC;
+    processMap["anti_protonInelastic"] = lar_content::MC_PROC_ANTI_PROTON_INELASTIC;
+    processMap["anti_tritonInelastic"] = lar_content::MC_PROC_ANTI_TRITON_INELASTIC;
+    processMap["dInelastic"] = lar_content::MC_PROC_DEUTERON_INELASTIC;
+    processMap["electronNuclear"] = lar_content::MC_PROC_ELECTRON_NUCLEAR;
+    processMap["photonNuclear"] = lar_content::MC_PROC_PHOTON_NUCLEAR;
+    processMap["kaon+Inelastic"] = lar_content::MC_PROC_KAON_PLUS_INELASTIC;
+    processMap["kaon-Inelastic"] = lar_content::MC_PROC_KAON_MINUS_INELASTIC;
+    processMap["hBertiniCaptureAtRest"] = lar_content::MC_PROC_HAD_BERTINI_CAPTURE_AT_REST;
+    processMap["lambdaInelastic"] = lar_content::MC_PROC_LAMBDA_INELASTIC;
+    processMap["muonNuclear"] = lar_content::MC_PROC_MU_NUCLEAR;
+    processMap["tInelastic"] = lar_content::MC_PROC_TRITON_INELASTIC;
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
