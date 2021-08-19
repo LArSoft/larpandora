@@ -8,6 +8,7 @@
 #define LAR_PANDORA_INPUT_H 1
 
 #include "lardata/ArtDataHelper/MVAReader.h"
+#include "larevt/CalibrationDBI/Interface/CalibrationDBIFwd.h"
 namespace detinfo {
   class DetectorPropertiesData;
 }
@@ -89,7 +90,8 @@ namespace lar_pandora {
      *  @param  settings the settings
      *  @param  driftVolumeMap the mapping from volume id to drift volume
      */
-    static void CreatePandoraReadoutGaps(const Settings& settings,
+    static void CreatePandoraReadoutGaps(lariov::DBTimeStamp_t ts, 
+                                         const Settings& settings,
                                          const LArDriftVolumeMap& driftVolumeMap);
 
     /**

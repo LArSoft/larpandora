@@ -332,7 +332,8 @@ namespace lar_pandora {
   //------------------------------------------------------------------------------------------------------------------------------------------
 
   void
-  LArPandoraInput::CreatePandoraReadoutGaps(const Settings& settings,
+  LArPandoraInput::CreatePandoraReadoutGaps(lariov::DBTimeStamp_t ts, 
+  const Settings& settings,
                                             const LArDriftVolumeMap& driftVolumeMap)
   {
     mf::LogDebug("LArPandora") << " *** LArPandoraInput::CreatePandoraReadoutGaps(...) *** "
@@ -364,7 +365,7 @@ namespace lar_pandora {
           for (unsigned int iwire = 0; iwire < nWires; ++iwire) {
             const raw::ChannelID_t channel(
               theGeometry->PlaneWireToChannel(iplane, iwire, itpc, icstat));
-            const bool isBadChannel(channelStatus.IsBad(channel));
+            const bool isBadChannel(channelStatus.IsBad(ts, channel));
             const bool isLastWire(nWires == (iwire + 1));
 
             if (isBadChannel && (firstBadWire < 0)) firstBadWire = iwire;

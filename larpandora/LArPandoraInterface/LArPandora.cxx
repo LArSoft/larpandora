@@ -177,7 +177,7 @@ namespace lar_pandora {
   {
     // ATTN Should complete gap creation in begin job callback, but channel status service functionality unavailable at that point
     if (!m_lineGapsCreated && m_enableDetectorGaps) {
-      LArPandoraInput::CreatePandoraReadoutGaps(m_inputSettings, m_driftVolumeMap);
+      LArPandoraInput::CreatePandoraReadoutGaps(evt.time().value(), m_inputSettings, m_driftVolumeMap);
       m_lineGapsCreated = true;
     }
 
