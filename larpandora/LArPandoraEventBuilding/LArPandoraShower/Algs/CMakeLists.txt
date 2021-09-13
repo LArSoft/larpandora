@@ -1,17 +1,17 @@
 art_make(LIB_LIBRARIES
   larcorealg_Geometry
   ${ROOT_BASIC_LIB_LIST}
-  canvas
-  ${FHICLCPP}
-  cetlib_except
-  ${MF_MESSAGELOGGER}
-  ${ART_FRAMEWORK_CORE}
-  ${ART_FRAMEWORK_PRINCIPAL}
-  ${ART_FRAMEWORK_SERVICES_REGISTRY}
-  ${ART_ROOT_IO_TFILE_SUPPORT}
-  ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-  art_Persistency_Provenance
-  art_Utilities
+  canvas::canvas
+  fhiclcpp::fhiclcpp
+  cetlib_except::cetlib_except
+  messagefacility::MF_MessageLogger
+  art::Framework_Core
+  art::Framework_Principal
+  art::Framework_Services_Registry
+  art_root_io::tfile_support
+  art_root_io::TFileService_service
+  art::Persistency_Provenance
+  art::Utilities
   nusimdata_SimulationBase
   lardataobj_RecoBase
   larsim_MCCheater_BackTrackerService_service

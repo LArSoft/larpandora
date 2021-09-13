@@ -33,15 +33,15 @@ namespace ShowerRecoTools {
 
 
       //fcl
-      bool fDebugEVD;
-      art::InputTag fPFParticleLabel;
-      art::InputTag fHitModuleLabel;
+      const bool fDebugEVD;
+      const art::InputTag fPFParticleLabel;
+      const art::InputTag fHitModuleLabel;
 
-      std::string fTrueParticleIntputLabel;
-      std::string fShowerStartPositionInputTag;
-      std::string fShowerDirectionInputTag;
-      std::string fInitialTrackHitsOutputLabel;
-      std::string fInitialTrackSpacePointsOutputLabel;
+      const std::string fTrueParticleIntputLabel;
+      const std::string fShowerStartPositionInputTag;
+      const std::string fShowerDirectionInputTag;
+      const std::string fInitialTrackHitsOutputLabel;
+      const std::string fInitialTrackSpacePointsOutputLabel;
   };
 
 
@@ -69,6 +69,22 @@ namespace ShowerRecoTools {
     auto const pfpHandle = Event.getValidHandle<std::vector<recob::PFParticle> >(fPFParticleLabel);
     auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(Event);
 
+    //Get the clusters
+    auto const clusHandle = Event.getValidHandle<std::vector<recob::Cluster> >(fPFParticleLabel);
+    art::FindManyP<recob::Cluster> fmc(pfpHandle, Event, fPFParticleLabel);
+    std::vector<art::Ptr<recob::Cluster> > clusters = fmc.at(pfparticle.key());
+
+    //Get the hit association
+    art::FindManyP<recob::Hit> fmhc(clusHandle, Event, fPFParticleLabel);
+
+    std::vector<art::Ptr<recob::Hit> > showerHits;
+    for(auto const& cluster: clusters){
+
+      //Get the hits
+      std::vector<art::Ptr<recob::Hit> > hits = fmhc.at(cluster.key());
+      showerHits.insert(showerHits.end(),hits.begin(),hits.end());
+    }
+
     if (ShowerEleHolder.CheckElement(fTrueParticleIntputLabel)){
       ShowerEleHolder.GetElement(fTrueParticleIntputLabel,trueParticle);
     } else {
@@ -76,23 +92,6 @@ namespace ShowerRecoTools {
       //Could store these in the shower element holder and just calculate once?
       std::map<int,const simb::MCParticle*> trueParticles = fLArPandoraShowerCheatingAlg.GetTrueParticleMap();
       std::map<int,std::vector<int> > showersMothers = fLArPandoraShowerCheatingAlg.GetTrueChain(trueParticles);
-
-
-      //Get the clusters
-      auto const clusHandle = Event.getValidHandle<std::vector<recob::Cluster> >(fPFParticleLabel);
-      art::FindManyP<recob::Cluster> fmc(pfpHandle, Event, fPFParticleLabel);
-      std::vector<art::Ptr<recob::Cluster> > clusters = fmc.at(pfparticle.key());
-
-      //Get the hit association
-      art::FindManyP<recob::Hit> fmhc(clusHandle, Event, fPFParticleLabel);
-
-      std::vector<art::Ptr<recob::Hit> > showerHits;
-      for(auto const& cluster: clusters){
-
-        //Get the hits
-        std::vector<art::Ptr<recob::Hit> > hits = fmhc.at(cluster.key());
-        showerHits.insert(showerHits.end(),hits.begin(),hits.end());
-      }
 
       //Get the true particle from the shower
       std::pair<int,double> ShowerTrackInfo = fLArPandoraShowerCheatingAlg.TrueParticleIDFromTrueChain(clockData,
@@ -103,6 +102,12 @@ namespace ShowerRecoTools {
         return 1;
       }
       trueParticle = trueParticles[ShowerTrackInfo.first];
+      ShowerEleHolder.SetElement(trueParticle,fTrueParticleIntputLabel);
+    }
+
+    if (!trueParticle){
+      mf::LogError("ShowerDirectionCheater") << "True shower not found, returning";
+      return 1;
     }
 
     //This is all based on the shower vertex being known. If it is not lets not do the track
@@ -122,8 +127,6 @@ namespace ShowerRecoTools {
     ShowerEleHolder.GetElement(fShowerDirectionInputTag,ShowerDirection);
 
     auto const hitHandle = Event.getValidHandle<std::vector<recob::Hit> >(fHitModuleLabel);
-    std::vector<art::Ptr<recob::Hit> > hits;
-    art::fill_ptr_vector(hits, hitHandle);
 
     // Get the hits associated with the space points
     art::FindManyP<recob::SpacePoint> fmsph(hitHandle, Event, fPFParticleLabel);
@@ -131,13 +134,36 @@ namespace ShowerRecoTools {
       throw cet::exception("ShowerTrackFinderCheater") << "Spacepoint and hit association not valid. Stopping.";
     }
 
+    std::vector<int> trueParticleIdVec;
+
+    // If we have an electron, take the hits from the primary only
+    // This will also cover the cases Pandora misclassify a track as a shower
+    if (trueParticle->PdgCode() != 22)
+    {
+      trueParticleIdVec.push_back(trueParticle->TrackId());
+    } else {
+      // To check if we are rolling up showers, check the number of daughters the photon has
+      const int nDaughters = trueParticle->NumberDaughters();
+      if (nDaughters == 0)
+      {
+        // If we roll up showers, we have no choice but to take all of the hits from the photon
+        trueParticleIdVec.push_back(-trueParticle->TrackId());
+      } else {
+        // If we do not roll up the showers, take all of the primary daughters
+        for (int i=0; i<nDaughters; i++)
+        {
+          trueParticleIdVec.push_back(trueParticle->Daughter(i));
+        }
+      }
+    }
+
     std::vector<art::Ptr<recob::Hit> > trackHits;
     std::vector<art::Ptr<recob::SpacePoint> > trackSpacePoints;
 
     //Get the hits from the true particle
-    for (auto hit : hits){
-      int trueParticleID = fLArPandoraShowerCheatingAlg.TrueParticleID(clockData, hit);
-      if (trueParticleID == trueParticle->TrackId()){
+    for (auto hit : showerHits){
+      int trueHitId = fLArPandoraShowerCheatingAlg.TrueParticleID(clockData, hit);
+      if (std::find(trueParticleIdVec.cbegin(), trueParticleIdVec.cend(), trueHitId) != trueParticleIdVec.cend()){
         trackHits.push_back(hit);
         std::vector<art::Ptr<recob::SpacePoint> > sps = fmsph.at(hit.key());
         if (sps.size() == 1){
@@ -145,6 +171,10 @@ namespace ShowerRecoTools {
         }
       }
     }
+
+    if (trackHits.empty() || trackSpacePoints.empty())
+      mf::LogWarning("ShowerTrackFinderCheater") << "Creating intial track with " <<
+        trackHits.size() << " hits and " << trackSpacePoints.size() << " spacepoints" << std::endl;
 
     ShowerEleHolder.SetElement(trackHits, fInitialTrackHitsOutputLabel);
     ShowerEleHolder.SetElement(trackSpacePoints,fInitialTrackSpacePointsOutputLabel);

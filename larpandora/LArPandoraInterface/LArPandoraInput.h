@@ -17,6 +17,8 @@ namespace detinfo {
 #include "larpandora/LArPandoraInterface/LArPandoraGeometry.h"
 #include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 
+#include "larpandoracontent/LArObjects/LArMCParticle.h"
+
 namespace lar_pandora {
 
   /**
@@ -136,6 +138,8 @@ namespace lar_pandora {
                                        const HitsToTrackIDEs& hitToParticleMap);
 
   private:
+    typedef std::map<std::string, lar_content::MCProcess> MCProcessMap;
+
     /**
      *  @brief  Loop over MC trajectory points and identify start and end points within the detector
      *
@@ -186,6 +190,13 @@ namespace lar_pandora {
                           const Settings& settings,
                           const double hit_Charge,
                           const geo::View_t hit_View);
+
+    /**
+     *  @brief  Populate a map from MC process string to enumeration
+     *
+     *  @param  processMap the output map from MC process string to enumeration
+     */
+    static void FillMCProcessMap(MCProcessMap &processMap);
   };
 
 } // namespace lar_pandora

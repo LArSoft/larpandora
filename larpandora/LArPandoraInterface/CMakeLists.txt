@@ -16,32 +16,30 @@ set(CORE_LIB_LIST
     larreco_RecoAlg
     larreco_ClusterFinder
     larreco_Calorimetry
-    ${PANDORASDK}
-    ${PANDORAMONITORING}
+    PANDORASDK
+    PANDORAMONITORING
     LArPandoraContent
     nusimdata_SimulationBase
-    ${ART_FRAMEWORK_CORE}
-    ${ART_FRAMEWORK_PRINCIPAL}
-    ${ART_FRAMEWORK_SERVICES_REGISTRY}
-    ${ART_FRAMEWORK_SERVICES_BASIC}
-    ${ART_ROOT_IO_TFILE_SUPPORT} ROOT::Core
-    ${ART_ROOT_IO_TFILESERVICE_SERVICE}
-    art_Persistency_Common
-    art_Persistency_Provenance
-    art_Utilities
-    canvas
-    ${MF_MESSAGELOGGER}
-    ${FHICLCPP}
-    cetlib cetlib_except
-    ROOT::Geom
-    ${ROOT_BASIC_LIB_LIST})
+    art::Framework_Core
+    art::Framework_Principal
+    art::Framework_Services_Registry
+    art_root_io::tfile_support ROOT::Core
+    art_root_io::TFileService_service
+    art::Persistency_Common
+    art::Persistency_Provenance
+    art::Utilities
+    canvas::canvas
+    messagefacility::MF_MessageLogger
+    fhiclcpp::fhiclcpp
+    cetlib::cetlib cetlib_except
+    ROOT::Geom)
 
 option(PANDORA_LIBTORCH "Flag for building with Pandora's LibTorch-aware algorithms" ON)
 if( ${PANDORA_LIBTORCH} AND DEFINED ENV{LIBTORCH_DIR})
     message(STATUS "Building with deep learning support")
     add_definitions("-DLIBTORCH_DL")
     art_make(
-        LIB_LIBRARIES ${CORE_LIB_LIST} LArPandoraDLContent
+        LIB_LIBRARIES ${CORE_LIB_LIST} larpandoracontent::LArPandoraDLContent
         MODULE_LIBRARIES larpandora_LArPandoraInterface)
 else()
     message( STATUS "Building without deep learning support" )

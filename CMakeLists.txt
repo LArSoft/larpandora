@@ -6,9 +6,9 @@
 #  buildtool [-I /install/path] -bt[i] -jN
 # ======================================================================
 
-cmake_minimum_required (VERSION 3.12...3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 
-project(larpandora LANGUAGES CXX)
+project(larpandora VERSION 09.07.02.01 LANGUAGES CXX)
 
 # cetbuildtools contains our cmake modules
 find_package(cetbuildtools REQUIRED)
@@ -27,6 +27,7 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
+find_ups_product( eigen )
 find_ups_product( larcoreobj )
 find_ups_product( larcorealg )
 find_ups_product( larcore )
@@ -42,7 +43,7 @@ find_ups_product(art_root_io)
 find_ups_product( pandora )
 find_ups_product( larpandoracontent )
 find_ups_product( postgresql )
-find_ups_product( eigen )
+find_ups_product(messagefacility)
 
 # macros for dictionary and simple_plugin
 include(ArtDictionary)
@@ -56,19 +57,21 @@ cet_find_library( PANDORAMONITORING NAMES PandoraMonitoring PATHS ENV PANDORA_LI
 #message(STATUS "larpandora: checking for MRB_SOURCE")
 set( mrb_source $ENV{MRB_SOURCE} )
 
-if( LARPANDORACONTENT_INC )
+
+# This logic does not work with cetbuildtools 8
+##if( LARPANDORACONTENT_INC )
   #message(STATUS "larpandora: found LARPANDORACONTENT_INC: $ENV{LARPANDORACONTENT_INC}")
   # note that mrb v1_07_00 or later will define LARPANDORACONTENT_INC
-  if( mrb_source )
-    include_directories( ${LARPANDORACONTENT_INC} )
-  endif()
-else()
-  if( mrb_source )
-    include_directories( ${mrb_source}/larpandoracontent )
-  else()
-    message(FATAL_ERROR "LARPANDORACONTENT_INC is undefined, please setup larpandoracontent")
-  endif()
-endif()
+##  if( mrb_source )
+##    include_directories( ${LARPANDORACONTENT_INC} )
+##  endif()
+##else()
+##  if( mrb_source )
+##    include_directories( ${mrb_source}/larpandoracontent )
+##  else()
+##    message(FATAL_ERROR "LARPANDORACONTENT_INC is undefined, please setup larpandoracontent")
+##  endif()
+##endif()
 
 # source
 add_subdirectory(larpandora)

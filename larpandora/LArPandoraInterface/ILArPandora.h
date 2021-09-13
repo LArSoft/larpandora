@@ -8,6 +8,7 @@
 #define I_LAR_PANDORA_H 1
 
 #include "art/Framework/Core/EDProducer.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 namespace recob {class Hit;}
 namespace pandora {class Pandora;}

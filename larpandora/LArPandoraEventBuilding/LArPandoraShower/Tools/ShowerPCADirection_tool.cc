@@ -47,16 +47,10 @@ namespace ShowerRecoTools {
 
       TVector3 GetPCAxisVector(recob::PCAxis& PCAxis);
 
-      double  RMSShowerGradient(std::vector<art::Ptr<recob::SpacePoint> >& sps,
-          TVector3& ShowerCentre, TVector3& Direction);
-
-      // Function to calculate the RMS spread of perpendicular distances from PCA
-      double CalculateRMS(const std::vector<double>& perpVec);
-
       //fcl
       art::InputTag fPFParticleLabel;
       int                        fVerbose;
-      float fNSegments;        //Used in the RMS gradient. How many segments should we split the shower into.
+      unsigned int fNSegments;        //Used in the RMS gradient. How many segments should we split the shower into.
       bool fUseStartPosition;  //If we use the start position the drection of the
       //PCA vector is decided as (Shower Centre - Shower Start Position).
       bool fChargeWeighted;    //Should the PCA axis be charge weighted.
@@ -72,7 +66,7 @@ namespace ShowerRecoTools {
     IShowerTool(pset.get<fhicl::ParameterSet>("BaseTools")),
     fPFParticleLabel(pset.get<art::InputTag>("PFParticleLabel")),
     fVerbose(pset.get<int>("Verbose")),
-    fNSegments(pset.get<float>("NSegments")),
+    fNSegments(pset.get<unsigned int>("NSegments")),
     fUseStartPosition(pset.get<bool>("UseStartPosition")),
     fChargeWeighted(pset.get<bool>("ChargeWeighted")),
     fShowerStartPositionInputLabel(pset.get<std::string>("ShowerStartPositionInputLabel")),
@@ -109,8 +103,10 @@ namespace ShowerRecoTools {
     std::vector<art::Ptr<recob::SpacePoint> > spacePoints_pfp = fmspp.at(pfparticle.key());
 
     //We cannot progress with no spacepoints.
-    if(spacePoints_pfp.empty())
+    if(spacePoints_pfp.size() < 3) {
+      mf::LogWarning("ShowerPCADirection") << spacePoints_pfp.size() << " spacepoints in shower, not calculating direction" << std::endl;
       return 1;
+    }
 
     auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(Event);
     auto const detProp   = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(Event, clockData);
@@ -156,9 +152,11 @@ namespace ShowerRecoTools {
     }
 
     //Otherwise Check against the RMS of the shower. Method adapated from EMShower Thanks Mike.
-    double RMSGradient = RMSShowerGradient(spacePoints_pfp,ShowerCentre,PCADirection);
+    double RMSGradient = IShowerTool::GetLArPandoraShowerAlg().RMSShowerGradient(spacePoints_pfp,ShowerCentre,PCADirection, fNSegments);
 
-    if(RMSGradient < 0){
+    // If the alg fails to calculate the gradient it will return 0. In this case do nothing
+    // If the gradient is negative, flip the direction of the shower
+    if(RMSGradient < -std::numeric_limits<double>::epsilon()){
       PCADirection[0] = - PCADirection[0];
       PCADirection[1] = - PCADirection[1];
       PCADirection[2] = - PCADirection[2];
@@ -170,68 +168,6 @@ namespace ShowerRecoTools {
     ShowerEleHolder.SetElement(PCADirection,PCADirectionErr,fShowerDirectionOutputLabel);
     return 0;
   }
-
-  //Function to calculate the RMS at segements of the shower and calculate the gradient of this. If negative then the direction is pointing the opposite way to the correct one
-  double ShowerPCADirection::RMSShowerGradient(std::vector<art::Ptr<recob::SpacePoint> >& sps, TVector3& ShowerCentre, TVector3& Direction){
-
-    //Order the spacepoints
-    IShowerTool::GetLArPandoraShowerAlg().OrderShowerSpacePoints(sps,ShowerCentre,Direction);
-
-    //Get the length of the shower.
-    double minProj =IShowerTool::GetLArPandoraShowerAlg().SpacePointProjection(sps[0],ShowerCentre,Direction);
-    double maxProj =IShowerTool::GetLArPandoraShowerAlg().SpacePointProjection(sps[sps.size()-1],ShowerCentre,Direction);
-
-    double length = (maxProj-minProj);
-    double segmentsize = length/fNSegments;
-
-    // Create a map from segment (projection) to perpendicular distance
-    std::map<int, std::vector<double> > len_segment_map;
-
-    //Split the the spacepoints into segments.
-    for(auto const& sp: sps){
-
-      //Get the the projected length
-      double proj = IShowerTool::GetLArPandoraShowerAlg().SpacePointProjection(sp,ShowerCentre,Direction);
-
-      //Get the length to the projection
-      double perp = IShowerTool::GetLArPandoraShowerAlg().SpacePointPerpendicular(sp,ShowerCentre,Direction,proj);
-
-      int segment = round(proj/segmentsize);
-      len_segment_map[segment].push_back(perp);
-    }
-
-    int counter = 0;
-    double sumx  = 0;
-    double sumy  = 0;
-    double sumx2 = 0;
-    double sumxy = 0;
-
-    //Get the rms of the segments and caclulate the gradient.
-    for(auto const& segment: len_segment_map){
-
-      // Require at least 2 space points in a segment
-      if (segment.second.size()<2) continue;
-
-      double RMS = CalculateRMS(segment.second);
-      //Calculate the gradient using regression
-      sumx  += segment.first;
-      sumy  += RMS;
-      sumx2 += segment.first * segment.first;
-      sumxy += RMS * segment.first;
-      ++counter;
-    }
-
-    return (counter*sumxy - sumx*sumy)/(counter*sumx2 - sumx*sumx);
-  }
-
-  double ShowerPCADirection::CalculateRMS(const std::vector<double>& perpVec){
-    double sum  = 0;
-    for (const auto& perp : perpVec){
-      sum = perp*perp;
-    }
-    return  std::sqrt(sum/(perpVec.size()-1));
-  }
-
 
   //Function to calculate the shower direction using a charge weight 3D PCA calculation.
   recob::PCAxis ShowerPCADirection::CalculateShowerPCA(const detinfo::DetectorClocksData& clockData,
