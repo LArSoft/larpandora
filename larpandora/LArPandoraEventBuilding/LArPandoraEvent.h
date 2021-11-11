@@ -8,6 +8,8 @@
 #define LAR_PANDORA_EVENT_H 1
 
 #include "art/Persistency/Common/PtrMaker.h"
+#include "canvas/Persistency/Common/Assns.h"
+#include "art/Framework/Principal/Event.h"
 
 #include "lardata/Utilities/AssociationUtil.h"
 
@@ -18,10 +20,11 @@
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/Track.h"
+#include "lardataobj/RecoBase/TrackHitMeta.h"
 #include "lardataobj/RecoBase/Shower.h"
 #include "lardataobj/RecoBase/PCAxis.h"
 #include "lardataobj/RecoBase/Hit.h"
-
+#include "lardataobj/RecoBase/Slice.h"
 #include "lardataobj/AnalysisBase/T0.h"
 
 #include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
@@ -33,15 +36,6 @@
 namespace lar_pandora
 {
 
-typedef std::vector< art::Ptr<larpandoraobj::PFParticleMetadata> >                                              MetadataVector;
-typedef std::map< art::Ptr<recob::PFParticle>, std::vector< art::Ptr<larpandoraobj::PFParticleMetadata> > >     PFParticlesToMetadata;
-
-typedef std::vector< art::Ptr<recob::PCAxis> >                                              PCAxisVector;
-typedef std::map< art::Ptr<recob::PFParticle>, std::vector< art::Ptr<recob::PCAxis> > >     PFParticlesToPCAxes;
-typedef std::map< art::Ptr<recob::PFParticle>, std::vector< art::Ptr<recob::PFParticle> > > PFParticlesToPFParticles;
-typedef std::map< art::Ptr<recob::Shower>, std::vector< art::Ptr<recob::PCAxis> > >         ShowersToPCAxes;
-typedef std::map< art::Ptr<recob::SpacePoint>, std::vector< art::Ptr<recob::Hit> > >        SpacePointsToHitVector;
-
 /**
  *  @brief LArPandoraEvent class
  */
@@ -49,7 +43,53 @@ class LArPandoraEvent
 {
 public:
     /**
-     *  @brief  Class to handle the required producer labels
+     *  @brief Shorthand for a collection of objects of type T
+     */
+    template <typename T>
+    using Collection = std::vector< art::Ptr<T> >;
+
+    template <typename R, typename D>
+    using PairVector = std::vector< std::pair< art::Ptr<R>, D > >;
+
+    /**
+     *  @brief General purpose short-hand with optional D parameter
+     */
+    template <typename L, typename R, typename D>
+    using Association = std::map< art::Ptr<L>, PairVector<R, D> >;
+
+    // Collection typedef specializations
+    typedef Collection<recob::Hit>                         HitCollection;
+    typedef Collection<recob::PFParticle>                  PFParticleCollection;
+    typedef Collection<recob::Cluster>                     ClusterCollection;
+    typedef Collection<recob::SpacePoint>                  SpacePointCollection;
+    typedef Collection<recob::Vertex>                      VertexCollection;
+    typedef Collection<recob::Slice>                       SliceCollection;
+    typedef Collection<recob::Track>                       TrackCollection;
+    typedef Collection<recob::Shower>                      ShowerCollection;
+    typedef Collection<recob::PCAxis>                      PCAxisCollection;
+    typedef Collection<larpandoraobj::PFParticleMetadata>  PFParticleMetadataCollection;
+    typedef Collection<anab::T0>                           T0Collection;
+
+    // Association typedef specializations
+    typedef Association<recob::PFParticle, recob::Cluster, void*>                     PFParticleToClusterAssoc;
+    typedef Association<recob::PFParticle, recob::SpacePoint, void*>                  PFParticleToSpacePointAssoc;
+    typedef Association<recob::PFParticle, recob::Vertex, void*>                      PFParticleToVertexAssoc;
+    typedef Association<recob::PFParticle, recob::Slice, void*>                       PFParticleToSliceAssoc;
+    typedef Association<recob::PFParticle, recob::Track, void*>                       PFParticleToTrackAssoc;
+    typedef Association<recob::PFParticle, recob::Shower, void*>                      PFParticleToShowerAssoc;
+    typedef Association<recob::PFParticle, recob::PCAxis, void*>                      PFParticleToPCAxisAssoc;
+    typedef Association<recob::PFParticle, larpandoraobj::PFParticleMetadata, void*>  PFParticleToPFParticleMetadataAssoc;
+    typedef Association<recob::PFParticle, anab::T0, void*>                           PFParticleToT0Assoc;
+
+    typedef Association<recob::Cluster, recob::Hit, void*>                            ClusterToHitAssoc;
+    typedef Association<recob::SpacePoint, recob::Hit, void*>                         SpacePointToHitAssoc;
+    typedef Association<recob::Slice, recob::Hit, void*>                              SliceToHitAssoc;
+    typedef Association<recob::Track, recob::Hit, recob::TrackHitMeta>                TrackToHitAssoc;
+    typedef Association<recob::Shower, recob::Hit, void*>                             ShowerToHitAssoc;
+    typedef Association<recob::Shower, recob::PCAxis, void*>                          ShowerToPCAxisAssoc;
+
+    /**
+     *  @brief  Class to handle the required producer labels 
      */
     class Labels
     {
@@ -63,6 +103,7 @@ public:
             SpacePointLabel,
             ClusterLabel,
             VertexLabel,
+            SliceLabel,
             TrackLabel,
             ShowerLabel,
             T0Label,
@@ -72,6 +113,7 @@ public:
             PFParticleToSpacePointLabel,
             PFParticleToClusterLabel,
             PFParticleToVertexLabel,
+            PFParticleToSliceLabel,
             PFParticleToTrackLabel,
             PFParticleToShowerLabel,
             PFParticleToT0Label,
@@ -79,6 +121,7 @@ public:
             PFParticleToPCAxisLabel,
             SpacePointToHitLabel,
             ClusterToHitLabel,
+            SliceToHitLabel,
             TrackToHitLabel,
             ShowerToHitLabel,
             ShowerToPCAxisLabel
@@ -86,7 +129,7 @@ public:
 
         /**
          *  @brief  Minimal parametrised constructor.
-         *          Sets all collection labels to be the same as the PFParticle producer label
+         *          Sets all collection labels to be the same as the PFParticle producer label 
          */
         Labels(const std::string &pfParticleProducerLabel, const std::string &hitProducerLabel);
 
@@ -98,33 +141,25 @@ public:
         Labels(const std::string &pfParticleProducerLabel, const std::string &trackProducerLabel, const std::string &showerProducerLabel,
             const std::string &hitProducerLabel);
 
-        const std::string &GetLabel(const LabelType &type) const;
+        /**
+         *  @brief  Get the label of a given type
+         *
+         *  @param  type the label type to retrieve
+         *
+         *  @return the label
+         */
+        const std::string & GetLabel(const LabelType type) const;
 
-        void SetSpacePointProducerLabel(const std::string &label);
-        void SetClusterProducerLabel(const std::string &label);
-        void SetVertexProducerLabel(const std::string &label);
-        void SetTrackProducerLabel(const std::string &label);
-        void SetShowerProducerLabel(const std::string &label);
-        void SetT0ProducerLabel(const std::string &label);
-        void SetMetadataProducerLabel(const std::string &label);
-        void SetPCAxisProducerLabel(const std::string &label);
-
-        void SetPFParticleToSpacePointProducerLabel(const std::string &label);
-        void SetPFParticleToClusterProducerLabel(const std::string &label);
-        void SetPFParticleToVertexProducerLabel(const std::string &label);
-        void SetPFParticleToTrackProducerLabel(const std::string &label);
-        void SetPFParticleToShowerProducerLabel(const std::string &label);
-        void SetPFParticleToT0ProducerLabel(const std::string &label);
-        void SetPFParticleToMetadataProducerLabel(const std::string &label);
-        void SetPFParticleToPCAxisProducerLabel(const std::string &label);
-        void SetSpacePointToHitProducerLabel(const std::string &label);
-        void SetClusterToHitProducerLabel(const std::string &label);
-        void SetTrackToHitProducerLabel(const std::string &label);
-        void SetShowerToHitProducerLabel(const std::string &label);
-        void SetShowerToPCAxisProducerLabel(const std::string &label);
+        /**
+         *  @brief  Set the label of a given type
+         *
+         *  @param  type the label type to set
+         *  @param  label the label to set
+         */
+        void SetLabel(const LabelType type, const std::string &label);
 
     private:
-        std::map<LabelType, std::string>    m_labels;   ///< Map holding the labels
+        std::map<LabelType, std::string> m_labels;   ///< Map holding the labels
     };
 
     /**
@@ -134,57 +169,24 @@ public:
      *  @param  pEvent pointer to the event to process
      *  @param  inputLabel labels for the producers of the input collections
      *  @param  shouldProduceT0s if T0s should be produced (usually only for multiple drift volume use cases)
-     *  @param  shift amount by which to shift PFParticle IDs when merging
      */
-    LArPandoraEvent(art::EDProducer *pProducer, art::Event *pEvent, const Labels &inputLabels, const bool shouldProduceT0s = false, const size_t shift = 100000);
+    LArPandoraEvent(art::EDProducer *pProducer, art::Event *pEvent, const Labels &inputLabels, const bool shouldProduceT0s = false);
 
     /**
-     *  @brief  Construct by copying an existing LArPandoraEvent, replacing the collections and associations
+     *  @brief  Construct by copying an existing LArPandoraEvent, replacing the collections and associations 
      *          by any objects associated with a PFParticle in the selection supplied.
-     *
+     * 
      *  @param  event input event to copy and filter
      *  @param  pfParticleVector input vector of selected particles
      */
     LArPandoraEvent(const LArPandoraEvent &event, const PFParticleVector &selectedPFParticles);
 
     /**
-     *  @brief  Produce a copy of the event keeping only the collections that are associated with a top-level particle whose Pdg code
-     *          is a neutrino (non-neutrino) if shouldProduceNeutrinos is set to true (false)
-     *
-     *  @param  shouldProduceNeutrinos if the returned event should contain neutrinos (or non-neutrinos)
-     */
-    LArPandoraEvent FilterByPdgCode(const bool shouldProduceNeutrinos) const;
-
-    /**
-     *  @brief  Produce a copy of the event keeping only the collections that are associated with a top-level particle that is not
-     *          tagged as a neutrino (non-neutrino) if shouldProduceNeutrinos is set to true (false)
-     *
-     *  @param  shouldProduceNeutrinos if the returned event should contain neutrinos (or non-neutrinos)
-     *  @param  tagProducerLabel label for the producer of the CRTags
-     */
-    LArPandoraEvent FilterByCRTag(const bool shouldProduceNeutrinos, const std::string &tagProducerLabel) const;
-
-    /**
      *  @brief  Write (put) the collections in this LArPandoraEvent to the art::Event
      */
     void WriteToEvent() const;
 
-    /**
-     *  @brief  Merge collections from two events into one
-     */
-    LArPandoraEvent Merge(const LArPandoraEvent &other) const;
-
 private:
-    /**
-     *  @brief pdg enumeration
-     */
-    enum Pdg
-    {
-        nue   = 12,
-        numu  = 14,
-        nutau = 16
-    };
-
     /**
      *  @brief  Get the collections and associations from m_pEvent with the required labels
      */
@@ -194,119 +196,56 @@ private:
      *  @brief  Gets a given collection from m_pEvent with the label supplied
      *
      *  @param  inputLabel a label for the producer of the collection required
-     *  @param  outputHandle the output art Handle to required collection
      *  @param  outputCollection the required collection
      */
     template <typename T>
-    void GetCollection(const Labels::LabelType &inputLabel, art::Handle<std::vector<T> > &outputHandle, std::vector<art::Ptr<T> > &outputCollection) const;
+    void GetCollection(const Labels::LabelType &inputLabel, Collection<T> &outputCollection) const;
 
     /**
-     *  @brief  Get the mapping between two collections using the specified label
+     *  @brief  Get the mapping between two collections with metadata using the specified label
      *
+     *  @param  collectionL the collection from which the associations should be retrieved
      *  @param  inputLabel a label for the producer of the association required
-     *  @param  inputHandleT the input art Handle to the first collection
-     *  @param  outputAssociationMap output mapping between the two data types supplied (T -> U)
+     *  @param  outputAssociationMap output mapping between the two data types supplied (L -> R + D)
      */
-    template <typename T, typename U>
-    void GetAssociationMap(const Labels::LabelType &inputLabel, art::Handle<std::vector<T> > &inputHandleT,
-        std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &outputAssociationMap) const;
+    template <typename L, typename R, typename D>
+    void GetAssociationMap(const Collection<L> &collectionL, const Labels::LabelType &inputLabel,
+        Association<L, R, D> &outputAssociationMap) const;
 
     /**
-     *  @brief  Get the mapping from PFParticles to their daughters
-     */
-    void GetPFParticleHierarchy();
-
-    /**
-     *  @brief  Filters primary PFParticles from the m_pfParticles
+     *  @brief  Get the mapping between two collections with metadata using the specified label
      *
-     *  @param  primaryPFParticles output vector of all primary PFParticles in the input vector
+     *  @param  collectionL the collection from which the associations should be retrieved
+     *  @param  inputLabel a label for the producer of the association required
+     *  @param  outputAssociationMap output mapping between the two data types supplied (L -> R no metadata)
      */
-    void GetPrimaryPFParticles(PFParticleVector &primaryPFParticles) const;
+    template <typename L, typename R>
+    void GetAssociationMap(const Collection<L> &collectionL, const Labels::LabelType &inputLabel,
+        Association<L, R, void*> &outputAssociationMap) const;
 
     /**
-     *  @brief  Filters PFParticles based on their Pdg from the inputPFParticles
+     *  @brief  Collects all objects of type R with metadata D associated to a given object of type L
      *
-     *  @param  shouldProduceNeutrinos if the filtered particle vector should contain neutrinos (or non-neutrinos)
-     *  @param  inputPFParticles input vector of PFParticles
-     *  @param  filteredPFParticles output vector of filtered PFParticles
+     *  @param  anObject an input object of type L with which we want to collect associated objects of type R with metadata D
+     *  @param  associationLtoR the general input association between objects of type L and R
+     *  @param  associatedR output vector of objects of type R associated with anObject
      */
-    void GetFilteredParticlesByPdgCode(const bool shouldProduceNeutrinos, const PFParticleVector &inputPFParticles, PFParticleVector &outputPFParticles) const;
+    template <typename L, typename R, typename D>
+    void CollectAssociated(const art::Ptr<L> &anObject, const Association<L, R, D> &associationLtoR, Collection<R> &associatedR) const;
 
     /**
-     *  @brief  Filters PFParticles based on their Pdg from the inputPFParticles
+     *   @brief  Gets the filtered mapping from objets in collectionL to objects that also exist in collectionR using a "superset" input association
      *
-     *  @param  shouldProduceNeutrinos if the filtered particle vector should contain neutrinos (or non-neutrinos)
-     *  @param  tagProducerLabel the label for the producer of the CR tags
-     *  @param  inputPFParticles input vector of PFParticles
-     *  @param  filteredPFParticles output vector of filtered PFParticles
-     */
-    void GetFilteredParticlesByCRTag(const bool shouldProduceNeutrinos, const std::string &tagProducerLabel, const PFParticleVector &inputPFParticles,
-        PFParticleVector &outputPFParticles) const;
-
-    /**
-     *  @brief  Filters the hierarchy map using a given vector of filteredParticles
-     *
-     *  @param  filteredParticles input PFParticles that have already been filtered
-     *  @param  unfilteredPFParticleDaughterMap input hierarchy map to filter
-     *  @param  outputPFParticleDaughterMap output filtered hierarchy map
-     */
-    void GetFilteredHierarchyMap(const PFParticleVector &filteredParticles, const PFParticlesToPFParticles &unfilteredPFParticleDaughterMap,
-        PFParticlesToPFParticles &outputPFParticleDaughterMap) const;
-
-    /**
-     *  @brief  Produce a mapping between PFParticles and their ID
-     *
-     *  @param  idToPFParticleMap output mapping between PFParticles and their IDs
-     */
-    void GetIdToPFParticleMap(std::map< size_t, art::Ptr<recob::PFParticle> > &idToPFParticleMap) const;
-
-    /**
-     *  @brief  Get particles downstream of any particle in an input vector
-     *
-     *  @param  inputPFParticles input vector of PFParticles
-     *  @param  downstreamPFParticles output vector of PFParticles downstream of those in the input vector
-     */
-    void GetDownstreamPFParticles(const PFParticleVector &inputPFParticles, PFParticleVector &downstreamPFParticles) const;
-
-    /**
-     *  @brief  Get particles downstream of a supplied particle
-     *
-     *  @param  part input PFParticles
-     *  @param  downstreamPFParticles output vector of PFParticles downstream of part
-     */
-    void GetDownstreamPFParticles(const art::Ptr<recob::PFParticle> &part, PFParticleVector &downstreamPFParticles) const;
-
-    /**
-     *  @brief  Fills the PFParticleToOriginIdMap using an existing map from another LArPandoraEvent
-     *
-     *  @param  existingMap input map from PFParticles to origin IDs
-     */
-    void FillPFParticleToOriginIdMap(const std::map<art::Ptr<recob::PFParticle>, unsigned int> &existingMap);
-
-    /**
-     *  @brief  Collects all objects of type U associated to a given object of type T
-     *
-     *  @param  anObject an input object of type T with which we want to collect associated objects of type U
-     *  @param  associationTtoU the general input association between objects of type U and T
-     *  @param  associatedU output vector of objects of type U associated with anObject
-     */
-    template <typename T, typename U>
-    void CollectAssociated(const art::Ptr<T> &anObject, const std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &associationTtoU,
-        std::vector<art::Ptr<U> > &associatedU) const;
-
-    /**
-     *   @brief  Gets the mapping between two filtered collections
-     *
-     *   @param  collectionT a first filtered collection
-     *   @param  collectionU a second filtered collection
-     *   @param  inputAssociationTtoU mapping between the two unfiltered collections
-     *   @param  outputAssociationTtoU mapping between the two filtered collections
+     *   @param  collectionL a first filtered collection
+     *   @param  collectionR a second filtered collection
+     *   @param  inputAssociationLtoR mapping between the two unfiltered collections
+     *   @param  outputAssociationLtoR mapping between the two filtered collections
      *
      *   @return mapping between the filtered collections
      */
-    template <typename T, typename U>
-    void GetFilteredAssociationMap(const std::vector<art::Ptr<T> > &collectionT, const std::vector<art::Ptr<U> > &collectionU,
-        const std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &inputAssociationTtoU, std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &outputAssociationTtoU) const;
+    template <typename L, typename R, typename D>
+    void GetFilteredAssociationMap(const Collection<L> &collectionL, const Collection<R> &collectionR,
+        const Association<L, R, D> &inputAssociationLtoR, Association<L, R, D> &outputAssociationLtoR) const;
 
     /**
      *  @brief  Write a given collection to the event
@@ -314,157 +253,177 @@ private:
      *  @param  collection the collection to write
      */
     template <typename T>
-    void WriteCollection(const std::vector<art::Ptr<T> > &collection) const;
+    void WriteCollection(const Collection<T> &collection) const;
 
     /**
      *  @brief  Write a given association to the event
      *
-     *  @param  associationMap the association to write from objects of type T -> U
-     *  @param  collectionT the collection of type T that has been written
-     *  @param  collectionU the collection of type U that has been written
-     *  @param  thisProducesU will this producer produce collectionU of was it produced by a different module?
+     *  @param  associationMap the association to write from objects of type L -> R + D
+     *  @param  collectionL the collection of type L that has been written
+     *  @param  collectionR the collection of type R that has been written
+     *  @param  thisProducesR will this producer produce collectionR of was it produced by a different module?
      */
-    template <typename T, typename U>
-    void WriteAssociation(const std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &associationMap, const std::vector<art::Ptr<T> > &collectionT,
-        const std::vector<art::Ptr<U> > &collectionU, const bool thisProducesU = true) const;
+    template <typename L, typename R, typename D>
+    void WriteAssociation(const Association<L, R, D> &associationMap, const Collection<L> &collectionL, const Collection<R> &collectionR,
+        const bool thisProducesR = true) const;
 
     /**
-     *  @brief  Merge two PFParticle to origin ID maps ensuring no ID collisions
+     *  @brief  Write a given association to the event
      *
-     *  @param  mapToMerge the map to accept the merge
-     *  @param  mapToAdd the map to append to the map to merge
+     *  @param  associationMap the association to write from objects of type L -> R (no metadata)
+     *  @param  collectionL the collection of type L that has been written
+     *  @param  collectionR the collection of type R that has been written
+     *  @param  thisProducesR will this producer produce collectionR of was it produced by a different module?
      */
-    void MergePFParticleToOriginIdMap(std::map<art::Ptr<recob::PFParticle>, unsigned int> &mapToMerge, const std::map<art::Ptr<recob::PFParticle>,
-        unsigned int> &mapToAdd) const;
+    template <typename L, typename R>
+    void WriteAssociation(const Association<L, R, void*> &associationMap, const Collection<L> &collectionL, const Collection<R> &collectionR,
+        const bool thisProducesR = true) const;
 
     /**
-     *  @brief  Append a collection onto an other collection
+     *  @brief  Get the index of an objet in a given collection
      *
-     *  @param  collectionToMerge the collection to accept
-     *  @param  collection the collection to append
-     */
-    template <typename T>
-    void MergeCollection(std::vector<art::Ptr<T> > &collectionToMerge, const std::vector<art::Ptr<T> > &collection) const;
-
-    /**
-     *  @brief  Append an association to another association
+     *  @param  object the object to search for
+     *  @param  collection the collection to search through
      *
-     *  @param  associationToMerge the association to accept
-     *  @param  association the association to append
+     *  @return the index of the object in the collection
      */
-    template <typename T, typename U>
-    void MergeAssociation(std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &associationToMerge, const std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &association) const;
+    template<typename T>
+    size_t GetIndex(const art::Ptr<T> object, const Collection<T> &collection) const;
 
     art::EDProducer            *m_pProducer;                    ///<  The producer which should write the output collections and associations
     art::Event                 *m_pEvent;                       ///<  The event to consider
     Labels                      m_labels;                       ///<  A set of labels describing the producers for each input collection
-
-    std::map<art::Ptr<recob::PFParticle>, unsigned int>  m_pfParticleToOriginIdMap;  ///< Mapping between PFParticles, and an ID for the LArPandoraEvent from which they originated (to keep track of merges)
-
     bool                        m_shouldProduceT0s;             ///<  If T0s should be produced (usually only true for use cases with multiple drift volumes)
-    const size_t                m_shift;                        ///<  Amount by which to shift PFParticle IDs when merging two reconstructions of the same event
 
     // Collections
-    PFParticleVector            m_pfParticles;                  ///<  The input collection of PFParticles
-    SpacePointVector            m_spacePoints;                  ///<  The input collection of SpacePoints
-    ClusterVector               m_clusters;                     ///<  The input collection of Clusters
-    VertexVector                m_vertices;                     ///<  The input collection of Vertices
-    TrackVector                 m_tracks;                       ///<  The input collection of Tracks
-    ShowerVector                m_showers;                      ///<  The input collection of Showers
-    T0Vector                    m_t0s;                          ///<  The input collection of T0s
-    MetadataVector              m_metadata;                     ///<  The input collection of PFParticle metadata
-    PCAxisVector                m_pcAxes;                       ///<  The input collection of PCAxes
-    HitVector                   m_hits;                         ///<  The input collection of Hits
+    PFParticleCollection                m_pfParticles;             ///<  The input collection of PFParticles
+    SpacePointCollection                m_spacePoints;             ///<  The input collection of SpacePoints
+    ClusterCollection                   m_clusters;                ///<  The input collection of Clusters
+    VertexCollection                    m_vertices;                ///<  The input collection of Vertices
+    SliceCollection                     m_slices;                  ///<  The input collection of Slices
+    TrackCollection                     m_tracks;                  ///<  The input collection of Tracks
+    ShowerCollection                    m_showers;                 ///<  The input collection of Showers
+    T0Collection                        m_t0s;                     ///<  The input collection of T0s
+    PFParticleMetadataCollection        m_metadata;                ///<  The input collection of PFParticle metadata
+    PCAxisCollection                    m_pcAxes;                  ///<  The input collection of PCAxes
+    HitCollection                       m_hits;                    ///<  The input collection of Hits
 
     // Association maps
-    PFParticlesToSpacePoints    m_pfParticleSpacePointMap;      ///<  The input associations: PFParticle -> SpacePoint
-    PFParticlesToClusters       m_pfParticleClusterMap;         ///<  The input associations: PFParticle -> Cluster
-    PFParticlesToVertices       m_pfParticleVertexMap;          ///<  The input associations: PFParticle -> Vertex
-    PFParticlesToTracks         m_pfParticleTrackMap;           ///<  The input associations: PFParticle -> Track
-    PFParticlesToShowers        m_pfParticleShowerMap;          ///<  The input associations: PFParticle -> Shower
-    PFParticlesToT0s            m_pfParticleT0Map;              ///<  The input associations: PFParticle -> T0
-    PFParticlesToMetadata       m_pfParticleMetadataMap;        ///<  The input associations: PFParticle -> Metadata
-    PFParticlesToPCAxes         m_pfParticlePCAxisMap;          ///<  The input associations: PFParticle -> PCAxis
-
-    SpacePointsToHitVector      m_spacePointHitMap;             ///<  The input associations: SpacePoint -> Hit
-    ClustersToHits              m_clusterHitMap;                ///<  The input associations: Cluster -> Hit
-    TracksToHits                m_trackHitMap;                  ///<  The input associations: Track -> Hit
-    ShowersToHits               m_showerHitMap;                 ///<  The input associations: Shower -> Hit
-
-    ShowersToPCAxes             m_showerPCAxisMap;              ///<  The input associations: PCAxis -> Shower
-
-    PFParticlesToPFParticles    m_pfParticleDaughterMap;        ///<  The mapping from parent to daughter PFParticles
+    PFParticleToSpacePointAssoc         m_pfParticleSpacePointMap; ///<  The input associations: PFParticle -> SpacePoint
+    PFParticleToClusterAssoc            m_pfParticleClusterMap;    ///<  The input associations: PFParticle -> Cluster
+    PFParticleToVertexAssoc             m_pfParticleVertexMap;     ///<  The input associations: PFParticle -> Vertex
+    PFParticleToSliceAssoc              m_pfParticleSliceMap;      ///<  The input associations: PFParticle -> Slice
+    PFParticleToTrackAssoc              m_pfParticleTrackMap;      ///<  The input associations: PFParticle -> Track
+    PFParticleToShowerAssoc             m_pfParticleShowerMap;     ///<  The input associations: PFParticle -> Shower
+    PFParticleToT0Assoc                 m_pfParticleT0Map;         ///<  The input associations: PFParticle -> T0
+    PFParticleToPFParticleMetadataAssoc m_pfParticleMetadataMap;   ///<  The input associations: PFParticle -> Metadata
+    PFParticleToPCAxisAssoc             m_pfParticlePCAxisMap;     ///<  The input associations: PFParticle -> PCAxis
+    SpacePointToHitAssoc                m_spacePointHitMap;        ///<  The input associations: SpacePoint -> Hit
+    ClusterToHitAssoc                   m_clusterHitMap;           ///<  The input associations: Cluster -> Hit
+    SliceToHitAssoc                     m_sliceHitMap;             ///<  The input associations: Slice -> Hit
+    TrackToHitAssoc                     m_trackHitMap;             ///<  The input associations: Track -> Hit
+    ShowerToHitAssoc                    m_showerHitMap;            ///<  The input associations: Shower -> Hit
+    ShowerToPCAxisAssoc                 m_showerPCAxisMap;         ///<  The input associations: PCAxis -> Shower
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
-inline void LArPandoraEvent::GetCollection(const Labels::LabelType &inputLabel, art::Handle<std::vector<T> > &outputHandle, std::vector<art::Ptr<T> > &outputCollection) const
+inline void LArPandoraEvent::GetCollection(const Labels::LabelType &inputLabel, Collection<T> &outputCollection) const
 {
-    m_pEvent->getByLabel(m_labels.GetLabel(inputLabel), outputHandle);
+    const auto &handle(m_pEvent->getValidHandle<std::vector<T> >(m_labels.GetLabel(inputLabel)));
 
-    for (unsigned int i = 0; i != outputHandle->size(); i++)
-    {
-        art::Ptr< T > object(outputHandle, i);
-        outputCollection.push_back(object);
-    }
+    for (unsigned int i = 0; i != handle->size(); i++)
+        outputCollection.emplace_back(handle, i);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-template <typename T, typename U>
-inline void LArPandoraEvent::GetAssociationMap(const Labels::LabelType &inputLabel, art::Handle<std::vector<T> > &inputHandleT,
-    std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &outputAssociationMap) const
+template <typename L, typename R, typename D>
+inline void LArPandoraEvent::GetAssociationMap(const Collection<L> &collectionL, const Labels::LabelType &inputLabel,
+    Association<L, R, D> &outputAssociationMap) const
 {
-    art::FindManyP< U > assoc(inputHandleT, (*m_pEvent), m_labels.GetLabel(inputLabel));
-
-    for (unsigned int iT = 0; iT < inputHandleT->size(); iT++)
+    const auto &assocHandle(m_pEvent->getValidHandle<art::Assns<L, R, D> >(m_labels.GetLabel(inputLabel)));
+   
+    // Check that there are no associaions from objects not in collectionL
+    for (const auto &entry : *assocHandle)
     {
-        art::Ptr<T> objectT(inputHandleT, iT);
-
-        if (outputAssociationMap.find(objectT) == outputAssociationMap.end())
-        {
-            std::vector< art::Ptr< U > > emptyVect;
-            outputAssociationMap.insert(typename std::map< art::Ptr< T >, std::vector< art::Ptr< U > > >::value_type(objectT, emptyVect));
-        }
-
-        for (art::Ptr<U> objectU : assoc.at(objectT.key()))
-            outputAssociationMap[objectT].push_back(objectU);
+        auto it(std::find(collectionL.begin(), collectionL.end(), entry.first));
+        if (it == collectionL.end())
+            throw cet::exception("LArPandora") << " LArPandoraEvent::GetAssociationMap -- Found object in association that isn't in the supplied collection" << std::endl;
     }
+    
+    // Ensure there is an entry for every object of type L
+    for (const auto &objectL : collectionL)
+        outputAssociationMap[objectL];
+
+    // Fill the association map
+    for (const auto &entry : *assocHandle)
+        outputAssociationMap.at(entry.first).emplace_back(entry.second, *entry.data);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-template <typename T, typename U>
-inline void LArPandoraEvent::CollectAssociated(const art::Ptr<T> &anObject, const std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &associationTtoU,
-    std::vector<art::Ptr<U> > &associatedU) const
+template <typename L, typename R>
+inline void LArPandoraEvent::GetAssociationMap(const Collection<L> &collectionL, const Labels::LabelType &inputLabel,
+    Association<L, R, void*> &outputAssociationMap) const
 {
-    if (associationTtoU.find(anObject) == associationTtoU.end())
+    const auto &assocHandle(m_pEvent->getValidHandle<art::Assns<L, R> >(m_labels.GetLabel(inputLabel)));
+    
+    // Check that there are no associaions from objects not in collectionL
+    for (const auto &entry : *assocHandle)
+    {
+        auto it(std::find(collectionL.begin(), collectionL.end(), entry.first));
+        if (it == collectionL.end())
+            throw cet::exception("LArPandora") << " LArPandoraEvent::GetAssociationMap -- Found object in association that isn't in the supplied collection" << std::endl;
+    }
+    
+    // Ensure there is an entry for every object of type L
+    for (const auto &objectL : collectionL)
+        outputAssociationMap[objectL];
+
+    // Fill the association map
+    for (const auto &entry : *assocHandle)
+        outputAssociationMap.at(entry.first).emplace_back(entry.second, nullptr);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+template <typename L, typename R, typename D>
+inline void LArPandoraEvent::CollectAssociated(const art::Ptr<L> &anObject, const Association<L, R, D> &associationLtoR,
+    Collection<R> &associatedR) const
+{
+    if (associationLtoR.find(anObject) == associationLtoR.end())
         throw cet::exception("LArPandora") << " LArPandoraEvent::CollectAssociated -- Can not find association for object supplied." << std::endl;
 
-    std::vector<art::Ptr<U> > associatedObjects = associationTtoU.at(anObject);
-    associatedU.insert(associatedU.end(), associatedObjects.begin(), associatedObjects.end());
+    for (const auto &entry : associationLtoR.at(anObject))
+    {
+        // Ensure we don't repeat objects in the output collection
+        if (std::find(associatedR.begin(), associatedR.end(), entry.first) == associatedR.end())
+            associatedR.push_back(entry.first);
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-template <typename T, typename U>
-inline void LArPandoraEvent::GetFilteredAssociationMap(const std::vector<art::Ptr<T> > &collectionT, const std::vector<art::Ptr<U> > &collectionU,
-    const std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &inputAssociationTtoU, std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &outputAssociationTtoU) const
+template <typename L, typename R, typename D>
+inline void LArPandoraEvent::GetFilteredAssociationMap(const Collection<L> &collectionL, const Collection<R> &collectionR,
+    const Association<L, R, D> &inputAssociationLtoR, Association<L, R, D> &outputAssociationLtoR) const
 {
-    for (art::Ptr< T > objectT : collectionT)
+    for (const auto &objectL : collectionL) 
     {
-        std::vector<art::Ptr<U> > emptyVector;
-        if (!outputAssociationTtoU.insert(typename std::map<art::Ptr<T>, std::vector<art::Ptr<U> > >::value_type(objectT, emptyVector)).second)
-            throw cet::exception("LArPandora") << " LArPandoraEvent::GetFilteredAssociationMap -- Can not have multiple association map entries for a single object." << std::endl;
-
-        for (art::Ptr< U > objectU : inputAssociationTtoU.at(objectT))
+        if (inputAssociationLtoR.find(objectL) == inputAssociationLtoR.end())
+            throw cet::exception("LArPandora") << " LArPandoraEvent::GetFilteredAssociationMap -- Can not find association for object in supplied collection." << std::endl;
+        
+        if (outputAssociationLtoR.find(objectL) != outputAssociationLtoR.end())
+            throw cet::exception("LArPandora") << " LArPandoraEvent::GetFilteredAssociationMap -- Repeated objects in input collectionL" << std::endl;
+        
+        for (const auto &entry : inputAssociationLtoR.at(objectL)) 
         {
-            typename std::vector<art::Ptr<U> >::const_iterator associatedObjectIter = std::find(collectionU.begin(), collectionU.end(), objectU);
-            if (associatedObjectIter == collectionU.end())
+            if (std::find(collectionR.begin(), collectionR.end(), entry.first) == collectionR.end())
                 continue;
-
-            outputAssociationTtoU[objectT].push_back(objectU);
+       
+            outputAssociationLtoR[objectL].push_back(entry);
         }
     }
 }
@@ -472,82 +431,49 @@ inline void LArPandoraEvent::GetFilteredAssociationMap(const std::vector<art::Pt
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 template <typename T>
-inline void LArPandoraEvent::WriteCollection(const std::vector<art::Ptr<T> > &collection) const
+inline void LArPandoraEvent::WriteCollection(const Collection<T> &collection) const
 {
     std::unique_ptr<std::vector<T> > output(new std::vector<T>);
 
-    for (art::Ptr<T> object : collection)
+    for (const auto &object : collection)
         output->push_back(*object);
-
-    m_pEvent->put(std::move(output));
-}
-
-template <>
-inline void LArPandoraEvent::WriteCollection(const std::vector<art::Ptr<recob::PFParticle> > &collection) const
-{
-    std::unique_ptr<std::vector<recob::PFParticle> > output(new std::vector<recob::PFParticle>);
-
-    for (art::Ptr<recob::PFParticle> part : collection)
-    {
-
-        if (part->Self() >= m_shift)
-            throw cet::exception("LArPandora") << " LArPandoraEvent::WriteCollection -- PFParticle ID exceeds shift value of " << m_shift << ". Can't merge the collections!" << std::endl;
-
-        if (m_pfParticleToOriginIdMap.find(part) == m_pfParticleToOriginIdMap.end())
-            throw cet::exception("LArPandora") << " LArPandoraEvent::WriteCollection -- Can't find supplied PFParticle in the PFParticle to origin ID map." << std::endl;
-
-        const size_t offset(m_shift * m_pfParticleToOriginIdMap.at(part));
-        const size_t adjustedSelf(part->Self() + offset);
-
-        size_t adjustedParent = part->Parent();
-        if (part->Parent() != recob::PFParticle::kPFParticlePrimary)
-            adjustedParent += offset;
-
-        const std::vector<size_t> &daughters(part->Daughters());
-        std::vector<size_t> adjustedDaughters;
-        for (unsigned int d = 0; d < daughters.size(); d++)
-            adjustedDaughters.push_back(daughters[d] + offset);
-
-        recob::PFParticle adjustedPart(part->PdgCode(), adjustedSelf, adjustedParent, adjustedDaughters);
-        output->push_back(adjustedPart);
-    }
 
     m_pEvent->put(std::move(output));
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-template <typename T, typename U>
-inline void LArPandoraEvent::WriteAssociation(const std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &associationMap, const std::vector<art::Ptr<T> > &collectionT,
-    const std::vector<art::Ptr<U> > &collectionU, const bool thisProducesU) const
+template <typename L, typename R, typename D>
+inline void LArPandoraEvent::WriteAssociation(const Association<L, R, D> &associationMap, const Collection<L> &collectionL,
+    const Collection<R> &collectionR, const bool thisProducesR) const
 {
-    const art::PtrMaker<T> makePtrT(*m_pEvent);
-    std::unique_ptr<art::Assns<T, U> > outputAssn(new art::Assns<T, U>);
+    // The output assocation to populate
+    std::unique_ptr<art::Assns<L, R, D> > outputAssn(new art::Assns<L, R, D>);
 
-    for (typename std::map<art::Ptr<T>, std::vector<art::Ptr<U> > >::const_iterator it = associationMap.begin(); it != associationMap.end(); ++it)
+    // NB. The art::Ptrs in the stored collections refer to the producer that originally created the objects (e.g. Pandora pat-rec). To make
+    // correct associations, we need to make new art::Ptrs to refer to the *copies* of the objects made by this producer. This is done using
+    // the PtrMaker utility.
+    const art::PtrMaker<L> makePtrL(*m_pEvent);
+
+    for (auto it = associationMap.begin(); it != associationMap.end(); ++it) 
     {
-        typename std::vector<art::Ptr<T> >::const_iterator itT = std::find(collectionT.begin(), collectionT.end(), it-> first);
-        if (itT == collectionT.end())
-            throw cet::exception("LArPandora") << " LArPandoraEvent::WriteAssociation -- association map contains object not in collectionT." << std::endl;
-
-        art::Ptr<T> newObjectT(makePtrT(std::distance(collectionT.begin(), itT)));
-
-        for (const art::Ptr<U> &objectU : it->second)
+        const auto indexL(this->GetIndex(it->first, collectionL));
+        const auto outputPtrL(makePtrL(indexL));
+    
+        for (const auto &entry : it->second)
         {
-            if (thisProducesU)
+            const auto &objectR(entry.first);
+            const auto &objectD(entry.second);
+
+            if (thisProducesR)
             {
-                const art::PtrMaker<U> makePtrU(*m_pEvent);
-
-                typename std::vector<art::Ptr<U> >::const_iterator itU = std::find(collectionU.begin(), collectionU.end(), objectU);
-                if (itU == collectionU.end())
-                    throw cet::exception("LArPandora") << " LArPandoraEvent::WriteAssociation -- association map contains object not in collectionU." << std::endl;
-
-                art::Ptr<U> newObjectU(makePtrU(std::distance(collectionU.begin(), itU)));
-                util::CreateAssn(*m_pProducer, *m_pEvent, newObjectU, newObjectT, *outputAssn);
+                const art::PtrMaker<R> makePtrR(*m_pEvent);
+                const auto indexR(this->GetIndex(objectR, collectionR));
+                outputAssn->addSingle(outputPtrL, makePtrR(indexR), objectD);
             }
             else
             {
-                util::CreateAssn(*m_pProducer, *m_pEvent, objectU, newObjectT, *outputAssn);
+               outputAssn->addSingle(outputPtrL, objectR, objectD);
             }
         }
     }
@@ -557,19 +483,53 @@ inline void LArPandoraEvent::WriteAssociation(const std::map<art::Ptr<T>, std::v
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-template <typename T>
-inline void LArPandoraEvent::MergeCollection(std::vector<art::Ptr<T> > &collectionToMerge, const std::vector<art::Ptr<T> > &collection) const
+template <typename L, typename R>
+inline void LArPandoraEvent::WriteAssociation(const Association<L, R, void*> &associationMap, const Collection<L> &collectionL,
+    const Collection<R> &collectionR, const bool thisProducesR) const
 {
-    collectionToMerge.insert(collectionToMerge.end(), collection.begin(), collection.end());
+    // The output assocation to populate
+    std::unique_ptr<art::Assns<L, R> > outputAssn(new art::Assns<L, R>);
+
+    // NB. The art::Ptrs in the stored collections refer to the producer that originally created the objects (e.g. Pandora pat-rec). To make
+    // correct associations, we need to make new art::Ptrs to refer to the *copies* of the objects made by this producer. This is done using
+    // the PtrMaker utility.
+    const art::PtrMaker<L> makePtrL(*m_pEvent);
+
+    for (auto it = associationMap.begin(); it != associationMap.end(); ++it) 
+    {
+        const auto indexL(this->GetIndex(it->first, collectionL));
+        const auto outputPtrL(makePtrL(indexL));
+    
+        for (const auto &entry : it->second)
+        {
+            const auto &objectR(entry.first);
+
+            if (thisProducesR)
+            {
+                const art::PtrMaker<R> makePtrR(*m_pEvent);
+                const auto indexR(this->GetIndex(objectR, collectionR));
+                outputAssn->addSingle(outputPtrL, makePtrR(indexR));
+            }
+            else
+            {
+               outputAssn->addSingle(outputPtrL, objectR);
+            }
+        }
+    }
+
+    m_pEvent->put(std::move(outputAssn));
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-template <typename T, typename U>
-inline void LArPandoraEvent::MergeAssociation(std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &associationToMerge,
-    const std::map<art::Ptr<T>, std::vector<art::Ptr<U> > > &association) const
+template<typename T>
+inline size_t LArPandoraEvent::GetIndex(const art::Ptr<T> object, const Collection<T> &collection) const
 {
-    associationToMerge.insert(association.begin(), association.end());
+    const auto it(std::find(collection.begin(), collection.end(), object));
+    if (it == collection.end()) 
+        throw cet::exception("LArPandora") << " LArPandoraEvent::GetIndex -- Can't find input object in the supplied collection." << std::endl;
+        
+    return static_cast<size_t>(std::distance(collection.begin(), it));
 }
 
 } // namespace lar_pandora

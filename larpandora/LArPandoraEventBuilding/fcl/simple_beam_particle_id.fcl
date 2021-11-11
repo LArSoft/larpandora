@@ -1,0 +1,16 @@
+#include "external_event_building.fcl"
+
+BEGIN_PROLOG
+
+simple_beam_particle_id_tool :
+{
+    tool_type: "SimpleBeamParticleId"
+
+    MinBDTScore: -0.225
+}
+
+pandora_simple_beam_particle_event_building: @local::pandora_event_building
+pandora_simple_beam_particle_event_building.SliceIdTool: @local::simple_beam_particle_id_tool
+pandora_simple_beam_particle_event_building.ShouldProduceT0s: true
+
+END_PROLOG

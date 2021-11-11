@@ -3,6 +3,8 @@ include_directories( $ENV{LARPANDORACONTENT_INC} )
 include_directories( $ENV{EIGEN_INC} )
 
 add_subdirectory(LArPandoraShower)
+add_subdirectory(SliceIdTools)
+add_subdirectory(fcl)
 
 art_make( EXCLUDE SimpleNeutrinoId_tool.cc
           LIB_LIBRARIES larcorealg_Geometry
@@ -43,8 +45,6 @@ art_make( EXCLUDE SimpleNeutrinoId_tool.cc
                         ROOT::GenVector
           MODULE_LIBRARIES larpandora_LArPandoraEventBuilding
           )
-
-      simple_plugin(SimpleNeutrinoId "tool" larpandora_LArPandoraEventBuilding)
 
 install_headers()
 install_fhicl()

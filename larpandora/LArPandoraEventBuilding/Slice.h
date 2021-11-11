@@ -21,37 +21,37 @@ public:
     /**
      *  @brief  Default constructor
      *
-     *  @param  nuScore the neutrino score from Pandora
-     *  @param  nuHypothesis the slice as reconstructed under the neutrino hypothesis
+     *  @param  topologicalScore the topological score from Pandora
+     *  @param  targetHypothesis the slice as reconstructed under the target hypothesis
      *  @param  crHypothesis the slice as reconstructed under the cosmic-ray hypothesis
-     *  @param  isNeutrino if the slice has been identified as a neutrino
+     *  @param  isTarget if the slice has been identified as a target
      */
-    Slice(const float nuScore, const PFParticleVector &nuHypothesis, const PFParticleVector &crHypothesis, const bool isNeutrino = false);
+    Slice(const float topologicalScore, const PFParticleVector &targetHypothesis, const PFParticleVector &crHypothesis, const bool isTarget = false);
 
     /**
-     *  @brief Get the neutrino score for the slice
+     *  @brief Get the topological score for the slice - closer to 1 means more likely to be the target slice
      */
-    float GetNeutrinoScore() const;
+    float GetTopologicalScore() const;
 
     /**
-     *  @brief Get the slice as reconstructed under the neutrino hypothesis
+     *  @brief Get the slice as reconstructed under the target hypothesis
      */
-    const PFParticleVector &GetNeutrinoHypothesis() const;
-
+    const PFParticleVector &GetTargetHypothesis() const;
+    
     /**
      *  @brief Get the slice as reconstructed under the cosmic-ray hypothesis
      */
     const PFParticleVector &GetCosmicRayHypothesis() const;
 
     /**
-     *  @brief Check if the slice has been identified as a neutrino
+     *  @brief Check if the slice has been identified as a target
      */
-    bool IsTaggedAsNeutrino() const;
+    bool IsTaggedAsTarget() const;
 
     /**
-     *  @brief Tag the slice as a neutrino
+     *  @brief Tag the slice as a neutrino / test beam particle
      */
-    void TagAsNeutrino();
+    void TagAsTarget();
 
     /**
      *  @brief Tag the slice as a cosmic
@@ -59,36 +59,36 @@ public:
     void TagAsCosmic();
 
 private:
-    float            m_nuScore;         ///< The neutrino score from Pandora
-    PFParticleVector m_nuHypothesis;    ///< The slice as reconstructed under the neutrino hypothesis
-    PFParticleVector m_crHypothesis;    ///< The slice as reconstructed under the cosmic-ray hypothesis
-    bool             m_isNeutrino;      ///< If the slice has been identified as a neutrino
+    float            m_topologicalScore; ///< The topological neutrino / beam particle score from Pandora
+    PFParticleVector m_targetHypothesis; ///< The slice as reconstructed under the neutrino / beam particle hypothesis
+    PFParticleVector m_crHypothesis;     ///< The slice as reconstructed under the cosmic-ray hypothesis
+    bool             m_isTarget;         ///< If the slice has been identified as a neutrino / beam particle
 };
 
 typedef std::vector<Slice> SliceVector;
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline Slice::Slice(const float nuScore, const PFParticleVector &nuHypothesis, const PFParticleVector &crHypothesis, const bool isNeutrino) :
-    m_nuScore(nuScore),
-    m_nuHypothesis(nuHypothesis),
+inline Slice::Slice(const float topologicalScore, const PFParticleVector &targetHypothesis, const PFParticleVector &crHypothesis, const bool isTarget) : 
+    m_topologicalScore(topologicalScore),
+    m_targetHypothesis(targetHypothesis),
     m_crHypothesis(crHypothesis),
-    m_isNeutrino(isNeutrino)
+    m_isTarget(isTarget)
 {
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline float Slice::GetNeutrinoScore() const
+inline float Slice::GetTopologicalScore() const
 {
-    return m_nuScore;
+    return m_topologicalScore;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline const PFParticleVector &Slice::GetNeutrinoHypothesis() const
+inline const PFParticleVector &Slice::GetTargetHypothesis() const
 {
-    return m_nuHypothesis;
+    return m_targetHypothesis;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -99,24 +99,24 @@ inline const PFParticleVector &Slice::GetCosmicRayHypothesis() const
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-
-inline bool Slice::IsTaggedAsNeutrino() const
+    
+inline bool Slice::IsTaggedAsTarget() const
 {
-    return m_isNeutrino;
+    return m_isTarget;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline void Slice::TagAsNeutrino()
+inline void Slice::TagAsTarget()
 {
-    m_isNeutrino = true;
+    m_isTarget = true;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 inline void Slice::TagAsCosmic()
 {
-    m_isNeutrino = false;
+    m_isTarget = false;
 }
 
 

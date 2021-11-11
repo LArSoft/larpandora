@@ -1,11 +1,11 @@
 /**
- *  @file   larpandora/LArPandoraEventBuilding/Slice.h
+ *  @file   larpandora/LArPandoraEventBuilding/SliceIdBaseTool.h
  *
- *  @brief  header for the lar pandora slice class
+ *  @brief  header for the lar pandora slice ID base tool
  */
 
-#ifndef LAR_PANDORA_NEUTRINO_ID_BASE_TOOL_H
-#define LAR_PANDORA_NEUTRINO_ID_BASE_TOOL_H 1
+#ifndef LAR_PANDORA_SLICE_ID_BASE_TOOL_H
+#define LAR_PANDORA_SLICE_ID_BASE_TOOL_H 1
 
 #include "art/Framework/Principal/Event.h"
 
@@ -16,12 +16,12 @@ namespace lar_pandora
 {
 
 /**
- *  @brief  Abstract base class for a neutrino ID tool
+ *  @brief  Abstract base class for a slice ID tool
  */
-class NeutrinoIdBaseTool
+class SliceIdBaseTool
 {
 public:
-    virtual ~NeutrinoIdBaseTool() noexcept = default;
+    virtual ~SliceIdBaseTool() noexcept = default;
 
     /**
      *  @brief  The tools interface function. Here the derived tool will classify the input slices
@@ -34,4 +34,4 @@ public:
 
 } // namespace lar_pandora
 
-#endif // #ifndef LAR_PANDORA_NEUTRINO_ID_BASE_TOOL_H
+#endif // #ifndef LAR_PANDORA_SLICE_ID_BASE_TOOL_H
