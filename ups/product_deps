@@ -7,7 +7,7 @@ fcldir  product_dir job
 fwdir   product_dir scripts
 #
 product         version
-larreco         v09_08_02
+larreco         v09_09_00rc0
 larpandoracontent v03_26_02
 cetbuildtools	v8_18_09	-	only_for_build
 end_product_list
