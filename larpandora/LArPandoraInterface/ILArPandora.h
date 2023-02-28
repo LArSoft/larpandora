@@ -10,35 +10,37 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
-namespace recob {class Hit;}
-namespace pandora {class Pandora;}
+namespace recob {
+  class Hit;
+}
+namespace pandora {
+  class Pandora;
+}
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-namespace lar_pandora
-{
+namespace lar_pandora {
 
-typedef std::map< int, art::Ptr<recob::Hit> > IdToHitMap;
+  typedef std::map<int, art::Ptr<recob::Hit>> IdToHitMap;
 
-/**
+  /**
  *  @brief  ILArPandora class
  */
-class ILArPandora : public art::EDProducer
-{
-public:
+  class ILArPandora : public art::EDProducer {
+  public:
     /**
      *  @brief  Constructor
      *
      *  @param  pset the parameter set
      */
-    ILArPandora(fhicl::ParameterSet const &pset);
+    ILArPandora(fhicl::ParameterSet const& pset);
 
     /**
      *  @brief  Destructor
      */
     virtual ~ILArPandora();
 
-protected:
+  protected:
     /**
      *  @brief  Create pandora instances
      */
@@ -60,7 +62,7 @@ protected:
      *  @param  evt the art event
      *  @param  idToHitMap to receive the populated pandora hit id to art hit map
      */
-    virtual void CreatePandoraInput(art::Event &evt, IdToHitMap &idToHitMap) = 0;
+    virtual void CreatePandoraInput(art::Event& evt, IdToHitMap& idToHitMap) = 0;
 
     /**
      *  @brief  Process pandora output particle flow objects
@@ -68,7 +70,7 @@ protected:
      *  @param  evt the art event
      *  @param  idToHitMap the pandora hit id to art hit map
      */
-    virtual void ProcessPandoraOutput(art::Event &evt, const IdToHitMap &idToHitMap) = 0;
+    virtual void ProcessPandoraOutput(art::Event& evt, const IdToHitMap& idToHitMap) = 0;
 
     /**
      *  @brief  Run all associated pandora instances
@@ -80,22 +82,18 @@ protected:
      */
     virtual void ResetPandoraInstances() = 0;
 
-    const pandora::Pandora     *m_pPrimaryPandora;          ///< The address of the primary pandora instance
-};
+    const pandora::Pandora* m_pPrimaryPandora; ///< The address of the primary pandora instance
+  };
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline ILArPandora::ILArPandora(fhicl::ParameterSet const &pset) :
-    EDProducer(pset),
-    m_pPrimaryPandora(nullptr)
-{
-}
+  inline ILArPandora::ILArPandora(fhicl::ParameterSet const& pset)
+    : EDProducer(pset), m_pPrimaryPandora(nullptr)
+  {}
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline ILArPandora::~ILArPandora()
-{
-}
+  inline ILArPandora::~ILArPandora() {}
 
 } // namespace lar_pandora
 

@@ -309,8 +309,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::reconfigure(fhicl::ParameterSet const& pset)
+  void PFParticleMonitoring::reconfigure(fhicl::ParameterSet const& pset)
   {
     m_trackLabel = pset.get<std::string>("TrackModule", "pandoraTracks");
     m_particleLabel = pset.get<std::string>("PFParticleModule", "pandora");
@@ -330,8 +329,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::beginJob()
+  void PFParticleMonitoring::beginJob()
   {
     mf::LogDebug("LArPandora") << " *** PFParticleMonitoring::beginJob() *** " << std::endl;
 
@@ -409,14 +407,11 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::endJob()
-  {}
+  void PFParticleMonitoring::endJob() {}
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::analyze(const art::Event& evt)
+  void PFParticleMonitoring::analyze(const art::Event& evt)
   {
     if (m_printDebug) std::cout << " *** PFParticleMonitoring::analyze(...) *** " << std::endl;
 
@@ -1140,11 +1135,10 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::BuildTrueNeutrinoHitMaps(const MCTruthToMCParticles& truthToParticles,
-                                                 const MCParticlesToHits& trueParticlesToHits,
-                                                 MCTruthToHits& trueNeutrinosToHits,
-                                                 HitsToMCTruth& trueHitsToNeutrinos) const
+  void PFParticleMonitoring::BuildTrueNeutrinoHitMaps(const MCTruthToMCParticles& truthToParticles,
+                                                      const MCParticlesToHits& trueParticlesToHits,
+                                                      MCTruthToHits& trueNeutrinosToHits,
+                                                      HitsToMCTruth& trueHitsToNeutrinos) const
   {
     for (MCTruthToMCParticles::const_iterator iter1 = truthToParticles.begin(),
                                               iterEnd1 = truthToParticles.end();
@@ -1175,11 +1169,10 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::BuildRecoNeutrinoHitMaps(const PFParticleMap& recoParticleMap,
-                                                 const PFParticlesToHits& recoParticlesToHits,
-                                                 PFParticlesToHits& recoNeutrinosToHits,
-                                                 HitsToPFParticles& recoHitsToNeutrinos) const
+  void PFParticleMonitoring::BuildRecoNeutrinoHitMaps(const PFParticleMap& recoParticleMap,
+                                                      const PFParticlesToHits& recoParticlesToHits,
+                                                      PFParticlesToHits& recoNeutrinosToHits,
+                                                      HitsToPFParticles& recoHitsToNeutrinos) const
   {
     for (PFParticleMap::const_iterator iter1 = recoParticleMap.begin(),
                                        iterEnd1 = recoParticleMap.end();
@@ -1208,11 +1201,10 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::GetRecoToTrueMatches(const PFParticlesToHits& recoNeutrinosToHits,
-                                             const HitsToMCTruth& trueHitsToNeutrinos,
-                                             MCTruthToPFParticles& matchedNeutrinos,
-                                             MCTruthToHits& matchedNeutrinoHits) const
+  void PFParticleMonitoring::GetRecoToTrueMatches(const PFParticlesToHits& recoNeutrinosToHits,
+                                                  const HitsToMCTruth& trueHitsToNeutrinos,
+                                                  MCTruthToPFParticles& matchedNeutrinos,
+                                                  MCTruthToHits& matchedNeutrinoHits) const
   {
     PFParticleSet recoVeto;
     MCTruthSet trueVeto;
@@ -1227,13 +1219,12 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::GetRecoToTrueMatches(const PFParticlesToHits& recoNeutrinosToHits,
-                                             const HitsToMCTruth& trueHitsToNeutrinos,
-                                             MCTruthToPFParticles& matchedNeutrinos,
-                                             MCTruthToHits& matchedNeutrinoHits,
-                                             PFParticleSet& vetoReco,
-                                             MCTruthSet& vetoTrue) const
+  void PFParticleMonitoring::GetRecoToTrueMatches(const PFParticlesToHits& recoNeutrinosToHits,
+                                                  const HitsToMCTruth& trueHitsToNeutrinos,
+                                                  MCTruthToPFParticles& matchedNeutrinos,
+                                                  MCTruthToHits& matchedNeutrinoHits,
+                                                  PFParticleSet& vetoReco,
+                                                  MCTruthSet& vetoTrue) const
   {
     bool foundMatches(false);
 
@@ -1308,11 +1299,10 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::GetRecoToTrueMatches(const PFParticlesToHits& recoParticlesToHits,
-                                             const HitsToMCParticles& trueHitsToParticles,
-                                             MCParticlesToPFParticles& matchedParticles,
-                                             MCParticlesToHits& matchedHits) const
+  void PFParticleMonitoring::GetRecoToTrueMatches(const PFParticlesToHits& recoParticlesToHits,
+                                                  const HitsToMCParticles& trueHitsToParticles,
+                                                  MCParticlesToPFParticles& matchedParticles,
+                                                  MCParticlesToHits& matchedHits) const
   {
     PFParticleSet recoVeto;
     MCParticleSet trueVeto;
@@ -1323,13 +1313,12 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::GetRecoToTrueMatches(const PFParticlesToHits& recoParticlesToHits,
-                                             const HitsToMCParticles& trueHitsToParticles,
-                                             MCParticlesToPFParticles& matchedParticles,
-                                             MCParticlesToHits& matchedHits,
-                                             PFParticleSet& vetoReco,
-                                             MCParticleSet& vetoTrue) const
+  void PFParticleMonitoring::GetRecoToTrueMatches(const PFParticlesToHits& recoParticlesToHits,
+                                                  const HitsToMCParticles& trueHitsToParticles,
+                                                  MCParticlesToPFParticles& matchedParticles,
+                                                  MCParticlesToHits& matchedHits,
+                                                  PFParticleSet& vetoReco,
+                                                  MCParticleSet& vetoTrue) const
   {
     bool foundMatches(false);
 
@@ -1404,8 +1393,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  int
-  PFParticleMonitoring::CountHitsByType(const int view, const HitVector& hitVector) const
+  int PFParticleMonitoring::CountHitsByType(const int view, const HitVector& hitVector) const
   {
     int nHits(0);
 
@@ -1421,10 +1409,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleMonitoring::GetStartAndEndPoints(const art::Ptr<simb::MCParticle> particle,
-                                             int& startT,
-                                             int& endT) const
+  void PFParticleMonitoring::GetStartAndEndPoints(const art::Ptr<simb::MCParticle> particle,
+                                                  int& startT,
+                                                  int& endT) const
   {
     art::ServiceHandle<geo::Geometry const> theGeometry;
 
@@ -1457,10 +1444,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  double
-  PFParticleMonitoring::GetLength(const art::Ptr<simb::MCParticle> particle,
-                                  const int startT,
-                                  const int endT) const
+  double PFParticleMonitoring::GetLength(const art::Ptr<simb::MCParticle> particle,
+                                         const int startT,
+                                         const int endT) const
   {
     if (endT <= startT) return 0.0;
 

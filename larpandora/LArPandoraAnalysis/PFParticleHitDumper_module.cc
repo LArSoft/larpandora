@@ -217,8 +217,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleHitDumper::reconfigure(fhicl::ParameterSet const& pset)
+  void PFParticleHitDumper::reconfigure(fhicl::ParameterSet const& pset)
   {
     m_storeWires = pset.get<bool>("StoreWires", false);
     m_trackLabel = pset.get<std::string>("TrackModule", "pandoraTrack");
@@ -233,8 +232,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleHitDumper::beginJob()
+  void PFParticleHitDumper::beginJob()
   {
     mf::LogDebug("LArPandora") << " *** PFParticleHitDumper::beginJob() *** " << std::endl;
 
@@ -302,14 +300,11 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleHitDumper::endJob()
-  {}
+  void PFParticleHitDumper::endJob() {}
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleHitDumper::analyze(const art::Event& evt)
+  void PFParticleHitDumper::analyze(const art::Event& evt)
   {
     if (m_printDebug) std::cout << " *** PFParticleHitDumper::analyze(...) *** " << std::endl;
 
@@ -418,8 +413,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleHitDumper::FillRecoTracks(const PFParticlesToTracks& particlesToTracks)
+  void PFParticleHitDumper::FillRecoTracks(const PFParticlesToTracks& particlesToTracks)
   {
     // Initialise variables
     m_particle = -1;
@@ -464,10 +458,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleHitDumper::FillReco3D(const PFParticleVector& particleVector,
-                                  const PFParticlesToSpacePoints& particlesToSpacePoints,
-                                  const SpacePointsToHits& spacePointsToHits)
+  void PFParticleHitDumper::FillReco3D(const PFParticleVector& particleVector,
+                                       const PFParticlesToSpacePoints& particlesToSpacePoints,
+                                       const SpacePointsToHits& spacePointsToHits)
   {
     // Initialise variables
     m_particle = -1;
@@ -550,15 +543,14 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleHitDumper::FillAssociated2DHits(const art::Event& evt,
-                                            const PFParticleVector& particleVector,
-                                            const PFParticlesToHits& particlesToHits,
-                                            const PFParticlesToHits& particlesToHitsClusters,
-                                            const PFParticlesToTracks& particlesToTracks,
-                                            const TracksToHits& tracksToHits,
-                                            const PFParticlesToShowers& particlesToShowers,
-                                            const ShowersToHits& showersToHits)
+  void PFParticleHitDumper::FillAssociated2DHits(const art::Event& evt,
+                                                 const PFParticleVector& particleVector,
+                                                 const PFParticlesToHits& particlesToHits,
+                                                 const PFParticlesToHits& particlesToHitsClusters,
+                                                 const PFParticlesToTracks& particlesToTracks,
+                                                 const TracksToHits& tracksToHits,
+                                                 const PFParticlesToShowers& particlesToShowers,
+                                                 const ShowersToHits& showersToHits)
   {
     // Create dummy entry if there are no 2D hits
     if (particleVector.empty()) { m_pRecoComparison->Fill(); }
@@ -613,10 +605,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleHitDumper::FillReco2D(const art::Event& e,
-                                  const HitVector& hitVector,
-                                  const HitsToPFParticles& hitsToParticles)
+  void PFParticleHitDumper::FillReco2D(const art::Event& e,
+                                       const HitVector& hitVector,
+                                       const HitsToPFParticles& hitsToParticles)
   {
     // Initialise variables
     m_particle = -1;
@@ -665,8 +656,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleHitDumper::FillRecoWires(const art::Event& e, const WireVector& wireVector)
+  void PFParticleHitDumper::FillRecoWires(const art::Event& e, const WireVector& wireVector)
   {
 
     // Create dummy entry if there are no wires
@@ -725,8 +715,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  double
-  PFParticleHitDumper::GetUVW(const geo::WireID& wireID) const
+  double PFParticleHitDumper::GetUVW(const geo::WireID& wireID) const
   {
     // define UVW as closest distance from (0,0) to wire axis
     art::ServiceHandle<geo::Geometry const> theGeometry;
@@ -762,11 +751,10 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  double
-  PFParticleHitDumper::YZtoU(const unsigned int cstat,
-                             const unsigned int tpc,
-                             const double y,
-                             const double z) const
+  double PFParticleHitDumper::YZtoU(const unsigned int cstat,
+                                    const unsigned int tpc,
+                                    const double y,
+                                    const double z) const
   {
     // TODO: Check that this stills works in DUNE
     art::ServiceHandle<geo::Geometry const> theGeometry;
@@ -776,11 +764,10 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  double
-  PFParticleHitDumper::YZtoV(const unsigned int cstat,
-                             const unsigned int tpc,
-                             const double y,
-                             const double z) const
+  double PFParticleHitDumper::YZtoV(const unsigned int cstat,
+                                    const unsigned int tpc,
+                                    const double y,
+                                    const double z) const
   {
     // TODO; Check that this still works in DUNE
     art::ServiceHandle<geo::Geometry const> theGeometry;

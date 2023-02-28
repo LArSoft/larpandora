@@ -609,8 +609,7 @@ namespace lar_pandora {
   //------------------------------------------------------------------------------------------------------------------------------------------
 
   template <typename T>
-  inline size_t
-  LArPandoraOutput::GetId(const T* const pT, const std::list<const T*>& tList)
+  inline size_t LArPandoraOutput::GetId(const T* const pT, const std::list<const T*>& tList)
   {
     typename std::list<const T*>::const_iterator it(std::find(tList.begin(), tList.end(), pT));
 
@@ -624,8 +623,7 @@ namespace lar_pandora {
   //------------------------------------------------------------------------------------------------------------------------------------------
 
   template <typename T>
-  inline size_t
-  LArPandoraOutput::GetId(const T* const pT, const std::vector<const T*>& tVector)
+  inline size_t LArPandoraOutput::GetId(const T* const pT, const std::vector<const T*>& tVector)
   {
     typename std::vector<const T*>::const_iterator it(
       std::find(tVector.begin(), tVector.end(), pT));
@@ -640,12 +638,11 @@ namespace lar_pandora {
   //------------------------------------------------------------------------------------------------------------------------------------------
 
   template <typename A, typename B>
-  inline void
-  LArPandoraOutput::AddAssociation(const art::Event& event,
-                                   const std::string& instanceLabel,
-                                   const size_t idA,
-                                   const size_t idB,
-                                   std::unique_ptr<art::Assns<A, B>>& association)
+  inline void LArPandoraOutput::AddAssociation(const art::Event& event,
+                                               const std::string& instanceLabel,
+                                               const size_t idA,
+                                               const size_t idB,
+                                               std::unique_ptr<art::Assns<A, B>>& association)
   {
     const art::PtrMaker<A> makePtrA(event, instanceLabel);
     art::Ptr<A> pA(makePtrA(idA));
@@ -659,12 +656,11 @@ namespace lar_pandora {
   //------------------------------------------------------------------------------------------------------------------------------------------
 
   template <typename A, typename B>
-  inline void
-  LArPandoraOutput::AddAssociation(const art::Event& event,
-                                   const std::string& instanceLabel,
-                                   const size_t idA,
-                                   const IdToIdVectorMap& aToBMap,
-                                   std::unique_ptr<art::Assns<A, B>>& association)
+  inline void LArPandoraOutput::AddAssociation(const art::Event& event,
+                                               const std::string& instanceLabel,
+                                               const size_t idA,
+                                               const IdToIdVectorMap& aToBMap,
+                                               std::unique_ptr<art::Assns<A, B>>& association)
   {
     IdToIdVectorMap::const_iterator it(aToBMap.find(idA));
     if (it == aToBMap.end())
@@ -684,12 +680,11 @@ namespace lar_pandora {
   //------------------------------------------------------------------------------------------------------------------------------------------
 
   template <typename A, typename B>
-  inline void
-  LArPandoraOutput::AddAssociation(const art::Event& event,
-                                   const std::string& instanceLabel,
-                                   const size_t idA,
-                                   const std::vector<art::Ptr<B>>& bVector,
-                                   std::unique_ptr<art::Assns<A, B>>& association)
+  inline void LArPandoraOutput::AddAssociation(const art::Event& event,
+                                               const std::string& instanceLabel,
+                                               const size_t idA,
+                                               const std::vector<art::Ptr<B>>& bVector,
+                                               std::unique_ptr<art::Assns<A, B>>& association)
   {
     const art::PtrMaker<A> makePtrA(event, instanceLabel);
     art::Ptr<A> pA(makePtrA(idA));

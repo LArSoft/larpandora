@@ -129,8 +129,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandora::beginJob()
+  void LArPandora::beginJob()
   {
     LArDriftVolumeList driftVolumeList;
     LArPandoraGeometry::LoadGeometry(driftVolumeList, m_driftVolumeMap);
@@ -160,8 +159,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandora::produce(art::Event& evt)
+  void LArPandora::produce(art::Event& evt)
   {
     IdToHitMap idToHitMap;
     this->CreatePandoraInput(evt, idToHitMap);
@@ -172,12 +170,12 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandora::CreatePandoraInput(art::Event& evt, IdToHitMap& idToHitMap)
+  void LArPandora::CreatePandoraInput(art::Event& evt, IdToHitMap& idToHitMap)
   {
     // ATTN Should complete gap creation in begin job callback, but channel status service functionality unavailable at that point
     if (!m_lineGapsCreated && m_enableDetectorGaps) {
-      LArPandoraInput::CreatePandoraReadoutGaps(evt.time().value(), m_inputSettings, m_driftVolumeMap);
+      LArPandoraInput::CreatePandoraReadoutGaps(
+        evt.time().value(), m_inputSettings, m_driftVolumeMap);
       m_lineGapsCreated = true;
     }
 
@@ -238,8 +236,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandora::ProcessPandoraOutput(art::Event& evt, const IdToHitMap& idToHitMap)
+  void LArPandora::ProcessPandoraOutput(art::Event& evt, const IdToHitMap& idToHitMap)
   {
     if (m_enableProduction) {
       m_outputSettings.m_shouldProduceAllOutcomes = false;

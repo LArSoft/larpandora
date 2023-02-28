@@ -102,9 +102,14 @@ namespace lar_pandora {
      *  @param  widthY           width of tpc volume (Y)
      *  @param  widthZ           width of tpc volume (Z)
      */
-    LArDaughterDriftVolume(const unsigned int cryostat, const unsigned int tpc,
-                           const float centerX, const float centerY, const float centerZ,
-                           const float widthX, const float widthY, const float widthZ);
+    LArDaughterDriftVolume(const unsigned int cryostat,
+                           const unsigned int tpc,
+                           const float centerX,
+                           const float centerY,
+                           const float centerZ,
+                           const float widthX,
+                           const float widthY,
+                           const float widthZ);
 
     /**
      *  @brief  Return cryostat ID
@@ -146,16 +151,16 @@ namespace lar_pandora {
      */
     float GetWidthZ() const;
 
-private:
-    unsigned int    m_cryostat;
-    unsigned int    m_tpc;
-    float           m_centerX;
-    float           m_centerY;
-    float           m_centerZ;
-    float           m_widthX;
-    float           m_widthY;
-    float           m_widthZ;
-};
+  private:
+    unsigned int m_cryostat;
+    unsigned int m_tpc;
+    float m_centerX;
+    float m_centerY;
+    float m_centerZ;
+    float m_widthX;
+    float m_widthY;
+    float m_widthZ;
+  };
 
   typedef std::vector<LArDaughterDriftVolume> LArDaughterDriftVolumeList;
 
@@ -423,56 +428,31 @@ private:
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDetectorGap::GetX1() const
-  {
-    return m_x1;
-  }
+  inline float LArDetectorGap::GetX1() const { return m_x1; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDetectorGap::GetY1() const
-  {
-    return m_y1;
-  }
+  inline float LArDetectorGap::GetY1() const { return m_y1; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDetectorGap::GetZ1() const
-  {
-    return m_z1;
-  }
+  inline float LArDetectorGap::GetZ1() const { return m_z1; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDetectorGap::GetX2() const
-  {
-    return m_x2;
-  }
+  inline float LArDetectorGap::GetX2() const { return m_x2; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDetectorGap::GetY2() const
-  {
-    return m_y2;
-  }
+  inline float LArDetectorGap::GetY2() const { return m_y2; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDetectorGap::GetZ2() const
-  {
-    return m_z2;
-  }
+  inline float LArDetectorGap::GetZ2() const { return m_z2; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDetectorGap::GetMaxGapSize() noexcept
+  inline float LArDetectorGap::GetMaxGapSize() noexcept
   {
     return 30.f; // TODO: 30cm should be fine but can we do better than a hard-coded number here?
   }
@@ -480,198 +460,116 @@ private:
   //------------------------------------------------------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline LArDaughterDriftVolume::LArDaughterDriftVolume(const unsigned int cryostat, const unsigned int tpc,
-                                                        const float centerX, const float centerY, const float centerZ,
-                                                        const float widthX, const float widthY, const float widthZ) :
-      m_cryostat(cryostat), m_tpc(tpc),
-      m_centerX(centerX), m_centerY(centerY), m_centerZ(centerZ),
-      m_widthX(widthX), m_widthY(widthY), m_widthZ(widthZ)      
+  inline LArDaughterDriftVolume::LArDaughterDriftVolume(const unsigned int cryostat,
+                                                        const unsigned int tpc,
+                                                        const float centerX,
+                                                        const float centerY,
+                                                        const float centerZ,
+                                                        const float widthX,
+                                                        const float widthY,
+                                                        const float widthZ)
+    : m_cryostat(cryostat)
+    , m_tpc(tpc)
+    , m_centerX(centerX)
+    , m_centerY(centerY)
+    , m_centerZ(centerZ)
+    , m_widthX(widthX)
+    , m_widthY(widthY)
+    , m_widthZ(widthZ)
   {}
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline unsigned int
-  LArDaughterDriftVolume::GetCryostat() const
-  {
-    return m_cryostat;
-  }
+  inline unsigned int LArDaughterDriftVolume::GetCryostat() const { return m_cryostat; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline unsigned int
-  LArDaughterDriftVolume::GetTpc() const
-  {
-    return m_tpc;
-  }
+  inline unsigned int LArDaughterDriftVolume::GetTpc() const { return m_tpc; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDaughterDriftVolume::GetCenterX() const
-  {
-    return m_centerX;
-  }
+  inline float LArDaughterDriftVolume::GetCenterX() const { return m_centerX; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDaughterDriftVolume::GetCenterY() const
-  {
-    return m_centerY;
-  }
+  inline float LArDaughterDriftVolume::GetCenterY() const { return m_centerY; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDaughterDriftVolume::GetCenterZ() const
-  {
-    return m_centerZ;
-  }
+  inline float LArDaughterDriftVolume::GetCenterZ() const { return m_centerZ; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDaughterDriftVolume::GetWidthX() const
-  {
-    return m_widthX;
-  }
+  inline float LArDaughterDriftVolume::GetWidthX() const { return m_widthX; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDaughterDriftVolume::GetWidthY() const
-  {
-      return m_widthY;
-  }
+  inline float LArDaughterDriftVolume::GetWidthY() const { return m_widthY; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDaughterDriftVolume::GetWidthZ() const
-  {
-    return m_widthZ;
-  }
+  inline float LArDaughterDriftVolume::GetWidthZ() const { return m_widthZ; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline unsigned int
-  LArDriftVolume::GetVolumeID() const
-  {
-    return m_volumeID;
-  }
+  inline unsigned int LArDriftVolume::GetVolumeID() const { return m_volumeID; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline bool
-  LArDriftVolume::IsPositiveDrift() const
-  {
-    return m_isPositiveDrift;
-  }
+  inline bool LArDriftVolume::IsPositiveDrift() const { return m_isPositiveDrift; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetWirePitchU() const
-  {
-    return m_wirePitchU;
-  }
+  inline float LArDriftVolume::GetWirePitchU() const { return m_wirePitchU; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetWirePitchV() const
-  {
-    return m_wirePitchV;
-  }
+  inline float LArDriftVolume::GetWirePitchV() const { return m_wirePitchV; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetWirePitchW() const
-  {
-    return m_wirePitchW;
-  }
+  inline float LArDriftVolume::GetWirePitchW() const { return m_wirePitchW; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetWireAngleU() const
-  {
-    return m_wireAngleU;
-  }
+  inline float LArDriftVolume::GetWireAngleU() const { return m_wireAngleU; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetWireAngleV() const
-  {
-    return m_wireAngleV;
-  }
+  inline float LArDriftVolume::GetWireAngleV() const { return m_wireAngleV; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetWireAngleW() const
-  {
-    return m_wireAngleW;
-  }
+  inline float LArDriftVolume::GetWireAngleW() const { return m_wireAngleW; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetCenterX() const
-  {
-    return m_centerX;
-  }
+  inline float LArDriftVolume::GetCenterX() const { return m_centerX; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetCenterY() const
-  {
-    return m_centerY;
-  }
+  inline float LArDriftVolume::GetCenterY() const { return m_centerY; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetCenterZ() const
-  {
-    return m_centerZ;
-  }
+  inline float LArDriftVolume::GetCenterZ() const { return m_centerZ; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetWidthX() const
-  {
-    return m_widthX;
-  }
+  inline float LArDriftVolume::GetWidthX() const { return m_widthX; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetWidthY() const
-  {
-    return m_widthY;
-  }
+  inline float LArDriftVolume::GetWidthY() const { return m_widthY; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetWidthZ() const
-  {
-    return m_widthZ;
-  }
+  inline float LArDriftVolume::GetWidthZ() const { return m_widthZ; }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  inline float
-  LArDriftVolume::GetSigmaUVZ() const
-  {
-    return m_sigmaUVZ;
-  }
+  inline float LArDriftVolume::GetSigmaUVZ() const { return m_sigmaUVZ; }
 
 } // namespace lar_pandora
 

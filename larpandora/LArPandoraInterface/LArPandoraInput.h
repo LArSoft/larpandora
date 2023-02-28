@@ -92,7 +92,7 @@ namespace lar_pandora {
      *  @param  settings the settings
      *  @param  driftVolumeMap the mapping from volume id to drift volume
      */
-    static void CreatePandoraReadoutGaps(lariov::DBTimeStamp_t ts, 
+    static void CreatePandoraReadoutGaps(lariov::DBTimeStamp_t ts,
                                          const Settings& settings,
                                          const LArDriftVolumeMap& driftVolumeMap);
 
@@ -196,7 +196,7 @@ namespace lar_pandora {
      *
      *  @param  processMap the output map from MC process string to enumeration
      */
-    static void FillMCProcessMap(MCProcessMap &processMap);
+    static void FillMCProcessMap(MCProcessMap& processMap);
   };
 
 } // namespace lar_pandora

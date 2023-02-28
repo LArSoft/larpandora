@@ -18,8 +18,7 @@
 
 namespace lar_pandora {
 
-  void
-  LArPandoraGeometry::LoadDetectorGaps(LArDetectorGapList& listOfGaps)
+  void LArPandoraGeometry::LoadDetectorGaps(LArDetectorGapList& listOfGaps)
   {
     // Detector gaps can only be loaded once - throw an exception if the output lists are already filled
     if (!listOfGaps.empty())
@@ -87,22 +86,22 @@ namespace lar_pandora {
         else if (!isDualPhase)
           listOfGaps.emplace_back(LArDetectorGap(X1, Y1, Z1, X2, Y2, Z2));
       }
-      if (isDualPhase)
-      {
-        for (LArDaughterDriftVolumeList::const_iterator iterDghtr1 = driftVolume1.GetTpcVolumeList().begin(),
-             iterDghtrEnd1 = driftVolume1.GetTpcVolumeList().end();
-             iterDghtr1 != iterDghtrEnd1; 
+      if (isDualPhase) {
+        for (LArDaughterDriftVolumeList::const_iterator
+               iterDghtr1 = driftVolume1.GetTpcVolumeList().begin(),
+               iterDghtrEnd1 = driftVolume1.GetTpcVolumeList().end();
+             iterDghtr1 != iterDghtrEnd1;
              ++iterDghtr1) {
-          const LArDaughterDriftVolume &tpcVolume1(*iterDghtr1);
+          const LArDaughterDriftVolume& tpcVolume1(*iterDghtr1);
 
-          for (LArDaughterDriftVolumeList::const_iterator iterDghtr2 = iterDghtr1,
-               iterDghtrEnd2 = driftVolume1.GetTpcVolumeList().end();
+          for (LArDaughterDriftVolumeList::const_iterator
+                 iterDghtr2 = iterDghtr1,
+                 iterDghtrEnd2 = driftVolume1.GetTpcVolumeList().end();
                iterDghtr2 != iterDghtrEnd2;
                ++iterDghtr2) {
-            const LArDaughterDriftVolume &tpcVolume2(*iterDghtr2);
+            const LArDaughterDriftVolume& tpcVolume2(*iterDghtr2);
 
-            if (tpcVolume1.GetTpc() == tpcVolume2.GetTpc())
-              continue;
+            if (tpcVolume1.GetTpc() == tpcVolume2.GetTpc()) continue;
 
             const float maxDisplacement(LArDetectorGap::GetMaxGapSize());
 
@@ -115,10 +114,12 @@ namespace lar_pandora {
             const float gapY(deltaY - widthY);
             const float gapZ(deltaZ - widthZ);
 
-            const float X1((tpcVolume1.GetCenterX() < tpcVolume2.GetCenterX()) ? (tpcVolume1.GetCenterX() + 0.5f * tpcVolume1.GetWidthX()) :
-                           (tpcVolume2.GetCenterX() + 0.5f * tpcVolume2.GetWidthX()));
-            const float X2((tpcVolume1.GetCenterX() > tpcVolume2.GetCenterX()) ? (tpcVolume1.GetCenterX() - 0.5f * tpcVolume1.GetWidthX()) :
-                           (tpcVolume2.GetCenterX() - 0.5f * tpcVolume2.GetWidthX()));
+            const float X1((tpcVolume1.GetCenterX() < tpcVolume2.GetCenterX()) ?
+                             (tpcVolume1.GetCenterX() + 0.5f * tpcVolume1.GetWidthX()) :
+                             (tpcVolume2.GetCenterX() + 0.5f * tpcVolume2.GetWidthX()));
+            const float X2((tpcVolume1.GetCenterX() > tpcVolume2.GetCenterX()) ?
+                             (tpcVolume1.GetCenterX() - 0.5f * tpcVolume1.GetWidthX()) :
+                             (tpcVolume2.GetCenterX() - 0.5f * tpcVolume2.GetWidthX()));
             const float Y1(std::min((tpcVolume1.GetCenterY() - 0.5f * tpcVolume1.GetWidthY()),
                                     (tpcVolume2.GetCenterY() - 0.5f * tpcVolume2.GetWidthY())));
             const float Y2(std::max((tpcVolume1.GetCenterY() + 0.5f * tpcVolume1.GetWidthY()),
@@ -129,7 +130,8 @@ namespace lar_pandora {
                                     (tpcVolume2.GetCenterZ() + 0.5f * tpcVolume2.GetWidthZ())));
 
             if (std::fabs(gapY) > maxDisplacement || std::fabs(gapZ) > maxDisplacement)
-              listOfGaps.emplace_back(LArDetectorGap(X1, Y1 + widthY, Z1 + widthZ, X2, Y2 - widthY, Z2 - widthZ));
+              listOfGaps.emplace_back(
+                LArDetectorGap(X1, Y1 + widthY, Z1 + widthZ, X2, Y2 - widthY, Z2 - widthZ));
           }
         }
       }
@@ -138,9 +140,8 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraGeometry::LoadGeometry(LArDriftVolumeList& outputVolumeList,
-                                   LArDriftVolumeMap& outputVolumeMap)
+  void LArPandoraGeometry::LoadGeometry(LArDriftVolumeList& outputVolumeList,
+                                        LArDriftVolumeMap& outputVolumeMap)
   {
     if (!outputVolumeList.empty())
       throw cet::exception("LArPandora")
@@ -162,10 +163,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  unsigned int
-  LArPandoraGeometry::GetVolumeID(const LArDriftVolumeMap& driftVolumeMap,
-                                  const unsigned int cstat,
-                                  const unsigned int tpc)
+  unsigned int LArPandoraGeometry::GetVolumeID(const LArDriftVolumeMap& driftVolumeMap,
+                                               const unsigned int cstat,
+                                               const unsigned int tpc)
   {
     if (driftVolumeMap.empty())
       throw cet::exception("LArPandora")
@@ -183,29 +183,40 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  unsigned int LArPandoraGeometry::GetDaughterVolumeID(const LArDriftVolumeMap &driftVolumeMap, const unsigned int cstat, const unsigned int tpc)
+  unsigned int LArPandoraGeometry::GetDaughterVolumeID(const LArDriftVolumeMap& driftVolumeMap,
+                                                       const unsigned int cstat,
+                                                       const unsigned int tpc)
   {
     if (driftVolumeMap.empty())
-      throw cet::exception("LArPandora") << " LArPandoraGeometry::GetDaughterVolumeID --- detector geometry map is empty";
+      throw cet::exception("LArPandora")
+        << " LArPandoraGeometry::GetDaughterVolumeID --- detector geometry map is empty";
 
-    LArDriftVolumeMap::const_iterator iter = driftVolumeMap.find(LArPandoraGeometry::GetTpcID(cstat, tpc));
+    LArDriftVolumeMap::const_iterator iter =
+      driftVolumeMap.find(LArPandoraGeometry::GetTpcID(cstat, tpc));
 
     if (driftVolumeMap.end() == iter)
-      throw cet::exception("LArPandora") << " LArPandoraGeometry::GetDaughterVolumeID --- found a TPC volume that doesn't belong to a drift volume";
+      throw cet::exception("LArPandora") << " LArPandoraGeometry::GetDaughterVolumeID --- found a "
+                                            "TPC volume that doesn't belong to a drift volume";
 
-    for (LArDaughterDriftVolumeList::const_iterator iterDghtr = iter->second.GetTpcVolumeList().begin(),
-         iterDghtrEnd = iter->second.GetTpcVolumeList().end(); 
-         iterDghtr != iterDghtrEnd; ++iterDghtr) {
-      const LArDaughterDriftVolume &daughterVolume(*iterDghtr);
+    for (LArDaughterDriftVolumeList::const_iterator
+           iterDghtr = iter->second.GetTpcVolumeList().begin(),
+           iterDghtrEnd = iter->second.GetTpcVolumeList().end();
+         iterDghtr != iterDghtrEnd;
+         ++iterDghtr) {
+      const LArDaughterDriftVolume& daughterVolume(*iterDghtr);
       if (cstat == daughterVolume.GetCryostat() && tpc == daughterVolume.GetTpc())
         return std::distance(iter->second.GetTpcVolumeList().begin(), iterDghtr);
     }
-    throw cet::exception("LArPandora") << " LArPandoraGeometry::GetDaughterVolumeID --- found a daughter volume that doesn't belong to the drift volume ";
+    throw cet::exception("LArPandora")
+      << " LArPandoraGeometry::GetDaughterVolumeID --- found a daughter volume that doesn't belong "
+         "to the drift volume ";
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  geo::View_t LArPandoraGeometry::GetGlobalView(const unsigned int cstat, const unsigned int tpc, const geo::View_t hit_View)
+  geo::View_t LArPandoraGeometry::GetGlobalView(const unsigned int cstat,
+                                                const unsigned int tpc,
+                                                const geo::View_t hit_View)
   {
     const bool switchUV(LArPandoraGeometry::ShouldSwitchUV(cstat, tpc));
 
@@ -225,8 +236,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  unsigned int
-  LArPandoraGeometry::GetTpcID(const unsigned int cstat, const unsigned int tpc)
+  unsigned int LArPandoraGeometry::GetTpcID(const unsigned int cstat, const unsigned int tpc)
   {
     // We assume there will never be more than 10000 TPCs in a cryostat!
     if (tpc >= 10000)
@@ -238,8 +248,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  bool
-  LArPandoraGeometry::ShouldSwitchUV(const unsigned int cstat, const unsigned int tpc)
+  bool LArPandoraGeometry::ShouldSwitchUV(const unsigned int cstat, const unsigned int tpc)
   {
     // We determine whether U and V views should be switched by checking the drift direction
     art::ServiceHandle<geo::Geometry const> theGeometry;
@@ -251,8 +260,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  bool
-  LArPandoraGeometry::ShouldSwitchUV(const bool isPositiveDrift)
+  bool LArPandoraGeometry::ShouldSwitchUV(const bool isPositiveDrift)
   {
     // ATTN: In the dual phase scenario the wire planes pointing along two orthogonal directions and so interchanging U and V is unnecessary
     art::ServiceHandle<geo::Geometry const> theGeometry;
@@ -264,8 +272,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraGeometry::LoadGeometry(LArDriftVolumeList& driftVolumeList)
+  void LArPandoraGeometry::LoadGeometry(LArDriftVolumeList& driftVolumeList)
   {
     // This method will group TPCs into "drift volumes" (these are regions of the detector that share a common drift direction,
     // common range of x coordinates, and common detector parameters such as wire pitch and wire angle).
@@ -372,7 +379,8 @@ namespace lar_pandora {
         tpcList.insert(itpc1);
 
         LArDaughterDriftVolumeList tpcVolumeList;
-        tpcVolumeList.emplace_back(LArDaughterDriftVolume(icstat, itpc1,
+        tpcVolumeList.emplace_back(LArDaughterDriftVolume(icstat,
+                                                          itpc1,
                                                           0.5f * (driftMaxX + driftMinX),
                                                           0.5f * (driftMaxY + driftMinY),
                                                           0.5f * (driftMaxZ + driftMinZ),
@@ -432,7 +440,8 @@ namespace lar_pandora {
           driftMinZ = std::min(driftMinZ, driftMinZ2);
           driftMaxZ = std::max(driftMaxZ, driftMaxZ2);
 
-          tpcVolumeList.emplace_back(LArDaughterDriftVolume(icstat, itpc2, 
+          tpcVolumeList.emplace_back(LArDaughterDriftVolume(icstat,
+                                                            itpc2,
                                                             0.5f * (driftMaxX2 + driftMinX2),
                                                             0.5f * (driftMaxY2 + driftMinY2),
                                                             0.5f * (driftMaxZ2 + driftMinZ2),
@@ -468,9 +477,8 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraGeometry::LoadGlobalDaughterGeometry(const LArDriftVolumeList& driftVolumeList,
-                                                 LArDriftVolumeList& daughterVolumeList)
+  void LArPandoraGeometry::LoadGlobalDaughterGeometry(const LArDriftVolumeList& driftVolumeList,
+                                                      LArDriftVolumeList& daughterVolumeList)
   {
     // This method will create one or more daughter volumes (these share a common drift orientation along the X-axis,
     // have parallel or near-parallel wire angles, and similar wire pitches)
@@ -561,8 +569,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  const LArDaughterDriftVolumeList&
-  LArDriftVolume::GetTpcVolumeList() const
+  const LArDaughterDriftVolumeList& LArDriftVolume::GetTpcVolumeList() const
   {
     return m_tpcVolumeList;
   }

@@ -105,8 +105,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleTrackAna::reconfigure(fhicl::ParameterSet const& pset)
+  void PFParticleTrackAna::reconfigure(fhicl::ParameterSet const& pset)
   {
     m_useModBox = pset.get<bool>("UeModBox", true);
     m_isCheated = pset.get<bool>("IsCheated", false);
@@ -115,8 +114,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleTrackAna::beginJob()
+  void PFParticleTrackAna::beginJob()
   {
     //
     art::ServiceHandle<art::TFileService const> tfs;
@@ -143,14 +141,11 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleTrackAna::endJob()
-  {}
+  void PFParticleTrackAna::endJob() {}
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  PFParticleTrackAna::analyze(const art::Event& evt)
+  void PFParticleTrackAna::analyze(const art::Event& evt)
   {
     std::cout << " *** PFParticleTrackAna::analyze(...) *** " << std::endl;
 

@@ -38,12 +38,11 @@
 
 namespace lar_pandora {
 
-  void
-  LArPandoraInput::CreatePandoraHits2D(const art::Event& e,
-                                       const Settings& settings,
-                                       const LArDriftVolumeMap& driftVolumeMap,
-                                       const HitVector& hitVector,
-                                       IdToHitMap& idToHitMap)
+  void LArPandoraInput::CreatePandoraHits2D(const art::Event& e,
+                                            const Settings& settings,
+                                            const LArDriftVolumeMap& driftVolumeMap,
+                                            const HitVector& hitVector,
+                                            IdToHitMap& idToHitMap)
   {
     mf::LogDebug("LArPandora") << " *** LArPandoraInput::CreatePandoraHits2D(...) *** "
                                << std::endl;
@@ -123,8 +122,8 @@ namespace lar_pandora {
         caloHitParameters.m_pParentAddress = (void*)((intptr_t)(++hitCounter));
         caloHitParameters.m_larTPCVolumeId =
           LArPandoraGeometry::GetVolumeID(driftVolumeMap, hit_WireID.Cryostat, hit_WireID.TPC);
-        caloHitParameters.m_daughterVolumeId = 
-          LArPandoraGeometry::GetDaughterVolumeID(driftVolumeMap, hit_WireID.Cryostat, hit_WireID.TPC);
+        caloHitParameters.m_daughterVolumeId = LArPandoraGeometry::GetDaughterVolumeID(
+          driftVolumeMap, hit_WireID.Cryostat, hit_WireID.TPC);
 
         const geo::View_t pandora_GlobalView(
           LArPandoraGeometry::GetGlobalView(hit_WireID.Cryostat, hit_WireID.TPC, hit_View));
@@ -190,9 +189,8 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraInput::CreatePandoraLArTPCs(const Settings& settings,
-                                        const LArDriftVolumeList& driftVolumeList)
+  void LArPandoraInput::CreatePandoraLArTPCs(const Settings& settings,
+                                             const LArDriftVolumeList& driftVolumeList)
   {
     mf::LogDebug("LArPandora") << " *** LArPandoraInput::CreatePandoraLArTPCs(...) *** "
                                << std::endl;
@@ -246,10 +244,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraInput::CreatePandoraDetectorGaps(const Settings& settings,
-                                             const LArDriftVolumeList& driftVolumeList,
-                                             const LArDetectorGapList& listOfGaps)
+  void LArPandoraInput::CreatePandoraDetectorGaps(const Settings& settings,
+                                                  const LArDriftVolumeList& driftVolumeList,
+                                                  const LArDetectorGapList& listOfGaps)
   {
     //ATTN - Unlike SP, DP detector gaps are not in the drift direction
     art::ServiceHandle<geo::Geometry const> theGeometry;
@@ -332,10 +329,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraInput::CreatePandoraReadoutGaps(lariov::DBTimeStamp_t ts, 
-  const Settings& settings,
-                                            const LArDriftVolumeMap& driftVolumeMap)
+  void LArPandoraInput::CreatePandoraReadoutGaps(lariov::DBTimeStamp_t ts,
+                                                 const Settings& settings,
+                                                 const LArDriftVolumeMap& driftVolumeMap)
   {
     mf::LogDebug("LArPandora") << " *** LArPandoraInput::CreatePandoraReadoutGaps(...) *** "
                                << std::endl;
@@ -488,11 +484,11 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraInput::CreatePandoraMCParticles(const Settings& settings,
-                                            const MCTruthToMCParticles& truthToParticleMap,
-                                            const MCParticlesToMCTruth& particleToTruthMap,
-                                            const RawMCParticleVector& generatorMCParticleVector)
+  void LArPandoraInput::CreatePandoraMCParticles(
+    const Settings& settings,
+    const MCTruthToMCParticles& truthToParticleMap,
+    const MCParticlesToMCTruth& particleToTruthMap,
+    const RawMCParticleVector& generatorMCParticleVector)
   {
     mf::LogDebug("LArPandora") << " *** LArPandoraInput::CreatePandoraMCParticles(...) *** "
                                << std::endl;
@@ -676,14 +672,13 @@ namespace lar_pandora {
         MCProcessMap processMap;
         FillMCProcessMap(processMap);
         mcParticleParameters.m_nuanceCode = nuanceCode;
-        if (processMap.find(particle->Process()) != processMap.end())
-        {
-            mcParticleParameters.m_process = processMap[particle->Process()];
+        if (processMap.find(particle->Process()) != processMap.end()) {
+          mcParticleParameters.m_process = processMap[particle->Process()];
         }
-        else
-        {
-            mcParticleParameters.m_process = lar_content::MC_PROC_UNKNOWN;
-            mf::LogWarning("LArPandora") << "CreatePandoraMCParticles - found an unknown process" << std::endl;
+        else {
+          mcParticleParameters.m_process = lar_content::MC_PROC_UNKNOWN;
+          mf::LogWarning("LArPandora")
+            << "CreatePandoraMCParticles - found an unknown process" << std::endl;
         }
         mcParticleParameters.m_energy = E;
         mcParticleParameters.m_particleId = particle->PdgCode();
@@ -740,8 +735,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraInput::FindPrimaryParticles(
+  void LArPandoraInput::FindPrimaryParticles(
     const RawMCParticleVector& mcParticleVector,
     std::map<const simb::MCParticle, bool>& primaryMCParticleMap)
   {
@@ -754,9 +748,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  bool
-  LArPandoraInput::IsPrimaryMCParticle(const art::Ptr<simb::MCParticle>& mcParticle,
-                                       std::map<const simb::MCParticle, bool>& primaryMCParticleMap)
+  bool LArPandoraInput::IsPrimaryMCParticle(
+    const art::Ptr<simb::MCParticle>& mcParticle,
+    std::map<const simb::MCParticle, bool>& primaryMCParticleMap)
   {
     for (auto& mcParticleIter : primaryMCParticleMap) {
       if (!mcParticleIter.second) {
@@ -778,10 +772,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraInput::CreatePandoraMCLinks2D(const Settings& settings,
-                                          const IdToHitMap& idToHitMap,
-                                          const HitsToTrackIDEs& hitToParticleMap)
+  void LArPandoraInput::CreatePandoraMCLinks2D(const Settings& settings,
+                                               const IdToHitMap& idToHitMap,
+                                               const HitsToTrackIDEs& hitToParticleMap)
   {
     mf::LogDebug("LArPandora") << " *** LArPandoraInput::CreatePandoraMCLinks(...) *** "
                                << std::endl;
@@ -835,11 +828,10 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraInput::GetTrueStartAndEndPoints(const Settings& settings,
-                                            const art::Ptr<simb::MCParticle>& particle,
-                                            int& firstT,
-                                            int& lastT)
+  void LArPandoraInput::GetTrueStartAndEndPoints(const Settings& settings,
+                                                 const art::Ptr<simb::MCParticle>& particle,
+                                                 int& firstT,
+                                                 int& lastT)
   {
     art::ServiceHandle<geo::Geometry const> theGeometry;
     firstT = -1;
@@ -861,12 +853,11 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraInput::GetTrueStartAndEndPoints(const unsigned int cstat,
-                                            const unsigned int tpc,
-                                            const art::Ptr<simb::MCParticle>& particle,
-                                            int& startT,
-                                            int& endT)
+  void LArPandoraInput::GetTrueStartAndEndPoints(const unsigned int cstat,
+                                                 const unsigned int tpc,
+                                                 const art::Ptr<simb::MCParticle>& particle,
+                                                 int& startT,
+                                                 int& endT)
   {
     art::ServiceHandle<geo::Geometry const> theGeometry;
 
@@ -892,10 +883,9 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  float
-  LArPandoraInput::GetTrueX0(const art::Event& e,
-                             const art::Ptr<simb::MCParticle>& particle,
-                             const int nt)
+  float LArPandoraInput::GetTrueX0(const art::Event& e,
+                                   const art::Ptr<simb::MCParticle>& particle,
+                                   const int nt)
   {
     art::ServiceHandle<geo::Geometry const> theGeometry;
     auto const clock_data = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(e);
@@ -918,11 +908,10 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  double
-  LArPandoraInput::GetMips(detinfo::DetectorPropertiesData const& detProp,
-                           const Settings& settings,
-                           const double hit_Charge,
-                           const geo::View_t hit_View)
+  double LArPandoraInput::GetMips(detinfo::DetectorPropertiesData const& detProp,
+                                  const Settings& settings,
+                                  const double hit_Charge,
+                                  const geo::View_t hit_View)
   {
     art::ServiceHandle<geo::Geometry const> theGeometry;
 
@@ -944,8 +933,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void
-  LArPandoraInput::FillMCProcessMap(MCProcessMap &processMap)
+  void LArPandoraInput::FillMCProcessMap(MCProcessMap& processMap)
   {
     // QGSP_BERT and EM standard physics list mappings
     processMap["unknown"] = lar_content::MC_PROC_UNKNOWN;

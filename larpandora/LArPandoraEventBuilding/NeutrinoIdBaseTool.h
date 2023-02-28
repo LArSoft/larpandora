@@ -12,15 +12,13 @@
 #include "larpandora/LArPandoraEventBuilding/Slice.h"
 #include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 
-namespace lar_pandora
-{
+namespace lar_pandora {
 
-/**
+  /**
  *  @brief  Abstract base class for a neutrino ID tool
  */
-class NeutrinoIdBaseTool
-{
-public:
+  class NeutrinoIdBaseTool {
+  public:
     virtual ~NeutrinoIdBaseTool() noexcept = default;
 
     /**
@@ -29,8 +27,8 @@ public:
      *  @param  slices the input vector of slices to classify
      *  @param  evt the art event
      */
-    virtual void ClassifySlices(SliceVector &slices, const art::Event &evt) = 0;
-};
+    virtual void ClassifySlices(SliceVector& slices, const art::Event& evt) = 0;
+  };
 
 } // namespace lar_pandora
 
