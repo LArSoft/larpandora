@@ -12,6 +12,8 @@
 #include "larpandora/LArPandoraInterface/LArPandoraInput.h"
 #include "larpandora/LArPandoraInterface/LArPandoraOutput.h"
 
+#include "larpandora/LArPandoraInterface/LArPandoraHitCollectionTool.h"
+
 #include <string>
 
 namespace lar_pandora {
@@ -68,6 +70,9 @@ namespace lar_pandora {
     bool
       m_disableRealDataCheck; ///< Whether to check if the input file contains real data before accessing MC information
     bool m_lineGapsCreated; ///< Book-keeping: whether line gap creation has been called
+
+    // TODO: may need to change class/namespace names as I progress here...
+    std::unique_ptr<HitCollectionTools::HitCollectionTool> m_collectHitsTool; ///< art tool used to collect the hits
 
     LArPandoraInput::Settings m_inputSettings;   ///< The lar pandora input settings
     LArPandoraOutput::Settings m_outputSettings; ///< The lar pandora output settings

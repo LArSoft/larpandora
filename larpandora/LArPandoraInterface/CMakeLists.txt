@@ -70,6 +70,12 @@ cet_build_plugin(StandardPandora lar::LArPandora
   PandoraPFA::PandoraSDK
 )
 
+cet_build_plugin(LArPandoraHitCollectionToolDefault art::tool
+  LIBRARIES PRIVATE
+  ${lib_target}
+  PandoraPFA::PandoraSDK
+)
+
 if (LARPANDORA_LIBTORCH)
   target_link_libraries(${module_target} PRIVATE larpandoracontent::LArPandoraDLContent)
   target_compile_definitions(${module_target} PRIVATE LIBTORCH_DL)

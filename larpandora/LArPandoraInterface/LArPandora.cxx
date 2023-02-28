@@ -10,6 +10,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 #include "cetlib/cpu_timer.h"
+#include "art/Utilities/make_tool.h"
 
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
@@ -32,6 +33,8 @@
 
 #include "larpandoracontent/LArContent.h"
 #include "larpandoracontent/LArHelpers/LArPfoHelper.h"
+
+#include "larpandora/LArPandoraInterface/LArPandoraHitCollectionTool.h"
 
 #include <iostream>
 #include <limits>
@@ -83,6 +86,15 @@ namespace lar_pandora {
     m_outputSettings.m_isNeutrinoRecoOnlyNoSlicing =
       (!m_shouldRunSlicing && m_shouldRunNeutrinoRecoOption && !m_shouldRunCosmicRecoOption);
     m_outputSettings.m_hitfinderModuleLabel = m_hitfinderModuleLabel;
+
+    if ( pset.has_key("HitCollectionTool") ) {
+      m_collectHitsTool = art::make_tool<HitCollectionTools::HitCollectionTool>(pset.get<fhicl::ParameterSet>("HitCollectionTool"));
+    }
+    else {
+      fhicl::ParameterSet psetHitCollection;
+      psetHitCollection.put<std::string>("tool_type","LArPandoraHitCollectionToolDefault");
+      m_collectHitsTool = art::make_tool<HitCollectionTools::HitCollectionTool>(psetHitCollection);
+    }
 
     if (m_enableProduction) {
       // Set up the instance names to produces
@@ -187,7 +199,8 @@ namespace lar_pandora {
 
     bool areSimChannelsValid(false);
 
-    LArPandoraHelper::CollectHits(evt, m_hitfinderModuleLabel, artHits);
+    m_collectHitsTool->CollectHits(evt, m_hitfinderModuleLabel, artHits);
+    //LArPandoraHelper::CollectHits(evt, m_hitfinderModuleLabel, artHits);
 
     if (m_enableMCParticles && (m_disableRealDataCheck || !evt.isRealData())) {
       LArPandoraHelper::CollectMCParticles(evt, m_geantModuleLabel, artMCParticleVector);
