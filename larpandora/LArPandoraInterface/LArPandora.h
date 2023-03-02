@@ -37,6 +37,8 @@ namespace lar_pandora {
     void CreatePandoraInput(art::Event& evt, IdToHitMap& idToHitMap);
     void ProcessPandoraOutput(art::Event& evt, const IdToHitMap& idToHitMap);
 
+    fhicl::ParameterSet ConstructHitCollectionToolParameterSet(const fhicl::ParameterSet& pset);
+
     std::string m_configFile; ///< The config file
 
     bool
@@ -71,7 +73,6 @@ namespace lar_pandora {
       m_disableRealDataCheck; ///< Whether to check if the input file contains real data before accessing MC information
     bool m_lineGapsCreated; ///< Book-keeping: whether line gap creation has been called
 
-    // TODO: may need to change class/namespace names as I progress here...
     std::unique_ptr<HitCollectionTools::HitCollectionTool> m_collectHitsTool; ///< art tool used to collect the hits
 
     LArPandoraInput::Settings m_inputSettings;   ///< The lar pandora input settings

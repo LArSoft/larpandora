@@ -64,6 +64,7 @@ namespace lar_pandora {
     , m_enableMCParticles(pset.get<bool>("EnableMCParticles", false))
     , m_disableRealDataCheck(pset.get<bool>("DisableRealDataCheck", false))
     , m_lineGapsCreated(false)
+    , m_collectHitsTool{ art::make_tool<HitCollectionTools::HitCollectionTool>( this->ConstructHitCollectionToolParameterSet(pset) ) }
   {
     m_inputSettings.m_useHitWidths = pset.get<bool>("UseHitWidths", true);
     m_inputSettings.m_useBirksCorrection = pset.get<bool>("UseBirksCorrection", false);
@@ -86,15 +87,6 @@ namespace lar_pandora {
     m_outputSettings.m_isNeutrinoRecoOnlyNoSlicing =
       (!m_shouldRunSlicing && m_shouldRunNeutrinoRecoOption && !m_shouldRunCosmicRecoOption);
     m_outputSettings.m_hitfinderModuleLabel = m_hitfinderModuleLabel;
-
-    if ( pset.has_key("HitCollectionTool") ) {
-      m_collectHitsTool = art::make_tool<HitCollectionTools::HitCollectionTool>(pset.get<fhicl::ParameterSet>("HitCollectionTool"));
-    }
-    else {
-      fhicl::ParameterSet psetHitCollection;
-      psetHitCollection.put<std::string>("tool_type","LArPandoraHitCollectionToolDefault");
-      m_collectHitsTool = art::make_tool<HitCollectionTools::HitCollectionTool>(psetHitCollection);
-    }
 
     if (m_enableProduction) {
       // Set up the instance names to produces
@@ -259,6 +251,20 @@ namespace lar_pandora {
         LArPandoraOutput::ProduceArtOutput(m_outputSettings, idToHitMap, evt);
       }
     }
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  fhicl::ParameterSet LArPandora::ConstructHitCollectionToolParameterSet(const fhicl::ParameterSet& pset)
+  {
+    if ( pset.has_key("HitCollectionTool") )
+    {
+      return pset.get<fhicl::ParameterSet>("HitCollectionTool");
+    }
+
+    fhicl::ParameterSet psetHitCollection;
+    psetHitCollection.put<std::string>("tool_type","LArPandoraHitCollectionToolDefault");
+    return psetHitCollection;
   }
 
 } // namespace lar_pandora
