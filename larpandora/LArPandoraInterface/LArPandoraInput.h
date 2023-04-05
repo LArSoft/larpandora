@@ -7,17 +7,20 @@
 #ifndef LAR_PANDORA_INPUT_H
 #define LAR_PANDORA_INPUT_H 1
 
-#include "lardata/ArtDataHelper/MVAReader.h"
 #include "larevt/CalibrationDBI/Interface/CalibrationDBIFwd.h"
-namespace detinfo {
-  class DetectorPropertiesData;
-}
-
 #include "larpandora/LArPandoraInterface/ILArPandora.h"
 #include "larpandora/LArPandoraInterface/LArPandoraGeometry.h"
 #include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 
 #include "larpandoracontent/LArObjects/LArMCParticle.h"
+
+namespace detinfo {
+  class DetectorPropertiesData;
+}
+
+namespace pandora {
+  class Pandora;
+}
 
 namespace lar_pandora {
 
@@ -39,6 +42,7 @@ namespace lar_pandora {
       const pandora::Pandora* m_pPrimaryPandora; ///<
       bool m_useHitWidths;                       ///<
       bool m_useBirksCorrection;                 ///<
+      bool m_useActiveBoundingBox;               ///<
       int m_uidOffset;                           ///<
       int m_hitCounterOffset;                    ///<
       double m_dx_cm;                            ///<
@@ -162,8 +166,7 @@ namespace lar_pandora {
      *  @param  startT the first trajectory point in the detector
      *  @param  endT the last trajectory point in the detector
      */
-    static void GetTrueStartAndEndPoints(const unsigned int cstat,
-                                         const unsigned int tpc,
+    static void GetTrueStartAndEndPoints(const geo::TPCID& ref_tpcid,
                                          const art::Ptr<simb::MCParticle>& particle,
                                          int& startT,
                                          int& endT);

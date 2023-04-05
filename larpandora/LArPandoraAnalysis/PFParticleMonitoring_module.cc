@@ -1420,22 +1420,15 @@ namespace lar_pandora {
     const int numTrajectoryPoints(static_cast<int>(particle->NumberTrajectoryPoints()));
 
     for (int nt = 0; nt < numTrajectoryPoints; ++nt) {
-      try {
-        double pos[3] = {particle->Vx(nt), particle->Vy(nt), particle->Vz(nt)};
-        unsigned int which_tpc(std::numeric_limits<unsigned int>::max());
-        unsigned int which_cstat(std::numeric_limits<unsigned int>::max());
-        theGeometry->PositionToTPC(pos, which_tpc, which_cstat);
+      geo::Point_t const pos{particle->Vx(nt), particle->Vy(nt), particle->Vz(nt)};
+      if (theGeometry->PositionToTPCptr(pos) == nullptr) { continue; }
 
-        // TODO: Apply fiducial cut due to readout window
+      // TODO: Apply fiducial cut due to readout window
 
-        endT = nt;
-        if (!foundStartPosition) {
-          startT = endT;
-          foundStartPosition = true;
-        }
-      }
-      catch (cet::exception& e) {
-        continue;
+      endT = nt;
+      if (!foundStartPosition) {
+        startT = endT;
+        foundStartPosition = true;
       }
     }
 

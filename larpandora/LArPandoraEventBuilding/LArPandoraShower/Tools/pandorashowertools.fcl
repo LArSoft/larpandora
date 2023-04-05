@@ -118,6 +118,7 @@ showerunidirectiondedx:{
     MaxHitPlane:     true #Set the best planes as the one with the most hits
     MissFirstPoint:  true #Do not use any hits from the first wire
     dEdxTrackLength: 3    #Max length from a hit can be to the start point in cm.
+    SumHitSnippets: false
     ShowerStartPositionInputLabel: "ShowerStartPosition"
     InitialTrackHitsInputLabel: "InitialTrackHits"
     ShowerDirectionInputLabel: "ShowerDirection"
@@ -287,9 +288,11 @@ showertrajpointdedx:{
     SCECorrectPitch:      false
     SCECorrectEField:     false
     SCEInputCorrected:    false
+    SumHitSnippets: false
     # PFParticleLabel: "pandora"
     ShowerStartPositionInputLabel: "ShowerStartPosition"
     InitialTrackSpacePointsInputLabel: "InitialTrackSpacePoints"
+    InitialTrackHitsInputLabel: "InitialTrackHits"
     InitialTrackInputLabel: "InitialTrack"
     ShowerdEdxOutputLabel: "ShowerdEdx"
     ShowerBestPlaneOutputLabel: "ShowerBestPlane"

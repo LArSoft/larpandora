@@ -12,6 +12,8 @@
 //LArSoft Includes
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
+#include "lardataobj/RecoBase/Track.h"
+
 namespace ShowerRecoTools {
 
   class ShowerTrackTrajPointDirection : IShowerTool {
@@ -82,7 +84,7 @@ namespace ShowerRecoTools {
       return 1;
     }
 
-    geo::Vector_t Direction_vec;
+    geo::Vector_t Direction;
     //Get the difference between the point and the start position.
     if (fUsePositonInfo) {
       //Get the start position.
@@ -95,25 +97,21 @@ namespace ShowerRecoTools {
               << "Shower start position not set" << std::endl;
           return 1;
         }
-        TVector3 StartPosition_vec = {-999, -999, -999};
-        ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, StartPosition_vec);
-        StartPosition.SetCoordinates(
-          StartPosition_vec.X(), StartPosition_vec.Y(), StartPosition_vec.Z());
+        ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, StartPosition);
       }
       else {
         StartPosition = InitialTrack.Start();
       }
       //Get the specific trajectory point and look and and the direction from the start position
       geo::Point_t TrajPosition = InitialTrack.LocationAtPoint(fTrajPoint);
-      Direction_vec = (TrajPosition - StartPosition).Unit();
+      Direction = (TrajPosition - StartPosition).Unit();
     }
     else {
       //Use the direction of the trajection at tat point;
-      Direction_vec = InitialTrack.DirectionAtPoint(fTrajPoint);
+      Direction = InitialTrack.DirectionAtPoint(fTrajPoint);
     }
 
-    TVector3 Direction = {Direction_vec.X(), Direction_vec.Y(), Direction_vec.Z()};
-    TVector3 DirectionErr = {-999, -999, -999};
+    geo::Vector_t DirectionErr = {-999, -999, -999};
     ShowerEleHolder.SetElement(Direction, DirectionErr, fShowerDirectionOutputLabel);
     return 0;
   }

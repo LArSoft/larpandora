@@ -11,12 +11,14 @@
 #define ShowerElementHolder_HH
 
 //Framework includes
+#include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/FindOneP.h"
+#include "cetlib_except/demangle.h"
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //C++ Inlcudes
-#include "cetlib_except/demangle.h"
 #include <iomanip>
 #include <iostream>
 #include <map>

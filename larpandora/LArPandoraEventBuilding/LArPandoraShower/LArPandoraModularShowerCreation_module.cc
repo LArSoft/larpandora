@@ -22,7 +22,10 @@
 //LArSoft includes
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardataobj/RecoBase/Cluster.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/Shower.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
 namespace reco::shower {
@@ -340,16 +343,16 @@ void reco::shower::LArPandoraModularShowerCreation::produce(art::Event& evt)
     }
 
     //Get the properties
-    TVector3 ShowerStartPosition(-999, -999, -999);
-    TVector3 ShowerDirection(-999, -999, -999);
+    geo::Point_t ShowerStartPosition(-999, -999, -999);
+    geo::Vector_t ShowerDirection(-999, -999, -999);
     std::vector<double> ShowerEnergy(fNumPlanes, -999);
     std::vector<double> ShowerdEdx(fNumPlanes, -999);
     int BestPlane(-999);
     double ShowerLength(-999);
     double ShowerOpeningAngle(-999);
 
-    TVector3 ShowerStartPositionErr(-999, -999, -999);
-    TVector3 ShowerDirectionErr(-999, -999, -999);
+    geo::Point_t ShowerStartPositionErr(-999, -999, -999);
+    geo::Vector_t ShowerDirectionErr(-999, -999, -999);
     std::vector<double> ShowerEnergyErr(fNumPlanes, -999);
     std::vector<double> ShowerdEdxErr(fNumPlanes, -999);
 
@@ -414,10 +417,11 @@ void reco::shower::LArPandoraModularShowerCreation::produce(art::Event& evt)
     }
 
     //Make the shower
-    recob::Shower shower(ShowerDirection,
-                         ShowerDirectionErr,
-                         ShowerStartPosition,
-                         ShowerDirectionErr,
+    using namespace geo::vect;
+    recob::Shower shower(convertTo<TVector3>(ShowerDirection),
+                         convertTo<TVector3>(ShowerDirectionErr),
+                         convertTo<TVector3>(ShowerStartPosition),
+                         convertTo<TVector3>(ShowerDirectionErr),
                          ShowerEnergy,
                          ShowerEnergyErr,
                          ShowerdEdx,

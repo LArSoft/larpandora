@@ -18,11 +18,13 @@
 #include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 
 #include "larpandora/LArPandoraEventBuilding/LArPandoraEvent.h"
-#include "larpandora/LArPandoraEventBuilding/NeutrinoIdBaseTool.h"
 #include "larpandora/LArPandoraEventBuilding/Slice.h"
+#include "larpandora/LArPandoraEventBuilding/SliceIdBaseTool.h"
 
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/PFParticleMetadata.h"
+
+#include "TTree.h"
 
 namespace lar_pandora {
 
@@ -111,6 +113,15 @@ namespace lar_pandora {
     float GetMetadataValue(const art::Ptr<larpandoraobj::PFParticleMetadata>& metadata,
                            const std::string& key) const;
 
+    /**
+     *  @brief  Query a metadata object to see if it is a target particle
+     *
+     *  @param  metadata the metadata object to query
+     *
+     *  @return boolean - if the particle is a target
+     */
+    bool IsTarget(const art::Ptr<larpandoraobj::PFParticleMetadata>& metadata) const;
+
     std::string
       m_inputProducerLabel; ///< Label for the Pandora instance that produced the collections we want to consolidated
     std::string
@@ -121,8 +132,11 @@ namespace lar_pandora {
       m_hitProducerLabel; ///< Label for the hit producer that was used as input to the Pandora instance specified
     bool
       m_shouldProduceT0s; ///< If we should produce T0s (relevant when stitching over multiple drift volumes)
-    art::InputTag m_pandoraTag; ///< The input tag for the pandora producer
-    std::unique_ptr<NeutrinoIdBaseTool> m_neutrinoIdTool; ///< The neutrino id tool
+    art::InputTag m_pandoraTag;                     ///< The input tag for the pandora producer
+    std::unique_ptr<SliceIdBaseTool> m_sliceIdTool; ///< The slice id tool
+    bool m_useTestBeamMode;  ///< If we should expect a test-beam (instead of a neutrino) slice
+    std::string m_targetKey; ///< The metadata key for a PFParticle to determine if it is the target
+    std::string m_scoreKey;  ///< The metadata key for the score of the target slice from Pandora
   };
 
   DEFINE_ART_MODULE(LArPandoraExternalEventBuilding)
@@ -144,13 +158,16 @@ namespace lar_pandora {
     , m_hitProducerLabel(pset.get<std::string>("HitProducerLabel"))
     , m_shouldProduceT0s(pset.get<bool>("ShouldProduceT0s"))
     , m_pandoraTag(art::InputTag(m_inputProducerLabel))
-    , m_neutrinoIdTool(
-        art::make_tool<NeutrinoIdBaseTool>(pset.get<fhicl::ParameterSet>("NeutrinoIdTool")))
+    , m_sliceIdTool(art::make_tool<SliceIdBaseTool>(pset.get<fhicl::ParameterSet>("SliceIdTool")))
+    , m_useTestBeamMode(pset.get<bool>("ShouldUseTestBeamMode", false))
+    , m_targetKey(m_useTestBeamMode ? "IsTestBeam" : "IsNeutrino")
+    , m_scoreKey(m_useTestBeamMode ? "TestBeamScore" : "NuScore")
   {
     produces<std::vector<recob::PFParticle>>();
     produces<std::vector<recob::SpacePoint>>();
     produces<std::vector<recob::Cluster>>();
     produces<std::vector<recob::Vertex>>();
+    produces<std::vector<recob::Slice>>();
     produces<std::vector<recob::Track>>();
     produces<std::vector<recob::Shower>>();
     produces<std::vector<recob::PCAxis>>();
@@ -159,15 +176,17 @@ namespace lar_pandora {
     produces<art::Assns<recob::PFParticle, recob::SpacePoint>>();
     produces<art::Assns<recob::PFParticle, recob::Cluster>>();
     produces<art::Assns<recob::PFParticle, recob::Vertex>>();
+    produces<art::Assns<recob::PFParticle, recob::Slice>>();
     produces<art::Assns<recob::PFParticle, recob::Track>>();
     produces<art::Assns<recob::PFParticle, recob::Shower>>();
     produces<art::Assns<recob::PFParticle, recob::PCAxis>>();
     produces<art::Assns<recob::PFParticle, larpandoraobj::PFParticleMetadata>>();
-    produces<art::Assns<recob::Track, recob::Hit>>();
+    produces<art::Assns<recob::Track, recob::Hit, recob::TrackHitMeta>>();
     produces<art::Assns<recob::Shower, recob::Hit>>();
     produces<art::Assns<recob::Shower, recob::PCAxis>>();
     produces<art::Assns<recob::SpacePoint, recob::Hit>>();
     produces<art::Assns<recob::Cluster, recob::Hit>>();
+    produces<art::Assns<recob::Slice, recob::Hit>>();
 
     if (m_shouldProduceT0s) {
       produces<std::vector<anab::T0>>();
@@ -192,7 +211,7 @@ namespace lar_pandora {
     SliceVector slices;
     this->CollectSlices(particles, particlesToMetadata, particleMap, slices);
 
-    m_neutrinoIdTool->ClassifySlices(slices, evt);
+    m_sliceIdTool->ClassifySlices(slices, evt);
 
     PFParticleVector consolidatedParticles;
     this->CollectConsolidatedParticles(particles, clearCosmics, slices, consolidatedParticles);
@@ -285,9 +304,10 @@ namespace lar_pandora {
     const PFParticleMap& particleMap,
     SliceVector& slices) const
   {
-    std::map<unsigned int, float> nuScores;
+    std::map<unsigned int, float> targetScores;
     std::map<unsigned int, PFParticleVector> crHypotheses;
-    std::map<unsigned int, PFParticleVector> nuHypotheses;
+    std::map<unsigned int, PFParticleVector> targetHypotheses;
+    std::vector<unsigned int> usedSliceIds;
 
     // Collect the slice information
     for (const auto& part : allParticles) {
@@ -309,41 +329,51 @@ namespace lar_pandora {
 
       const unsigned int sliceId(static_cast<unsigned int>(
         std::round(this->GetMetadataValue(parentIt->second, "SliceIndex"))));
-      const float nuScore(this->GetMetadataValue(parentIt->second, "NuScore"));
-      // ATTN all PFParticles in the same slice will have the same nuScore
-      nuScores[sliceId] = nuScore;
+      const float targetScore(this->GetMetadataValue(parentIt->second, m_scoreKey));
 
-      if (LArPandoraHelper::IsNeutrino(parentIt->first)) { nuHypotheses[sliceId].push_back(part); }
+      // Keep track of the slice IDs we have used, and their corresponding score
+      if (std::find(usedSliceIds.begin(), usedSliceIds.end(), sliceId) == usedSliceIds.end()) {
+        usedSliceIds.push_back(sliceId);
+
+        // ATTN all PFParticles in the same slice will have the same targetScore
+        targetScores[sliceId] = targetScore;
+      }
+
+      if (this->IsTarget(parentIt->second)) { targetHypotheses[sliceId].push_back(part); }
       else {
         crHypotheses[sliceId].push_back(part);
       }
     }
+
+    // Sort the slice IDs to ensure reproducibility
+    std::sort(usedSliceIds.begin(), usedSliceIds.end());
 
     // ATTN: we need to ensure that for each slice there is a cosmic and neutrino hypothesis, even if the pass created no PFOs
     // in such a case we add an empty vector of pfparticles
     const PFParticleVector emptyPFParticleVector;
 
     // Produce the slices
-    // ATTN slice indices are enumerated from 1
-    for (unsigned int sliceId = 1; sliceId <= nuScores.size(); ++sliceId) {
-      // Get the neutrino score
-      const auto nuScoresIter(nuScores.find(sliceId));
-      if (nuScoresIter == nuScores.end())
+    for (const unsigned int sliceId : usedSliceIds) {
+      // Get the target score
+      const auto targetScoresIter(targetScores.find(sliceId));
+      if (targetScoresIter == targetScores.end())
         throw cet::exception("LArPandoraExternalEventBuilding")
-          << "Scrambled slice information - can't find nuScore with id = " << sliceId << std::endl;
+          << "Scrambled slice information - can't find target score with id = " << sliceId
+          << std::endl;
 
-      PFParticleVector nuPFParticleVector, crPFParticleVector;
-      // Get the neutrino hypothesis
-      const auto nuHypothesisIter(nuHypotheses.find(sliceId));
-      nuPFParticleVector = ((nuHypothesisIter == nuHypotheses.end()) ? emptyPFParticleVector :
-                                                                       nuHypothesisIter->second);
+      PFParticleVector targetPFParticleVector, crPFParticleVector;
+
+      // Get the target hypothesis
+      const auto targetHypothesisIter(targetHypotheses.find(sliceId));
+      targetPFParticleVector =
+        ((targetHypothesisIter == targetHypotheses.end()) ? emptyPFParticleVector :
+                                                            targetHypothesisIter->second);
 
       // Get the cosmic hypothesis
       const auto crHypothesisIter(crHypotheses.find(sliceId));
       crPFParticleVector = ((crHypothesisIter == crHypotheses.end()) ? emptyPFParticleVector :
                                                                        crHypothesisIter->second);
-
-      slices.emplace_back(nuScoresIter->second, nuPFParticleVector, crPFParticleVector);
+      slices.emplace_back(targetScoresIter->second, targetPFParticleVector, crPFParticleVector);
     }
   }
 
@@ -375,9 +405,8 @@ namespace lar_pandora {
     collectedParticles.insert(collectedParticles.end(), clearCosmics.begin(), clearCosmics.end());
 
     for (const auto& slice : slices) {
-      const PFParticleVector& particles(slice.IsTaggedAsNeutrino() ?
-                                          slice.GetNeutrinoHypothesis() :
-                                          slice.GetCosmicRayHypothesis());
+      const PFParticleVector& particles(slice.IsTaggedAsTarget() ? slice.GetTargetHypothesis() :
+                                                                   slice.GetCosmicRayHypothesis());
       collectedParticles.insert(collectedParticles.end(), particles.begin(), particles.end());
     }
 
@@ -387,6 +416,19 @@ namespace lar_pandora {
       if (std::find(collectedParticles.begin(), collectedParticles.end(), part) !=
           collectedParticles.end())
         consolidatedParticles.push_back(part);
+    }
+  }
+
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  bool LArPandoraExternalEventBuilding::IsTarget(
+    const art::Ptr<larpandoraobj::PFParticleMetadata>& metadata) const
+  {
+    try {
+      return static_cast<bool>(std::round(this->GetMetadataValue(metadata, m_targetKey)));
+    }
+    catch (const cet::exception&) {
+      return false;
     }
   }
 

@@ -7,12 +7,15 @@
 #ifndef LAR_PANDORA_HELPER_H
 #define LAR_PANDORA_HELPER_H
 
-#include "art/Framework/Principal/Event.h"
+namespace art {
+  class Event;
+}
 
-#include "lardataobj/Simulation/SimChannel.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include <map>
 #include <set>
+#include <unordered_set>
 #include <vector>
 
 namespace anab {
@@ -39,12 +42,11 @@ namespace recob {
 namespace larpandoraobj {
   class PFParticleMetadata;
 }
-namespace sim {
-  class SimChannel;
-  struct TrackIDE;
-}
+
+#include "lardataobj/Simulation/SimChannel.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
+
 namespace simb {
-  class MCParticle;
   class MCTruth;
 }
 

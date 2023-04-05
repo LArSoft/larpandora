@@ -10,6 +10,8 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
@@ -81,7 +83,7 @@ namespace ShowerRecoTools {
     }
 
     //Get the start poistion
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputTag, ShowerStartPosition);
 
     //Get the initial track hits.
@@ -100,26 +102,21 @@ namespace ShowerRecoTools {
       auto flags = InitialTrack.FlagsAtPoint(traj);
       if (flags.isSet(recob::TrajectoryPointFlagTraits::NoPoint)) { continue; }
 
-      geo::Point_t TrajPositionPoint = InitialTrack.LocationAtPoint(traj);
-      TVector3 TrajPosition = {TrajPositionPoint.X(), TrajPositionPoint.Y(), TrajPositionPoint.Z()};
-
-      geo::Point_t TrajPositionStartPoint = InitialTrack.LocationAtPoint(0);
-      TVector3 TrajPositionStart = {
-        TrajPositionStartPoint.X(), TrajPositionStartPoint.Y(), TrajPositionStartPoint.Z()};
+      geo::Point_t TrajPosition = InitialTrack.LocationAtPoint(traj);
+      geo::Point_t TrajPositionStart = InitialTrack.LocationAtPoint(0);
 
       //Ignore values with 0 mag from the start position
-      if ((TrajPosition - TrajPositionStart).Mag() == 0) { continue; }
-      if ((TrajPosition - ShowerStartPosition).Mag() == 0) { continue; }
+      if ((TrajPosition - TrajPositionStart).R() == 0) { continue; }
+      if ((TrajPosition - ShowerStartPosition).R() == 0) { continue; }
 
       float MinDist = 9999;
       unsigned int index = 999;
       for (unsigned int sp = 0; sp < intitaltrack_sp.size(); ++sp) {
         //Find the spacepoint closest to the trajectory point.
         art::Ptr<recob::SpacePoint> spacepoint = intitaltrack_sp[sp];
-        TVector3 pos =
-          IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(spacepoint) - TrajPosition;
-        if (pos.Mag() < MinDist && pos.Mag() < fMaxDist) {
-          MinDist = pos.Mag();
+        auto const dist = (spacepoint->position() - TrajPosition).R();
+        if (dist < MinDist && dist < fMaxDist) {
+          MinDist = dist;
           index = sp;
         }
       }

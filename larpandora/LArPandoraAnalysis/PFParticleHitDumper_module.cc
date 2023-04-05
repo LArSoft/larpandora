@@ -720,23 +720,13 @@ namespace lar_pandora {
     // define UVW as closest distance from (0,0) to wire axis
     art::ServiceHandle<geo::Geometry const> theGeometry;
 
-    double xyzStart[3];
-    theGeometry->Cryostat(wireID.Cryostat)
-      .TPC(wireID.TPC)
-      .Plane(wireID.Plane)
-      .Wire(wireID.Wire)
-      .GetStart(xyzStart);
-    const double ay(xyzStart[1]);
-    const double az(xyzStart[2]);
+    auto const xyzStart = theGeometry->Wire(wireID).GetStart();
+    const double ay(xyzStart.Y());
+    const double az(xyzStart.Z());
 
-    double xyzEnd[3];
-    theGeometry->Cryostat(wireID.Cryostat)
-      .TPC(wireID.TPC)
-      .Plane(wireID.Plane)
-      .Wire(wireID.Wire)
-      .GetEnd(xyzEnd);
-    const double by(xyzEnd[1]);
-    const double bz(xyzEnd[2]);
+    auto const xyzEnd = theGeometry->Wire(wireID).GetEnd();
+    const double by(xyzEnd.Y());
+    const double bz(xyzEnd.Z());
 
     const double ny(by - ay);
     const double nz(bz - az);
@@ -758,7 +748,7 @@ namespace lar_pandora {
   {
     // TODO: Check that this stills works in DUNE
     art::ServiceHandle<geo::Geometry const> theGeometry;
-    const double m_theta(theGeometry->WireAngleToVertical(geo::kU, tpc, cstat));
+    const double m_theta(theGeometry->WireAngleToVertical(geo::kU, geo::TPCID{cstat, tpc}));
     return z * std::sin(m_theta) - y * std::cos(m_theta);
   }
 
@@ -771,7 +761,7 @@ namespace lar_pandora {
   {
     // TODO; Check that this still works in DUNE
     art::ServiceHandle<geo::Geometry const> theGeometry;
-    const double m_theta(theGeometry->WireAngleToVertical(geo::kV, tpc, cstat));
+    const double m_theta(theGeometry->WireAngleToVertical(geo::kV, geo::TPCID{cstat, tpc}));
     return z * std::sin(m_theta) - y * std::cos(m_theta);
   }
 

@@ -11,7 +11,12 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/RecoBase/Cluster.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
 namespace ShowerRecoTools {
@@ -98,10 +103,10 @@ namespace ShowerRecoTools {
       return 1;
     }
 
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition{-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, ShowerStartPosition);
 
-    TVector3 ShowerDirection = {-999, -999, -999};
+    geo::Vector_t ShowerDirection = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerDirectionInputLabel, ShowerDirection);
 
     // Get the assocated pfParicle vertex PFParticles

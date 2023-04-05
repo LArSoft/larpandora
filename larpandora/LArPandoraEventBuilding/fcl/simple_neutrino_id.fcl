@@ -1,0 +1,13 @@
+#include "external_event_building.fcl"
+
+BEGIN_PROLOG
+
+simple_neutrino_id_tool :
+{
+    tool_type: "SimpleNeutrinoId"
+}
+
+pandora_simple_neutrino_event_building: @local::pandora_event_building
+pandora_simple_neutrino_event_building.SliceIdTool: @local::simple_neutrino_id_tool
+
+END_PROLOG

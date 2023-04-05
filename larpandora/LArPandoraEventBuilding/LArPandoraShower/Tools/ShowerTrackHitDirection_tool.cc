@@ -12,6 +12,10 @@
 //LArSoft Includes
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/Track.h"
+
 namespace ShowerRecoTools {
 
   class ShowerTrackHitDirection : IShowerTool {
@@ -71,7 +75,7 @@ namespace ShowerRecoTools {
     }
 
     //Get the start poistion
-    TVector3 StartPosition = {-999, -999, -99};
+    geo::Point_t StartPosition = {-999, -999, -99};
     if (fUsePandoraVertex) {
       ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, StartPosition);
     }
@@ -112,8 +116,8 @@ namespace ShowerRecoTools {
         intitaltrack_sp.push_back(sp);
 
         //Get the direction relative to the start positon
-        TVector3 pos = IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(sp) - StartPosition;
-        if (pos.Mag() == 0) { continue; }
+        auto const pos = sp->position() - StartPosition;
+        if (pos.R() == 0) { continue; }
 
         sumX = pos.X();
         sumX2 += pos.X() * pos.X();
@@ -125,8 +129,7 @@ namespace ShowerRecoTools {
     }
 
     float NumSps = intitaltrack_sp.size();
-    TVector3 Mean = {sumX / NumSps, sumY / NumSps, sumZ / NumSps};
-    Mean = Mean.Unit();
+    auto const Mean = geo::Vector_t{sumX / NumSps, sumY / NumSps, sumZ / NumSps}.Unit();
 
     float RMSX = 999;
     float RMSY = 999;
@@ -142,15 +145,14 @@ namespace ShowerRecoTools {
     }
 
     //Loop over the spacepoints and remove ones the relative direction is not within one sigma.
-    TVector3 Direction_Mean = {0, 0, 0};
+    geo::Vector_t Direction_Mean{0, 0, 0};
     int N = 0;
     for (auto const sp : intitaltrack_sp) {
-      TVector3 Direction =
-        IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(sp) - StartPosition;
+      auto const Direction = sp->position() - StartPosition;
       if ((std::abs((Direction - Mean).X()) < 1 * RMSX) &&
           (std::abs((Direction - Mean).Y()) < 1 * RMSY) &&
           (std::abs((Direction - Mean).Z()) < 1 * RMSZ)) {
-        if (Direction.Mag() == 0) { continue; }
+        if (Direction.R() == 0) { continue; }
         ++N;
         Direction_Mean += Direction;
       }
@@ -158,8 +160,8 @@ namespace ShowerRecoTools {
 
     if (N > 0) {
       //Take the mean value
-      TVector3 Direction = Direction_Mean.Unit();
-      ShowerEleHolder.SetElement(Direction, fShowerDirectionOutputLabel);
+      Direction_Mean = Direction_Mean.Unit();
+      ShowerEleHolder.SetElement(Direction_Mean, fShowerDirectionOutputLabel);
     }
     else {
       if (fVerbose)

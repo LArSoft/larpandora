@@ -4,6 +4,8 @@
  *  @brief  module for lar pandora track creation
  */
 
+#include "larpandoracontent/LArObjects/LArPfoObjects.h"
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -14,8 +16,6 @@
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/TrackHitMeta.h"
-
-#include "larpandoracontent/LArObjects/LArPfoObjects.h"
 
 #include <memory>
 
@@ -76,6 +76,8 @@ namespace lar_pandora {
 
 #include "larpandoracontent/LArHelpers/LArPfoHelper.h"
 
+#include "larpandora/LArPandoraInterface/Detectors/GetDetectorType.h"
+#include "larpandora/LArPandoraInterface/Detectors/LArPandoraDetectorType.h"
 #include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 
 #include <iostream>
@@ -111,51 +113,9 @@ namespace lar_pandora {
     std::unique_ptr<art::Assns<recob::Track, recob::Hit, recob::TrackHitMeta>>
       outputTracksToHitsWithMeta(new art::Assns<recob::Track, recob::Hit, recob::TrackHitMeta>);
 
+    LArPandoraDetectorType* detType(detector_functions::GetDetectorType());
     // 'wirePitchW` is here used only to provide length scale for binning hits and performing sliding/local linear fits.
-    // Fits should be robust against the precise choice, provided length scale is comparable to the granularity of the images.
-    art::ServiceHandle<geo::Geometry const> theGeometry;
-    const unsigned int nWirePlanes(theGeometry->MaxPlanes());
-
-    if (nWirePlanes > 3)
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraTrackCreation::produce --- More than three wire planes present ";
-
-    if ((0 == theGeometry->Ncryostats()) || (0 == theGeometry->NTPC(0)))
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraTrackCreation::produce --- unable to access first tpc in first cryostat ";
-
-    std::unordered_set<geo::_plane_proj> planeSet;
-    for (unsigned int iPlane = 0; iPlane < nWirePlanes; ++iPlane)
-      (void)planeSet.insert(theGeometry->TPC(0, 0).Plane(iPlane).View());
-
-    // ATTN: Expectations here are that the input geometry corresponds to either a single or dual phase LArTPC.  For single phase we expect
-    // three views, U, V and either W or Y, for dual phase we expect two views, W and Y.
-    const bool isDualPhase(theGeometry->MaxPlanes() == 2);
-
-    if (nWirePlanes != planeSet.size())
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraGeometry::LoadGeometry --- geometry description for wire plane(s) missing ";
-
-    if (isDualPhase && (!planeSet.count(geo::kW) || !planeSet.count(geo::kY)))
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraGeometry::LoadGeometry --- dual phase scenario; expect to find w and y "
-           "views ";
-
-    if (!isDualPhase && (!planeSet.count(geo::kU) || !planeSet.count(geo::kV) ||
-                         (planeSet.count(geo::kW) && planeSet.count(geo::kY))))
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraGeometry::LoadGeometry --- single phase scenatio; expect to find u and v "
-           "views; if there is one further view, it must be w or y ";
-
-    const bool useYPlane((nWirePlanes > 2) && planeSet.count(geo::kY));
-
-    // ATTN: In the dual phase mode, map the wire planes as follows W->U and Y->V.  This mapping was chosen so that the dual phase wire
-    // planes, which are inherently induction only, are mapped to induction planes in the single phase geometry.
-    const float wirePitchU(theGeometry->WirePitch((isDualPhase ? geo::kW : geo::kU)));
-    const float wirePitchV(theGeometry->WirePitch((isDualPhase ? geo::kY : geo::kV)));
-    const float wirePitchW((nWirePlanes < 3) ? 0.5f * (wirePitchU + wirePitchV) :
-                                               (useYPlane) ? theGeometry->WirePitch(geo::kY) :
-                                                             theGeometry->WirePitch(geo::kW));
+    const float wirePitchW(detType->WirePitchW());
 
     int trackCounter(0);
     const art::PtrMaker<recob::Track> makeTrackPtr(evt);

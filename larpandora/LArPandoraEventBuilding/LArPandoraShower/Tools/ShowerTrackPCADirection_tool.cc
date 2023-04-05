@@ -10,6 +10,11 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
 //Root Includes
@@ -28,11 +33,11 @@ namespace ShowerRecoTools {
                          reco::shower::ShowerElementHolder& ShowerEleHolder) override;
 
   private:
-    TVector3 ShowerPCAVector(const detinfo::DetectorClocksData& clockData,
-                             const detinfo::DetectorPropertiesData& detProp,
-                             std::vector<art::Ptr<recob::SpacePoint>>& spacePoints_pfp,
-                             const art::FindManyP<recob::Hit>& fmh,
-                             TVector3& ShowerCentre);
+    geo::Vector_t ShowerPCAVector(const detinfo::DetectorClocksData& clockData,
+                                  const detinfo::DetectorPropertiesData& detProp,
+                                  std::vector<art::Ptr<recob::SpacePoint>>& spacePoints_pfp,
+                                  const art::FindManyP<recob::Hit>& fmh,
+                                  geo::Point_t& ShowerCentre);
 
     //fcl
     art::InputTag fPFParticleLabel;
@@ -97,41 +102,36 @@ namespace ShowerRecoTools {
       art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(Event, clockData);
 
     //Find the PCA vector
-    TVector3 trackCentre;
-    TVector3 Eigenvector = ShowerPCAVector(clockData, detProp, trackSpacePoints, fmh, trackCentre);
+    geo::Point_t trackCentre;
+    auto Eigenvector = ShowerPCAVector(clockData, detProp, trackSpacePoints, fmh, trackCentre);
 
     //Get the General direction as the vector between the start position and the centre
-    TVector3 StartPositionVec = {-999, -999, -999};
+    geo::Point_t StartPositionVec = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, StartPositionVec);
-    TVector3 GeneralDir = (trackCentre - StartPositionVec).Unit();
+    auto const GeneralDir = (trackCentre - StartPositionVec).Unit();
 
     //Dot product
     double DotProduct = Eigenvector.Dot(GeneralDir);
 
     //If the dotproduct is negative the Direction needs Flipping
-    if (DotProduct < 0) {
-      Eigenvector[0] = -Eigenvector[0];
-      Eigenvector[1] = -Eigenvector[1];
-      Eigenvector[2] = -Eigenvector[2];
-    }
+    if (DotProduct < 0) { Eigenvector *= -1.; }
 
-    TVector3 EigenvectorErr = {-999, -999, -999};
-
+    geo::Vector_t EigenvectorErr = {-999, -999, -999};
     ShowerEleHolder.SetElement(Eigenvector, EigenvectorErr, fShowerDirectionOutputLabel);
 
     return 0;
   }
 
   //Function to calculate the shower direction using a charge weight 3D PCA calculation.
-  TVector3 ShowerTrackPCADirection::ShowerPCAVector(const detinfo::DetectorClocksData& clockData,
-                                                    const detinfo::DetectorPropertiesData& detProp,
-                                                    std::vector<art::Ptr<recob::SpacePoint>>& sps,
-                                                    const art::FindManyP<recob::Hit>& fmh,
-                                                    TVector3& ShowerCentre)
+  geo::Vector_t ShowerTrackPCADirection::ShowerPCAVector(
+    const detinfo::DetectorClocksData& clockData,
+    const detinfo::DetectorPropertiesData& detProp,
+    std::vector<art::Ptr<recob::SpacePoint>>& sps,
+    const art::FindManyP<recob::Hit>& fmh,
+    geo::Point_t& ShowerCentre)
   {
-
     //Initialise the the PCA.
-    TPrincipal* pca = new TPrincipal(3, "");
+    TPrincipal pca(3, "");
 
     float TotalCharge = 0;
 
@@ -142,12 +142,10 @@ namespace ShowerRecoTools {
     //Normalise the spacepoints, charge weight and add to the PCA.
     for (auto& sp : sps) {
 
-      TVector3 sp_position = IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(sp);
-
       float wht = 1;
 
       //Normalise the spacepoint position.
-      sp_position = sp_position - ShowerCentre;
+      auto const sp_position = sp->position() - ShowerCentre;
 
       if (fChargeWeighted) {
 
@@ -170,20 +168,16 @@ namespace ShowerRecoTools {
       sp_coord[2] = sp_position.Z() * wht;
 
       //Add to the PCA
-      pca->AddRow(sp_coord);
+      pca.AddRow(sp_coord);
     }
 
     //Evaluate the PCA
-    pca->MakePrincipals();
+    pca.MakePrincipals();
 
     //Get the Eigenvectors.
-    const TMatrixD* Eigenvectors = pca->GetEigenVectors();
+    const TMatrixD* Eigenvectors = pca.GetEigenVectors();
 
-    TVector3 Eigenvector = {(*Eigenvectors)[0][0], (*Eigenvectors)[1][0], (*Eigenvectors)[2][0]};
-
-    delete pca;
-
-    return Eigenvector;
+    return {(*Eigenvectors)[0][0], (*Eigenvectors)[1][0], (*Eigenvectors)[2][0]};
   }
 }
 

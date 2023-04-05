@@ -9,7 +9,10 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/RecoBase/Cluster.h"
+#include "lardataobj/RecoBase/PFParticle.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Algs/LArPandoraShowerCheatingAlg.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
@@ -122,10 +125,10 @@ namespace ShowerRecoTools {
       return 1;
     }
 
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputTag, ShowerStartPosition);
 
-    TVector3 ShowerDirection = {-999, -999, -999};
+    geo::Vector_t ShowerDirection = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerDirectionInputTag, ShowerDirection);
 
     auto const hitHandle = Event.getValidHandle<std::vector<recob::Hit>>(fHitModuleLabel);

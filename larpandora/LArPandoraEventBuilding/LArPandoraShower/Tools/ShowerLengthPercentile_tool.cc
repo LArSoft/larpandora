@@ -10,6 +10,8 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
 namespace ShowerRecoTools {
@@ -58,7 +60,7 @@ namespace ShowerRecoTools {
       return 1;
     }
     //Only consider hits in the same tpcs as the vertex.
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, ShowerStartPosition);
 
     // Get the assocated pfParicle Handle
@@ -82,7 +84,7 @@ namespace ShowerRecoTools {
       return 1;
     }
 
-    TVector3 ShowerDirection = {-999, -999, -999};
+    geo::Vector_t ShowerDirection = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerDirectionInputLabel, ShowerDirection);
 
     //Order the spacepoints

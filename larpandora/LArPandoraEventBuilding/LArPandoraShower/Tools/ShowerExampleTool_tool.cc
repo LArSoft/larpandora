@@ -71,37 +71,30 @@ namespace ShowerRecoTools {
     //Remember the module goes through the tools and if you want to (fcl param) it will loop over them twice. You can check to see if a element has been set with a specific name:
     bool shower_direction_set = ShowerEleHolder.CheckElement("ShowerDirection");
 
-    TVector3 ShowerDirection = {-999, -999, -999};
+    geo::Vector_t ShowerDirection = {-999, -999, -999};
 
     //Then you can go and get that element if you want to use it and fill it in for you.
     if (shower_direction_set) { ShowerEleHolder.GetElement("ShowerDirection", ShowerDirection); }
 
     //Do some crazy physics - Some legacy code in here for ease.
-    art::Ptr<recob::Vertex> proposed_vertex = vertices[0];
-    double xyz[3] = {-999, -999, -999};
-    proposed_vertex->XYZ(xyz);
+    recob::Vertex const& proposed_vertex = *vertices[0];
+    auto pos = proposed_vertex.position();
 
-    if (ShowerDirection.X() < 0) {
-      xyz[0] = -xyz[0];
-      xyz[1] = -xyz[1];
-      xyz[2] = -xyz[2];
-    }
-    recob::Vertex new_vertex = recob::Vertex(xyz);
-    TVector3 recobshower_vertex = {xyz[0], xyz[1], xyz[2]};
-    TVector3 recobshower_err = {xyz[0] * 0.1, xyz[1] * 0.1, xyz[2] * 0.1};
+    if (ShowerDirection.X() < 0) { pos *= -1.; }
+    recob::Vertex new_vertex{pos, {}, util::kBogusD, util::kBogusI};
+    geo::Point_t recobshower_err = pos * 0.1;
     //You can set elements of the recob::shower just choose the right name (you can acess them later). You can give the property an error anf this must be done the for standard recob::shower properties; The standard is to access the name via a fcl file.
-    ShowerEleHolder.SetElement(recobshower_vertex, recobshower_err, "ShowerStartPosition");
+    ShowerEleHolder.SetElement(pos, recobshower_err, "ShowerStartPosition");
 
     //You can also set the same element with a different name so that you can compare downstream two tools.
     //The standard is to actually define the name in fcl.
-    ShowerEleHolder.SetElement(
-      recobshower_vertex, recobshower_err, "ShowerExampleTool_ShowerStartPosition");
+    ShowerEleHolder.SetElement(pos, recobshower_err, "ShowerExampleTool_ShowerStartPosition");
 
     //Or you can set one of the save elements
     ShowerEleHolder.SetElement(new_vertex, "myvertex");
 
     //Or a new unsave one.
-    std::vector<double> xyz_vec = {xyz[0], xyz[1], xyz[2]};
+    std::vector<double> xyz_vec = {pos.X(), pos.Y(), pos.Z()};
     ShowerEleHolder.SetElement(xyz_vec, "xyz");
 
     //If you want to check if your element was actually made before the shower is made you can set a bool. If partial showers is turned off then the shower will not be made if this element is not filled. Properties i.e. elements with errors i.e. ShowerStartPosition  will not be checked. There is no way to store properties in the Event, only products are stored. You can make your own class which holds the error. The defualt is not to check the element. The recob::shower properties are checked however.

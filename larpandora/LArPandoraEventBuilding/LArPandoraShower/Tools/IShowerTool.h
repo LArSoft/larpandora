@@ -9,17 +9,22 @@
 #ifndef IShowerTool_H
 #define IShowerTool_H
 
-//Framwork Includes
-#include "art/Framework/Core/ProducesCollector.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Persistency/Common/PtrMaker.h"
-#include "canvas/Persistency/Common/Ptr.h"
-#include "fhiclcpp/ParameterSet.h"
-
 //LArSoft Includes
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Algs/LArPandoraShowerAlg.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Algs/ShowerElementHolder.hh"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Algs/ShowerProducedPtrsHolder.hh"
+
+namespace recob {
+  class PFParticle;
+}
+
+//Framwork Includes
+#include "art/Framework/Core/ProducesCollector.h"
+namespace art {
+  class Event;
+}
+#include "canvas/Persistency/Common/Ptr.h"
+#include "fhiclcpp/ParameterSet.h"
 
 namespace ShowerRecoTools {
   class IShowerTool {

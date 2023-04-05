@@ -12,6 +12,13 @@
 //LArSoft Includes
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
+#include "lardataobj/RecoBase/Track.h"
+
+//ROOT
+#include "Math/VectorUtil.h"
+
+using ROOT::Math::VectorUtil::Angle;
+
 namespace ShowerRecoTools {
 
   class ShowerTrackColinearTrajPointDirection : IShowerTool {
@@ -86,7 +93,7 @@ namespace ShowerRecoTools {
 
     //Trajectory point which the direction is calcualted for.
     int trajpoint = 0;
-    geo::Vector_t Direction_vec;
+    geo::Vector_t Direction;
 
     if (fUsePositionInfo) {
       //Get the start position.
@@ -100,10 +107,7 @@ namespace ShowerRecoTools {
               << "Shower start position not set" << std::endl;
           return 1;
         }
-        TVector3 StartPosition_vec = {-999, -999, -999};
-        ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, StartPosition_vec);
-        StartPosition.SetCoordinates(
-          StartPosition_vec.X(), StartPosition_vec.Y(), StartPosition_vec.Z());
+        ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, StartPosition);
       }
       else {
         StartPosition = InitialTrack.Start();
@@ -155,48 +159,37 @@ namespace ShowerRecoTools {
         }
 
         //Get the directions.
-        geo::Vector_t TrajPosition_vec = InitialTrack.LocationAtPoint(traj) - StartPosition;
-        geo::Vector_t NextTrajPosition_vec;
-        geo::Vector_t NextNextTrajPosition_vec;
+        geo::Vector_t TrajPosition = InitialTrack.LocationAtPoint(traj) - StartPosition;
+        geo::Vector_t NextTrajPosition;
+        geo::Vector_t NextNextTrajPosition;
         if (fUseStartPos) {
-          NextTrajPosition_vec = InitialTrack.LocationAtPoint(nexttraj) - StartPosition;
-          NextNextTrajPosition_vec = InitialTrack.LocationAtPoint(nextnexttraj) - StartPosition;
+          NextTrajPosition = InitialTrack.LocationAtPoint(nexttraj) - StartPosition;
+          NextNextTrajPosition = InitialTrack.LocationAtPoint(nextnexttraj) - StartPosition;
         }
         else {
-          NextTrajPosition_vec =
+          NextTrajPosition =
             InitialTrack.LocationAtPoint(nexttraj) - InitialTrack.LocationAtPoint(traj);
-          NextNextTrajPosition_vec =
+          NextNextTrajPosition =
             InitialTrack.LocationAtPoint(nextnexttraj) - InitialTrack.LocationAtPoint(traj + 1);
         }
 
-        //Get the directions.
-        TVector3 TrajPosition = {TrajPosition_vec.X(), TrajPosition_vec.Y(), TrajPosition_vec.Z()};
-        TVector3 NextTrajPosition = {
-          NextTrajPosition_vec.X(), NextTrajPosition_vec.Y(), NextTrajPosition_vec.Z()};
-        TVector3 NextNextTrajPosition = {
-          NextNextTrajPosition_vec.X(), NextNextTrajPosition_vec.Y(), NextNextTrajPosition_vec.Z()};
-
         //Might still be bogus and we can't use the start point
-        if (TrajPosition.Mag() == 0) { continue; }
-        if (NextTrajPosition.Mag() == 0) { continue; }
-        if (NextNextTrajPosition.Mag() == 0) { continue; }
+        if (TrajPosition.R() == 0) { continue; }
+        if (NextTrajPosition.R() == 0) { continue; }
+        if (NextNextTrajPosition.R() == 0) { continue; }
 
         //Check to see if the angle between the directions is small enough.
-        if (TrajPosition.Angle(NextTrajPosition) < fAngleCut &&
-            TrajPosition.Angle(NextNextTrajPosition) < fAngleCut) {
+        if (Angle(TrajPosition, NextTrajPosition) < fAngleCut &&
+            Angle(TrajPosition, NextNextTrajPosition) < fAngleCut) {
           break;
         }
 
         //Move the start position onwords.
-        if (fAllowDynamicSliding) {
-          StartPosition = {InitialTrack.LocationAtPoint(traj).X(),
-                           InitialTrack.LocationAtPoint(traj).Y(),
-                           InitialTrack.LocationAtPoint(traj).Z()};
-        }
+        if (fAllowDynamicSliding) { StartPosition = InitialTrack.LocationAtPoint(traj); }
       }
 
       geo::Point_t TrajPosition = InitialTrack.LocationAtPoint(trajpoint);
-      Direction_vec = (TrajPosition - StartPosition).Unit();
+      Direction = (TrajPosition - StartPosition).Unit();
     }
     else {
       //Loop over the trajectory points and find two corresponding trajectory points where the angle between themselves (or themsleves and the start position) is less the fMinAngle.
@@ -213,7 +206,7 @@ namespace ShowerRecoTools {
 
         bool bail = false;
 
-        geo::Vector_t TrajDirection_vec;
+        geo::Vector_t TrajDirection;
 
         //Get the next non bogus trajectory points
         if (fUseStartPos) {
@@ -227,7 +220,7 @@ namespace ShowerRecoTools {
             ++prevtraj;
             prevflags = InitialTrack.FlagsAtPoint(prevtraj);
           }
-          TrajDirection_vec = InitialTrack.DirectionAtPoint(prevtraj);
+          TrajDirection = InitialTrack.DirectionAtPoint(prevtraj);
         }
         else if (fAllowDynamicSliding && traj != 0) {
           int prevtraj = traj - 1;
@@ -240,10 +233,10 @@ namespace ShowerRecoTools {
             --prevtraj;
             prevflags = InitialTrack.FlagsAtPoint(prevtraj);
           }
-          TrajDirection_vec = InitialTrack.DirectionAtPoint(prevtraj);
+          TrajDirection = InitialTrack.DirectionAtPoint(prevtraj);
         }
         else {
-          TrajDirection_vec = InitialTrack.DirectionAtPoint(traj);
+          TrajDirection = InitialTrack.DirectionAtPoint(traj);
         }
 
         //find the next non bogus traj point.
@@ -278,29 +271,21 @@ namespace ShowerRecoTools {
         }
 
         //Get the directions.
-        geo::Vector_t NextTrajDirection_vec = InitialTrack.DirectionAtPoint(nexttraj);
-        geo::Vector_t NextNextTrajDirection_vec = InitialTrack.DirectionAtPoint(nextnexttraj);
-
-        TVector3 TrajDirection = {
-          TrajDirection_vec.X(), TrajDirection_vec.Y(), TrajDirection_vec.Z()};
-        TVector3 NextTrajDirection = {
-          NextTrajDirection_vec.X(), NextTrajDirection_vec.Y(), NextTrajDirection_vec.Z()};
-        TVector3 NextNextTrajDirection = {NextNextTrajDirection_vec.X(),
-                                          NextNextTrajDirection_vec.Y(),
-                                          NextNextTrajDirection_vec.Z()};
+        geo::Vector_t NextTrajDirection = InitialTrack.DirectionAtPoint(nexttraj);
+        geo::Vector_t NextNextTrajDirection = InitialTrack.DirectionAtPoint(nextnexttraj);
 
         //Might still be bogus and we can't use the start point
-        if (TrajDirection.Mag() == 0) { continue; }
-        if (NextTrajDirection.Mag() == 0) { continue; }
-        if (NextNextTrajDirection.Mag() == 0) { continue; }
+        if (TrajDirection.R() == 0) { continue; }
+        if (NextTrajDirection.R() == 0) { continue; }
+        if (NextNextTrajDirection.R() == 0) { continue; }
 
         //See if the angle is small enough.
-        if (TrajDirection.Angle(NextTrajDirection) < fAngleCut &&
-            TrajDirection.Angle(NextNextTrajDirection) < fAngleCut) {
+        if (Angle(TrajDirection, NextTrajDirection) < fAngleCut &&
+            Angle(TrajDirection, NextNextTrajDirection) < fAngleCut) {
           break;
         }
       }
-      Direction_vec = InitialTrack.DirectionAtPoint(trajpoint).Unit();
+      Direction = InitialTrack.DirectionAtPoint(trajpoint).Unit();
     }
 
     if (trajpoint == (int)InitialTrack.NumberTrajectoryPoints() - 3) {
@@ -311,8 +296,7 @@ namespace ShowerRecoTools {
     }
 
     //Set the direction.
-    TVector3 Direction = {Direction_vec.X(), Direction_vec.Y(), Direction_vec.Z()};
-    TVector3 DirectionErr = {-999, -999, -999};
+    geo::Vector_t DirectionErr = {-999, -999, -999};
     ShowerEleHolder.SetElement(Direction, DirectionErr, fShowerDirectionOutputLabel);
     return 0;
   }

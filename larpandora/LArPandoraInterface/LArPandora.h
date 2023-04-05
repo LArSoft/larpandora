@@ -9,11 +9,9 @@
 #define LAR_PANDORA_H 1
 
 #include "larpandora/LArPandoraInterface/ILArPandora.h"
-#include "larpandora/LArPandoraInterface/LArPandoraGeometry.h"
 #include "larpandora/LArPandoraInterface/LArPandoraInput.h"
 #include "larpandora/LArPandoraInterface/LArPandoraOutput.h"
 
-#include <memory> // std::unique_ptr<>
 #include <string>
 
 namespace lar_pandora {

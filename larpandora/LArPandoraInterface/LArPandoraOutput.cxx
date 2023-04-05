@@ -4,6 +4,9 @@
  *  @brief  Helper functions for processing outputs from pandora
  *
  */
+#include "larpandora/LArPandoraInterface/LArPandoraOutput.h"
+
+#include "art/Framework/Principal/Event.h"
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -13,19 +16,10 @@
 #include "larreco/RecoAlg/ClusterParamsImportWrapper.h"
 #include "larreco/RecoAlg/ClusterRecoUtil/StandardClusterParamsAlg.h"
 
-#include "lardataobj/AnalysisBase/T0.h"
-#include "lardataobj/RecoBase/Hit.h"
-#include "lardataobj/RecoBase/PFParticle.h"
-#include "lardataobj/RecoBase/PFParticleMetadata.h"
-#include "lardataobj/RecoBase/Slice.h"
-#include "lardataobj/RecoBase/SpacePoint.h"
-#include "lardataobj/RecoBase/Vertex.h"
-
 #include "larcore/Geometry/Geometry.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-
-#include "Api/PandoraApi.h"
+#include "lardataobj/RecoBase/Hit.h"
 
 #include "Objects/CaloHit.h"
 #include "Objects/Cluster.h"
@@ -35,8 +29,6 @@
 #include "larpandoracontent/LArControlFlow/MultiPandoraApi.h"
 #include "larpandoracontent/LArHelpers/LArClusterHelper.h"
 #include "larpandoracontent/LArHelpers/LArPfoHelper.h"
-
-#include "larpandora/LArPandoraInterface/LArPandoraOutput.h"
 
 #include <algorithm>
 #include <iostream>

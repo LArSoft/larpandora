@@ -5,6 +5,8 @@
  *
  */
 
+#include "larpandora/LArPandoraInterface/LArPandora.h"
+
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 #include "cetlib/cpu_timer.h"
@@ -30,11 +32,6 @@
 
 #include "larpandoracontent/LArContent.h"
 #include "larpandoracontent/LArHelpers/LArPfoHelper.h"
-
-#include "larpandora/LArPandoraInterface/LArPandora.h"
-#include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
-#include "larpandora/LArPandoraInterface/LArPandoraInput.h"
-#include "larpandora/LArPandoraInterface/LArPandoraOutput.h"
 
 #include <iostream>
 #include <limits>
@@ -67,6 +64,7 @@ namespace lar_pandora {
   {
     m_inputSettings.m_useHitWidths = pset.get<bool>("UseHitWidths", true);
     m_inputSettings.m_useBirksCorrection = pset.get<bool>("UseBirksCorrection", false);
+    m_inputSettings.m_useActiveBoundingBox = pset.get<bool>("UseActiveBoundingBox", false);
     m_inputSettings.m_uidOffset = pset.get<int>("UidOffset", 100000000);
     m_inputSettings.m_dx_cm = pset.get<double>("DefaultHitWidth", 0.5);
     m_inputSettings.m_int_cm = pset.get<double>("InteractionLength", 84.);
@@ -132,7 +130,8 @@ namespace lar_pandora {
   void LArPandora::beginJob()
   {
     LArDriftVolumeList driftVolumeList;
-    LArPandoraGeometry::LoadGeometry(driftVolumeList, m_driftVolumeMap);
+    LArPandoraGeometry::LoadGeometry(
+      driftVolumeList, m_driftVolumeMap, m_inputSettings.m_useActiveBoundingBox);
 
     this->CreatePandoraInstances();
 
@@ -149,7 +148,7 @@ namespace lar_pandora {
     // If using global drift volume approach, pass details of gaps between daughter volumes to the pandora instance
     if (m_enableDetectorGaps) {
       LArDetectorGapList listOfGaps;
-      LArPandoraGeometry::LoadDetectorGaps(listOfGaps);
+      LArPandoraGeometry::LoadDetectorGaps(listOfGaps, m_inputSettings.m_useActiveBoundingBox);
       LArPandoraInput::CreatePandoraDetectorGaps(m_inputSettings, driftVolumeList, listOfGaps);
     }
 

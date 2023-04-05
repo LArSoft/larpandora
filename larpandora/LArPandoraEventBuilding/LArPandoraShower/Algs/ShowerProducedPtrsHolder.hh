@@ -11,9 +11,16 @@
 #ifndef ShowerProducedPtrsHolder_HH
 #define ShowerProducedPtrsHolder_HH
 
+#include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Algs/ShowerElementHolder.hh"
+
 //Framework includes
 #include "art/Framework/Principal/Event.h"
-#include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Algs/ShowerElementHolder.hh"
+#include "art/Persistency/Common/PtrMaker.h"
+#include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "cetlib_except/demangle.h"
+#include "cetlib_except/exception.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace reco::shower {
   class ShowerUniqueProduerPtrBase;
@@ -26,6 +33,13 @@ namespace reco::shower {
   class ShowerPtrMaker;
   class ShowerProducedPtrsHolder;
 }
+
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <string>
+#include <utility> // std::move()
+#include <vector>
 
 //Template to check if its an assn
 template <class N>

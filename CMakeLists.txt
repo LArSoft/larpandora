@@ -6,14 +6,10 @@
 #  buildtool [-I /install/path] -bt[i] -jN
 # ======================================================================
 
-cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
-project(larpandora VERSION 09.07.02.01 LANGUAGES CXX)
-
-# cetbuildtools contains our cmake modules
-find_package(cetbuildtools REQUIRED)
-
-list(APPEND CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules $ENV{ART_DIR}/Modules)
+find_package(cetmodules REQUIRED)
+project(larpandora VERSION 09.18.01 LANGUAGES CXX)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -24,61 +20,49 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
   EXTRA_FLAGS -pedantic -Wno-unused-local-typedefs
   )
 
-cet_report_compiler_flags()
+cet_report_compiler_flags(REPORT_THRESHOLD VERBOSE)
 
-# these are minimum required versions, not the actual product versions
-find_ups_product( eigen )
-find_ups_product( larcoreobj )
-find_ups_product( larcorealg )
-find_ups_product( larcore )
-find_ups_product( lardataobj )
-find_ups_product( lardataalg )
-find_ups_product( lardata )
-find_ups_product( larevt )
-find_ups_product( larsim )
-find_ups_product( larreco )
-find_ups_product( nug4)
-find_ups_product( art )
-find_ups_product(art_root_io)
-find_ups_product( pandora )
-find_ups_product( larpandoracontent )
-find_ups_product( postgresql )
-find_ups_product(messagefacility)
+find_package(art REQUIRED EXPORT)
+find_package(art_root_io REQUIRED EXPORT)
+find_package(canvas REQUIRED EXPORT)
+find_package(messagefacility REQUIRED EXPORT)
+find_package(fhiclcpp REQUIRED EXPORT)
+find_package(cetlib REQUIRED EXPORT)
+find_package(cetlib_except REQUIRED EXPORT)
+
+find_package(nusimdata REQUIRED EXPORT)
+
+find_package(larcore REQUIRED EXPORT)
+find_package(larcorealg REQUIRED EXPORT)
+find_package(larcoreobj REQUIRED EXPORT)
+find_package(lardata REQUIRED EXPORT)
+find_package(lardataalg REQUIRED EXPORT)
+find_package(lardataobj REQUIRED EXPORT)
+find_package(larevt REQUIRED EXPORT)
+find_package(larpandoracontent REQUIRED EXPORT) # Must precede Pandora*
+find_package(larreco REQUIRED EXPORT)
+find_package(larsim REQUIRED EXPORT)
+
+find_package(Eigen3 3.3 REQUIRED)
+find_package(PandoraSDK REQUIRED EXPORT)
+find_package(ROOT COMPONENTS Core Gpad Graf3d Hist Physics RIO Tree REQUIRED EXPORT)
+
+option(LARPANDORA_LIBTORCH "Flag for building with Pandora's LibTorch-aware algorithms" ON)
+if (LARPANDORA_LIBTORCH)
+  find_package(Torch REQUIRED EXPORT)
+  message(STATUS "Building WITH deep learning support")
+else()
+  message(STATUS "Building WITHOUT deep learning support")
+endif()
 
 # macros for dictionary and simple_plugin
-include(ArtDictionary)
-include(ArtMake)
+include(CetMake)
 include(BuildPlugins)
 
-cet_find_library( PANDORASDK NAMES PandoraSDK PATHS ENV PANDORA_LIB )
-cet_find_library( PANDORAMONITORING NAMES PandoraMonitoring PATHS ENV PANDORA_LIB )
-
-# find larpandoracontent headers if building at the same time
-#message(STATUS "larpandora: checking for MRB_SOURCE")
-set( mrb_source $ENV{MRB_SOURCE} )
-
-
-# This logic does not work with cetbuildtools 8
-##if( LARPANDORACONTENT_INC )
-  #message(STATUS "larpandora: found LARPANDORACONTENT_INC: $ENV{LARPANDORACONTENT_INC}")
-  # note that mrb v1_07_00 or later will define LARPANDORACONTENT_INC
-##  if( mrb_source )
-##    include_directories( ${LARPANDORACONTENT_INC} )
-##  endif()
-##else()
-##  if( mrb_source )
-##    include_directories( ${mrb_source}/larpandoracontent )
-##  else()
-##    message(FATAL_ERROR "LARPANDORACONTENT_INC is undefined, please setup larpandoracontent")
-##  endif()
-##endif()
+cet_cmake_module_directories(Modules BINARY)
 
 # source
 add_subdirectory(larpandora)
 
-# ups - table and config files
-add_subdirectory(ups)
-
 # packaging utility
-include(UseCPack)
-
+cet_cmake_config()

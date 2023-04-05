@@ -11,9 +11,15 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Shower.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
+#include "larpandora/LArPandoraInterface/Detectors/GetDetectorType.h"
+#include "larpandora/LArPandoraInterface/Detectors/LArPandoraDetectorType.h"
 #include "larpandoracontent/LArHelpers/LArPfoHelper.h"
 
 namespace ShowerRecoTools {
@@ -98,10 +104,10 @@ namespace ShowerRecoTools {
       return 1;
     }
 
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, ShowerStartPosition);
 
-    TVector3 ShowerDirection = {-999, -999, -999};
+    geo::Vector_t ShowerDirection = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerDirectionInputLabel, ShowerDirection);
 
     std::vector<art::Ptr<recob::SpacePoint>> spacepoints;
@@ -115,49 +121,10 @@ namespace ShowerRecoTools {
           << "Insufficient space points points to build track: " << spacepoints.size();
       return 1;
     }
-
-    const unsigned int nWirePlanes(fGeom->MaxPlanes());
-
-    if (nWirePlanes > 3)
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraTrackCreation::produce --- More than three wire planes present ";
-
-    if ((0 == fGeom->Ncryostats()) || (0 == fGeom->NTPC(0)))
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraTrackCreation::produce --- unable to access first tpc in first cryostat ";
-
-    std::unordered_set<geo::_plane_proj> planeSet;
-    for (unsigned int iPlane = 0; iPlane < nWirePlanes; ++iPlane)
-      (void)planeSet.insert(fGeom->TPC(0, 0).Plane(iPlane).View());
-
-    // ATTN: Expectations here are that the input geometry corresponds to either a single or dual phase LArTPC.  For single phase we expect
-    // three views, U, V and either W or Y, for dual phase we expect two views, W and Y.
-    const bool isDualPhase(fGeom->MaxPlanes() == 2);
-
-    if (nWirePlanes != planeSet.size())
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraGeometry::LoadGeometry --- geometry description for wire plane(s) missing ";
-
-    if (isDualPhase && (!planeSet.count(geo::kW) || !planeSet.count(geo::kY)))
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraGeometry::LoadGeometry --- dual phase scenario; expect to find w and y "
-           "views ";
-
-    if (!isDualPhase && (!planeSet.count(geo::kU) || !planeSet.count(geo::kV) ||
-                         (planeSet.count(geo::kW) && planeSet.count(geo::kY))))
-      throw cet::exception("LArPandoraTrackCreation")
-        << " LArPandoraGeometry::LoadGeometry --- single phase scenatio; expect to find u and v "
-           "views; if there is one further view, it must be w or y ";
-
-    const bool useYPlane((nWirePlanes > 2) && planeSet.count(geo::kY));
-
-    // ATTN: In the dual phase mode, map the wire planes as follows W->U and Y->V.  This mapping was chosen so that the dual phase wire
-    // planes, which are inherently induction only, are mapped to induction planes in the single phase geometry.
-    const float wirePitchU(fGeom->WirePitch((isDualPhase ? geo::kW : geo::kU)));
-    const float wirePitchV(fGeom->WirePitch((isDualPhase ? geo::kY : geo::kV)));
-    const float wirePitchW((nWirePlanes < 3) ?
-                             0.5f * (wirePitchU + wirePitchV) :
-                             (useYPlane) ? fGeom->WirePitch(geo::kY) : fGeom->WirePitch(geo::kW));
+    lar_pandora::LArPandoraDetectorType* detType(
+      lar_pandora::detector_functions::GetDetectorType());
+    // 'wirePitchW` is here used only to provide length scale for binning hits and performing sliding/local linear fits.
+    const float wirePitchW(detType->WirePitchW());
 
     const pandora::CartesianVector vertexPosition(
       ShowerStartPosition.X(), ShowerStartPosition.Y(), ShowerStartPosition.Z());
@@ -233,9 +200,7 @@ namespace ShowerRecoTools {
 
     ShowerEleHolder.SetElement(InitialTrack, fInitialTrackOutputLabel);
 
-    TVector3 Start = {InitialTrack.Start().X(), InitialTrack.Start().Y(), InitialTrack.Start().Z()};
-    TVector3 End = {InitialTrack.End().X(), InitialTrack.End().Y(), InitialTrack.End().Z()};
-    float tracklength = (Start - End).Mag();
+    float tracklength = (InitialTrack.Start() - InitialTrack.End()).R();
 
     ShowerEleHolder.SetElement(tracklength, fInitialTrackLengthOutputLabel);
 

@@ -10,22 +10,34 @@
 #include "art/Persistency/Common/PtrMaker.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
-#include "lardataobj/RecoBase/Cluster.h"
-#include "lardataobj/RecoBase/PFParticleMetadata.h"
+namespace recob {
+  class Cluster;
+  class PFParticleMetadata;
+}
 
-#include "larreco/RecoAlg/ClusterRecoUtil/ClusterParamsAlgBase.h"
+namespace cluster {
+  class ClusterParamsAlgBase;
+}
 
 #include "larpandora/LArPandoraInterface/ILArPandora.h"
 #include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 
-#include "Pandora/PandoraInternal.h"
+#include "lardataobj/AnalysisBase/T0.h"
+#include "lardataobj/RecoBase/Cluster.h"
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/PFParticleMetadata.h"
+#include "lardataobj/RecoBase/Slice.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/Vertex.h"
 
-namespace pandora {
-  class Pandora;
-}
+#include "Api/PandoraApi.h"
+
 namespace util {
   class GeometryUtilities;
 }
+
+#include <map>
+#include <vector>
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 

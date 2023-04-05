@@ -4,6 +4,9 @@
  *  @brief  Helper functions for extracting detector geometry for use in reconsruction
  */
 
+#include "larpandora/LArPandoraInterface/LArPandoraGeometry.h"
+
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "cetlib_except/exception.h"
 
 #include "larcore/Geometry/Geometry.h"
@@ -11,14 +14,16 @@
 #include "larcorealg/Geometry/TPCGeo.h"
 #include "larcorealg/Geometry/WireGeo.h"
 
-#include "larpandora/LArPandoraInterface/LArPandoraGeometry.h"
+#include "larpandora/LArPandoraInterface/Detectors/GetDetectorType.h"
+#include "larpandora/LArPandoraInterface/Detectors/LArPandoraDetectorType.h"
 
 #include <iomanip>
 #include <set>
 
 namespace lar_pandora {
 
-  void LArPandoraGeometry::LoadDetectorGaps(LArDetectorGapList& listOfGaps)
+  void LArPandoraGeometry::LoadDetectorGaps(LArDetectorGapList& listOfGaps,
+                                            const bool useActiveBoundingBox)
   {
     // Detector gaps can only be loaded once - throw an exception if the output lists are already filled
     if (!listOfGaps.empty())
@@ -27,11 +32,9 @@ namespace lar_pandora {
 
     // Loop over drift volumes and write out the dead regions at their boundaries
     LArDriftVolumeList driftVolumeList;
-    LArPandoraGeometry::LoadGeometry(driftVolumeList);
+    LArPandoraGeometry::LoadGeometry(driftVolumeList, useActiveBoundingBox);
 
-    // ATTN: Expectations here are that the input geometry corresponds to either a single or dual phase LArTPC.
-    art::ServiceHandle<geo::Geometry const> theGeometry;
-    const bool isDualPhase(theGeometry->MaxPlanes() == 2);
+    LArPandoraDetectorType* detType(detector_functions::GetDetectorType());
 
     for (LArDriftVolumeList::const_iterator iter1 = driftVolumeList.begin(),
                                             iterEnd1 = driftVolumeList.end();
@@ -60,10 +63,6 @@ namespace lar_pandora {
         const float gapY(deltaY - widthY);
         const float gapZ(deltaZ - widthZ);
 
-        if (!isDualPhase && (gapX < 0.f || gapX > maxDisplacement || deltaY > maxDisplacement ||
-                             deltaZ > maxDisplacement))
-          continue;
-
         const float X1((driftVolume1.GetCenterX() < driftVolume2.GetCenterX()) ?
                          (driftVolume1.GetCenterX() + 0.5f * driftVolume1.GetWidthX()) :
                          (driftVolume2.GetCenterX() + 0.5f * driftVolume2.GetWidthX()));
@@ -79,78 +78,29 @@ namespace lar_pandora {
         const float Z2(std::max((driftVolume1.GetCenterZ() + 0.5f * driftVolume1.GetWidthZ()),
                                 (driftVolume2.GetCenterZ() + 0.5f * driftVolume2.GetWidthZ())));
 
-        if (isDualPhase && (std::fabs(gapY) > maxDisplacement || std::fabs(gapZ) > maxDisplacement))
-          listOfGaps.emplace_back(
-            LArDetectorGap(X1, Y1 + widthY, Z1 + widthZ, X2, Y2 - widthY, Z2 - widthZ));
-
-        else if (!isDualPhase)
-          listOfGaps.emplace_back(LArDetectorGap(X1, Y1, Z1, X2, Y2, Z2));
-      }
-      if (isDualPhase) {
-        for (LArDaughterDriftVolumeList::const_iterator
-               iterDghtr1 = driftVolume1.GetTpcVolumeList().begin(),
-               iterDghtrEnd1 = driftVolume1.GetTpcVolumeList().end();
-             iterDghtr1 != iterDghtrEnd1;
-             ++iterDghtr1) {
-          const LArDaughterDriftVolume& tpcVolume1(*iterDghtr1);
-
-          for (LArDaughterDriftVolumeList::const_iterator
-                 iterDghtr2 = iterDghtr1,
-                 iterDghtrEnd2 = driftVolume1.GetTpcVolumeList().end();
-               iterDghtr2 != iterDghtrEnd2;
-               ++iterDghtr2) {
-            const LArDaughterDriftVolume& tpcVolume2(*iterDghtr2);
-
-            if (tpcVolume1.GetTpc() == tpcVolume2.GetTpc()) continue;
-
-            const float maxDisplacement(LArDetectorGap::GetMaxGapSize());
-
-            const float deltaY(std::fabs(tpcVolume1.GetCenterY() - tpcVolume2.GetCenterY()));
-            const float deltaZ(std::fabs(tpcVolume1.GetCenterZ() - tpcVolume2.GetCenterZ()));
-
-            const float widthY(0.5f * (tpcVolume1.GetWidthY() + tpcVolume2.GetWidthY()));
-            const float widthZ(0.5f * (tpcVolume1.GetWidthZ() + tpcVolume2.GetWidthZ()));
-
-            const float gapY(deltaY - widthY);
-            const float gapZ(deltaZ - widthZ);
-
-            const float X1((tpcVolume1.GetCenterX() < tpcVolume2.GetCenterX()) ?
-                             (tpcVolume1.GetCenterX() + 0.5f * tpcVolume1.GetWidthX()) :
-                             (tpcVolume2.GetCenterX() + 0.5f * tpcVolume2.GetWidthX()));
-            const float X2((tpcVolume1.GetCenterX() > tpcVolume2.GetCenterX()) ?
-                             (tpcVolume1.GetCenterX() - 0.5f * tpcVolume1.GetWidthX()) :
-                             (tpcVolume2.GetCenterX() - 0.5f * tpcVolume2.GetWidthX()));
-            const float Y1(std::min((tpcVolume1.GetCenterY() - 0.5f * tpcVolume1.GetWidthY()),
-                                    (tpcVolume2.GetCenterY() - 0.5f * tpcVolume2.GetWidthY())));
-            const float Y2(std::max((tpcVolume1.GetCenterY() + 0.5f * tpcVolume1.GetWidthY()),
-                                    (tpcVolume2.GetCenterY() + 0.5f * tpcVolume2.GetWidthY())));
-            const float Z1(std::min((tpcVolume1.GetCenterZ() - 0.5f * tpcVolume1.GetWidthZ()),
-                                    (tpcVolume2.GetCenterZ() - 0.5f * tpcVolume2.GetWidthZ())));
-            const float Z2(std::max((tpcVolume1.GetCenterZ() + 0.5f * tpcVolume1.GetWidthZ()),
-                                    (tpcVolume2.GetCenterZ() + 0.5f * tpcVolume2.GetWidthZ())));
-
-            if (std::fabs(gapY) > maxDisplacement || std::fabs(gapZ) > maxDisplacement)
-              listOfGaps.emplace_back(
-                LArDetectorGap(X1, Y1 + widthY, Z1 + widthZ, X2, Y2 - widthY, Z2 - widthZ));
-          }
+        geo::Vector_t gaps(gapX, gapY, gapZ), deltas(deltaX, deltaY, deltaZ);
+        if (detType->CheckDetectorGapSize(gaps, deltas, maxDisplacement)) {
+          geo::Point_t point1(X1, Y1, Z1), point2(X2, Y2, Z2);
+          geo::Vector_t widths(widthX, widthY, widthZ);
+          listOfGaps.emplace_back(detType->CreateDetectorGap(point1, point2, widths));
         }
       }
+
+      detType->LoadDaughterDetectorGaps(driftVolume1, LArDetectorGap::GetMaxGapSize(), listOfGaps);
     }
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
   void LArPandoraGeometry::LoadGeometry(LArDriftVolumeList& outputVolumeList,
-                                        LArDriftVolumeMap& outputVolumeMap)
+                                        LArDriftVolumeMap& outputVolumeMap,
+                                        const bool useActiveBoundingBox)
   {
     if (!outputVolumeList.empty())
       throw cet::exception("LArPandora")
         << " LArPandoraGeometry::LoadGeometry --- the list of drift volumes already exists ";
 
-    // Use a global coordinate system but keep drift volumes separate
-    LArDriftVolumeList inputVolumeList;
-    LArPandoraGeometry::LoadGeometry(inputVolumeList);
-    LArPandoraGeometry::LoadGlobalDaughterGeometry(inputVolumeList, outputVolumeList);
+    LArPandoraGeometry::LoadGeometry(outputVolumeList, useActiveBoundingBox);
 
     // Create mapping between tpc/cstat labels and drift volumes
     for (const LArDriftVolume& driftVolume : outputVolumeList) {
@@ -228,10 +178,9 @@ namespace lar_pandora {
     else if (hit_View == geo::kV) {
       return (switchUV ? geo::kU : geo::kV);
     }
-    else {
-      throw cet::exception("LArPandora")
-        << " LArPandoraGeometry::GetGlobalView --- found an unknown plane view (not U, V or W) ";
-    }
+
+    throw cet::exception("LArPandora")
+      << " LArPandoraGeometry::GetGlobalView --- found an unknown plane view (not U, V or W) ";
   }
 
   //------------------------------------------------------------------------------------------------------------------------------------------
@@ -252,7 +201,7 @@ namespace lar_pandora {
   {
     // We determine whether U and V views should be switched by checking the drift direction
     art::ServiceHandle<geo::Geometry const> theGeometry;
-    const geo::TPCGeo& theTpc(theGeometry->TPC(tpc, cstat));
+    const geo::TPCGeo& theTpc{theGeometry->TPC(geo::TPCID(cstat, tpc))};
 
     const bool isPositiveDrift(theTpc.DriftDirection() == geo::kPosX);
     return LArPandoraGeometry::ShouldSwitchUV(isPositiveDrift);
@@ -272,7 +221,8 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void LArPandoraGeometry::LoadGeometry(LArDriftVolumeList& driftVolumeList)
+  void LArPandoraGeometry::LoadGeometry(LArDriftVolumeList& driftVolumeList,
+                                        const bool useActiveBoundingBox)
   {
     // This method will group TPCs into "drift volumes" (these are regions of the detector that share a common drift direction,
     // common range of x coordinates, and common detector parameters such as wire pitch and wire angle).
@@ -284,94 +234,52 @@ namespace lar_pandora {
 
     // Pandora requires three independent images, and ability to correlate features between images (via wire angles and transformation plugin).
     art::ServiceHandle<geo::Geometry const> theGeometry;
-    const unsigned int nWirePlanes(theGeometry->MaxPlanes());
-
-    if (nWirePlanes > 3)
-      throw cet::exception("LArPandora")
-        << " LArPandoraGeometry::LoadGeometry --- More than three wire planes present ";
-
-    // We here check the plane information only for the first tpc in the first cryostat.
-    if ((0 == theGeometry->Ncryostats()) || (0 == theGeometry->NTPC(0)))
-      throw cet::exception("LArPandora")
-        << " LArPandoraGeometry::LoadGeometry --- unable to access first tpc in first cryostat ";
-
-    std::unordered_set<geo::_plane_proj> planeSet;
-    for (unsigned int iPlane = 0; iPlane < nWirePlanes; ++iPlane)
-      (void)planeSet.insert(theGeometry->TPC(0, 0).Plane(iPlane).View());
-
-    // ATTN: Expectations here are that the input geometry corresponds to either a single or dual phase LArTPC.  For single phase we expect
-    // three views, U, V and either W or Y, for dual phase we expect two views, W and Y.
-    const bool isDualPhase(theGeometry->MaxPlanes() == 2);
-
-    if (nWirePlanes != planeSet.size())
-      throw cet::exception("LArPandora")
-        << " LArPandoraGeometry::LoadGeometry --- geometry description for wire plane(s) missing ";
-
-    if (isDualPhase && (!planeSet.count(geo::kW) || !planeSet.count(geo::kY)))
-      throw cet::exception("LArPandora") << " LArPandoraGeometry::LoadGeometry --- dual phase "
-                                            "scenario; expect to find w and y views ";
-
-    if (!isDualPhase && (!planeSet.count(geo::kU) || !planeSet.count(geo::kV) ||
-                         (planeSet.count(geo::kW) && planeSet.count(geo::kY))))
-      throw cet::exception("LArPandora")
-        << " LArPandoraGeometry::LoadGeometry --- single phase scenatio; expect to find u and v "
-           "views; if there is one further view, it must be w or y ";
-
-    const bool useYPlane((nWirePlanes > 2) && planeSet.count(geo::kY));
-
-    // ATTN: In the dual phase mode, map the wire planes as follows W->U and Y->V.  This mapping was chosen so that the dual phase wire
-    // planes, which are inherently induction only, are mapped to induction planes in the single phase geometry.
-    const float wirePitchU(theGeometry->WirePitch((isDualPhase ? geo::kW : geo::kU)));
-    const float wirePitchV(theGeometry->WirePitch((isDualPhase ? geo::kY : geo::kV)));
-    const float wirePitchW((nWirePlanes < 3) ? 0.5f * (wirePitchU + wirePitchV) :
-                                               (useYPlane) ? theGeometry->WirePitch(geo::kY) :
-                                                             theGeometry->WirePitch(geo::kW));
-
+    LArPandoraDetectorType* detType(detector_functions::GetDetectorType());
+    const float wirePitchU(detType->WirePitchU());
+    const float wirePitchV(detType->WirePitchV());
+    const float wirePitchW(detType->WirePitchW());
     const float maxDeltaTheta(0.01f); // leave this hard-coded for now
 
     // Loop over cryostats
-    for (unsigned int icstat = 0; icstat < theGeometry->Ncryostats(); ++icstat) {
+    for (auto const& cryostat : theGeometry->Iterate<geo::CryostatGeo>()) {
+      auto const icstat = cryostat.ID().Cryostat;
       UIntSet cstatList;
 
       // Loop over TPCs in in this cryostat
-      for (unsigned int itpc1 = 0; itpc1 < theGeometry->NTPC(icstat); ++itpc1) {
+      for (auto const& theTpc1 : theGeometry->Iterate<geo::TPCGeo>(cryostat.ID())) {
+        auto const itpc1 = theTpc1.ID().TPC;
         if (cstatList.end() != cstatList.find(itpc1)) continue;
 
         // Use this TPC to seed a drift volume
-        const geo::TPCGeo& theTpc1(theGeometry->TPC(itpc1, icstat));
         cstatList.insert(itpc1);
 
-        // ATTN: In dual phase scenario propagate the W->U and Y->V mapping and set wire angle for remaining view to epsilon to
-        // avoid identical wire angles clashes (dual phase W and Y wires are horizontal and vertical).  Inside LArSoft the
-        // WireAngleToVertical function returns the wire angle to the positive Z axis, but Pandora expects to receive the wire
-        // angle to the vertical, hence the conversion.  The fabs() in wireAngleW for the kY case is due to the ICARUS geometry
-        // having a wire angle of PI instead of 0.
-        const geo::View_t targetViewU(isDualPhase ? geo::kW : geo::kU);
-        const geo::View_t targetViewV(isDualPhase ? geo::kY : geo::kV);
-        const float wireAngleU(0.5f * M_PI -
-                               theGeometry->WireAngleToVertical(targetViewU, itpc1, icstat));
-        const float wireAngleV(0.5f * M_PI -
-                               theGeometry->WireAngleToVertical(targetViewV, itpc1, icstat));
-        const float wireAngleW(
-          (nWirePlanes < 3) ?
-            std::numeric_limits<float>::epsilon() :
-            (useYPlane) ?
-            (std::fabs(0.5f * M_PI - theGeometry->WireAngleToVertical(geo::kY, itpc1, icstat))) :
-            (0.5f * M_PI - theGeometry->WireAngleToVertical(geo::kW, itpc1, icstat)));
+        const float wireAngleU(detType->WireAngleU(itpc1, icstat));
+        const float wireAngleV(detType->WireAngleV(itpc1, icstat));
+        const float wireAngleW(detType->WireAngleW(itpc1, icstat));
 
-        double localCoord1[3] = {0., 0., 0.};
-        double worldCoord1[3] = {0., 0., 0.};
-        theTpc1.LocalToWorld(localCoord1, worldCoord1);
+        auto const worldCoord1 = theTpc1.GetCenter();
 
-        const double min1(worldCoord1[0] - 0.5 * theTpc1.ActiveHalfWidth());
-        const double max1(worldCoord1[0] + 0.5 * theTpc1.ActiveHalfWidth());
+        float driftMinX(useActiveBoundingBox ? theTpc1.ActiveBoundingBox().MinX() :
+                                               (worldCoord1.X() - theTpc1.ActiveHalfWidth()));
+        float driftMaxX(useActiveBoundingBox ? theTpc1.ActiveBoundingBox().MaxX() :
+                                               (worldCoord1.X() + theTpc1.ActiveHalfWidth()));
+        float driftMinY(useActiveBoundingBox ? theTpc1.ActiveBoundingBox().MinY() :
+                                               (worldCoord1.Y() - theTpc1.ActiveHalfHeight()));
+        float driftMaxY(useActiveBoundingBox ? theTpc1.ActiveBoundingBox().MaxY() :
+                                               (worldCoord1.Y() + theTpc1.ActiveHalfHeight()));
+        float driftMinZ(useActiveBoundingBox ? theTpc1.ActiveBoundingBox().MinZ() :
+                                               (worldCoord1.Z() - 0.5f * theTpc1.ActiveLength()));
+        float driftMaxZ(useActiveBoundingBox ? theTpc1.ActiveBoundingBox().MaxZ() :
+                                               (worldCoord1.Z() + 0.5f * theTpc1.ActiveLength()));
 
-        float driftMinX(worldCoord1[0] - theTpc1.ActiveHalfWidth());
-        float driftMaxX(worldCoord1[0] + theTpc1.ActiveHalfWidth());
-        float driftMinY(worldCoord1[1] - theTpc1.ActiveHalfHeight());
-        float driftMaxY(worldCoord1[1] + theTpc1.ActiveHalfHeight());
-        float driftMinZ(worldCoord1[2] - 0.5f * theTpc1.ActiveLength());
-        float driftMaxZ(worldCoord1[2] + 0.5f * theTpc1.ActiveLength());
+        const double min1(
+          useActiveBoundingBox ?
+            (0.5 * (driftMinX + driftMaxX) - 0.25 * std::fabs(driftMaxX - driftMinX)) :
+            (worldCoord1.X() - 0.5 * theTpc1.ActiveHalfWidth()));
+        const double max1(
+          useActiveBoundingBox ?
+            (0.5 * (driftMinX + driftMaxX) + 0.25 * std::fabs(driftMaxX - driftMinX)) :
+            (worldCoord1.X() + 0.5 * theTpc1.ActiveHalfWidth()));
 
         const bool isPositiveDrift(theTpc1.DriftDirection() == geo::kPosX);
 
@@ -389,49 +297,56 @@ namespace lar_pandora {
                                                           (driftMaxZ - driftMinZ)));
 
         // Now identify the other TPCs associated with this drift volume
-        for (unsigned int itpc2 = itpc1 + 1; itpc2 < theGeometry->NTPC(icstat); ++itpc2) {
+        for (auto const& theTpc2 : theGeometry->Iterate<geo::TPCGeo>(cryostat.ID())) {
+          auto const itpc2 = theTpc2.ID().TPC;
           if (cstatList.end() != cstatList.find(itpc2)) continue;
-
-          const geo::TPCGeo& theTpc2(theGeometry->TPC(itpc2, icstat));
 
           if (theTpc1.DriftDirection() != theTpc2.DriftDirection()) continue;
 
-          // ATTN: In dual phase scenario propagate the W->U and Y->V mapping as described above.
-          const geo::View_t pandoraUView(isDualPhase ? geo::kW : geo::kU);
-          const geo::View_t pandoraVView(isDualPhase ? geo::kY : geo::kV);
-          const float dThetaU(theGeometry->WireAngleToVertical(pandoraUView, itpc1, icstat) -
-                              theGeometry->WireAngleToVertical(pandoraUView, itpc2, icstat));
-          const float dThetaV(theGeometry->WireAngleToVertical(pandoraVView, itpc1, icstat) -
-                              theGeometry->WireAngleToVertical(pandoraVView, itpc2, icstat));
-          const float dThetaW((nWirePlanes < 3) ?
-                                std::numeric_limits<float>::epsilon() :
-                                (useYPlane) ?
-                                (theGeometry->WireAngleToVertical(geo::kY, itpc1, icstat) -
-                                 theGeometry->WireAngleToVertical(geo::kY, itpc2, icstat)) :
-                                (theGeometry->WireAngleToVertical(geo::kW, itpc1, icstat) -
-                                 theGeometry->WireAngleToVertical(geo::kW, itpc2, icstat)));
-
+          const float dThetaU(detType->WireAngleU(itpc1, icstat) -
+                              detType->WireAngleU(itpc2, icstat));
+          const float dThetaV(detType->WireAngleV(itpc1, icstat) -
+                              detType->WireAngleV(itpc2, icstat));
+          const float dThetaW(detType->WireAngleW(itpc1, icstat) -
+                              detType->WireAngleW(itpc2, icstat));
           if (dThetaU > maxDeltaTheta || dThetaV > maxDeltaTheta || dThetaW > maxDeltaTheta)
             continue;
 
-          double localCoord2[3] = {0., 0., 0.};
-          double worldCoord2[3] = {0., 0., 0.};
-          theTpc2.LocalToWorld(localCoord2, worldCoord2);
+          auto const worldCoord2 = theTpc2.GetCenter();
 
-          const double min2(worldCoord2[0] - 0.5 * theTpc2.ActiveHalfWidth());
-          const double max2(worldCoord2[0] + 0.5 * theTpc2.ActiveHalfWidth());
+          const float driftMinX2(useActiveBoundingBox ?
+                                   theTpc2.ActiveBoundingBox().MinX() :
+                                   (worldCoord2.X() - theTpc2.ActiveHalfWidth()));
+          const float driftMaxX2(useActiveBoundingBox ?
+                                   theTpc2.ActiveBoundingBox().MaxX() :
+                                   (worldCoord2.X() + theTpc2.ActiveHalfWidth()));
+
+          const double min2(
+            useActiveBoundingBox ?
+              (0.5 * (driftMinX2 + driftMaxX2) - 0.25 * std::fabs(driftMaxX2 - driftMinX2)) :
+              (worldCoord2.X() - 0.5 * theTpc2.ActiveHalfWidth()));
+          const double max2(
+            useActiveBoundingBox ?
+              (0.5 * (driftMinX2 + driftMaxX2) + 0.25 * std::fabs(driftMaxX2 - driftMinX2)) :
+              (worldCoord2.X() + 0.5 * theTpc2.ActiveHalfWidth()));
 
           if ((min2 > max1) || (min1 > max2)) continue;
 
           cstatList.insert(itpc2);
           tpcList.insert(itpc2);
 
-          const float driftMinX2(worldCoord2[0] - theTpc2.ActiveHalfWidth());
-          const float driftMaxX2(worldCoord2[0] + theTpc2.ActiveHalfWidth());
-          const float driftMinY2(worldCoord2[1] - theTpc2.ActiveHalfHeight());
-          const float driftMaxY2(worldCoord2[1] + theTpc2.ActiveHalfHeight());
-          const float driftMinZ2(worldCoord2[2] - 0.5f * theTpc2.ActiveLength());
-          const float driftMaxZ2(worldCoord2[2] + 0.5f * theTpc2.ActiveLength());
+          const float driftMinY2(useActiveBoundingBox ?
+                                   theTpc2.ActiveBoundingBox().MinY() :
+                                   (worldCoord2.Y() - theTpc2.ActiveHalfHeight()));
+          const float driftMaxY2(useActiveBoundingBox ?
+                                   theTpc2.ActiveBoundingBox().MaxY() :
+                                   (worldCoord2.Y() + theTpc2.ActiveHalfHeight()));
+          const float driftMinZ2(useActiveBoundingBox ?
+                                   theTpc2.ActiveBoundingBox().MinZ() :
+                                   (worldCoord2.Z() - 0.5f * theTpc2.ActiveLength()));
+          const float driftMaxZ2(useActiveBoundingBox ?
+                                   theTpc2.ActiveBoundingBox().MaxZ() :
+                                   (worldCoord2.Z() + 0.5f * theTpc2.ActiveLength()));
 
           driftMinX = std::min(driftMinX, driftMinX2);
           driftMaxX = std::max(driftMaxX, driftMaxX2);
@@ -493,9 +408,13 @@ namespace lar_pandora {
       throw cet::exception("LArPandora") << " LArPandoraGeometry::LoadGlobalDaughterGeometry --- "
                                             "detector geometry has not yet been loaded ";
 
+    std::cout << "The size of the drif list is: " << driftVolumeList.size() << std::endl;
+    int count(0);
     // Create daughter drift volumes
     for (const LArDriftVolume& driftVolume : driftVolumeList) {
+      std::cout << "Looking at dau vol: " << count++ << std::endl;
       const bool switchViews(LArPandoraGeometry::ShouldSwitchUV(driftVolume.IsPositiveDrift()));
+
       const float daughterWirePitchU(switchViews ? driftVolume.GetWirePitchV() :
                                                    driftVolume.GetWirePitchU());
       const float daughterWirePitchV(switchViews ? driftVolume.GetWirePitchU() :
@@ -566,12 +485,5 @@ namespace lar_pandora {
     , m_sigmaUVZ(sigmaUVZ)
     , m_tpcVolumeList(tpcVolumeList)
   {}
-
-  //------------------------------------------------------------------------------------------------------------------------------------------
-
-  const LArDaughterDriftVolumeList& LArDriftVolume::GetTpcVolumeList() const
-  {
-    return m_tpcVolumeList;
-  }
 
 } // namespace lar_pandora

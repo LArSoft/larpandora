@@ -53,10 +53,9 @@ namespace ShowerRecoTools {
     ShowerEleHolder.GetElement(fInitialTrackInputLabel, InitialTrack);
 
     //Set the shower start position as the
-    TVector3 StartPositionErr = {-999, -999, -999};
+    geo::Point_t StartPositionErr = {-999, -999, -999};
 
-    geo::Point_t TrajPosition_vec = InitialTrack.LocationAtPoint(0);
-    TVector3 TrajPosition = {TrajPosition_vec.X(), TrajPosition_vec.Y(), TrajPosition_vec.Z()};
+    geo::Point_t TrajPosition = InitialTrack.LocationAtPoint(0);
     ShowerEleHolder.SetElement(TrajPosition, StartPositionErr, fShowerStartPositionOutputLabel);
 
     return 0;

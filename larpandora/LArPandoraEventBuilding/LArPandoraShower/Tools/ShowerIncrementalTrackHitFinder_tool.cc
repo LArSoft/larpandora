@@ -10,9 +10,19 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataalg/DetectorInfo/DetectorPropertiesData.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
 //Root Includes
+#include "Math/RotationX.h"
+#include "Math/RotationY.h"
+#include "Math/RotationZ.h"
+#include "TCanvas.h"
 #include "TGraph2D.h"
 #include "TPrincipal.h"
 
@@ -71,41 +81,41 @@ namespace ShowerRecoTools {
       const art::FindManyP<recob::Hit>& fmh,
       double current_residual);
 
-    bool IsResidualOK(double new_residual, double current_residual)
+    bool IsResidualOK(double new_residual, double current_residual) const
     {
       return new_residual - current_residual < fMaxResidualDiff;
-    };
-    bool IsResidualOK(double new_residual, double current_residual, size_t no_sps)
-    {
-      return (new_residual - current_residual < fMaxResidualDiff &&
-              new_residual / no_sps < fMaxAverageResidual);
-    };
-    bool IsResidualOK(double residual, size_t no_sps)
+    }
+    bool IsResidualOK(double residual, size_t no_sps) const
     {
       return residual / no_sps < fMaxAverageResidual;
     }
+    bool IsResidualOK(double new_residual, double current_residual, size_t no_sps) const
+    {
+      return IsResidualOK(new_residual, current_residual) && IsResidualOK(new_residual, no_sps);
+    }
 
     double CalculateResidual(std::vector<art::Ptr<recob::SpacePoint>>& sps,
-                             TVector3& PCAEigenvector,
-                             TVector3& TrackPosition);
+                             geo::Vector_t const& PCAEigenvector,
+                             geo::Point_t const& TrackPosition) const;
 
     double CalculateResidual(std::vector<art::Ptr<recob::SpacePoint>>& sps,
-                             TVector3& PCAEigenvector,
-                             TVector3& TrackPosition,
-                             int& max_residual_point);
+                             geo::Vector_t const& PCAEigenvector,
+                             geo::Point_t const& TrackPosition,
+                             int& max_residual_point) const;
 
     //Function to calculate the shower direction using a charge weight 3D PCA calculation.
-    TVector3 ShowerPCAVector(std::vector<art::Ptr<recob::SpacePoint>>& sps);
+    geo::Vector_t ShowerPCAVector(std::vector<art::Ptr<recob::SpacePoint>> const& sps) const;
 
-    TVector3 ShowerPCAVector(const detinfo::DetectorClocksData& clockData,
-                             const detinfo::DetectorPropertiesData& detProp,
-                             const std::vector<art::Ptr<recob::SpacePoint>>& sps,
-                             const art::FindManyP<recob::Hit>& fmh);
+    geo::Vector_t ShowerPCAVector(const detinfo::DetectorClocksData& clockData,
+                                  const detinfo::DetectorPropertiesData& detProp,
+                                  const std::vector<art::Ptr<recob::SpacePoint>>& sps,
+                                  const art::FindManyP<recob::Hit>& fmh) const;
 
-    std::vector<art::Ptr<recob::SpacePoint>> CreateFakeShowerTrajectory(TVector3 start_position,
-                                                                        TVector3 start_direction);
-    std::vector<art::Ptr<recob::SpacePoint>> CreateFakeSPLine(TVector3 start_position,
-                                                              TVector3 start_direction,
+    std::vector<art::Ptr<recob::SpacePoint>> CreateFakeShowerTrajectory(
+      geo::Point_t const& start_position,
+      geo::Vector_t const& start_direction);
+    std::vector<art::Ptr<recob::SpacePoint>> CreateFakeSPLine(geo::Point_t const& start_position,
+                                                              geo::Vector_t const& start_direction,
                                                               int npoints);
     void RunTestOfIncrementalSpacePointFinder(const art::Event& Event,
                                               const art::FindManyP<recob::Hit>& dud_fmh);
@@ -206,7 +216,7 @@ namespace ShowerRecoTools {
       return 1;
     }
 
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, ShowerStartPosition);
 
     //Decide if the you want to use the direction of the shower or make one.
@@ -219,7 +229,7 @@ namespace ShowerRecoTools {
         return 1;
       }
 
-      TVector3 ShowerDirection = {-999, -999, -999};
+      geo::Vector_t ShowerDirection = {-999, -999, -999};
       ShowerEleHolder.GetElement(fShowerDirectionInputLabel, ShowerDirection);
 
       //Order the spacepoints
@@ -245,10 +255,8 @@ namespace ShowerRecoTools {
 
     //Remove the first x spacepoints
     int frontsp = 0;
-    for (auto spacePoint : spacePoints) {
-      double dist =
-        (IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(spacePoint) - ShowerStartPosition)
-          .Mag();
+    for (auto const& spacePoint : spacePoints) {
+      double dist = (spacePoint->position() - ShowerStartPosition).R();
       if (dist > fStartDistanceCut) { break; }
       ++frontsp;
     }
@@ -256,10 +264,8 @@ namespace ShowerRecoTools {
 
     //Bin anything above x cm
     int sp_iter = 0;
-    for (auto spacePoint : spacePoints) {
-      double dist =
-        (IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(spacePoint) - ShowerStartPosition)
-          .Mag();
+    for (auto const& spacePoint : spacePoints) {
+      double dist = (spacePoint->position() - ShowerStartPosition).R();
       if (dist > fDistanceCut) { break; }
       ++sp_iter;
     }
@@ -295,97 +301,67 @@ namespace ShowerRecoTools {
     return 0;
   }
 
-  TVector3 ShowerIncrementalTrackHitFinder::ShowerPCAVector(
-    std::vector<art::Ptr<recob::SpacePoint>>& sps)
+  geo::Vector_t ShowerIncrementalTrackHitFinder::ShowerPCAVector(
+    std::vector<art::Ptr<recob::SpacePoint>> const& sps) const
   {
-
     //Initialise the the PCA.
-    TPrincipal* pca = new TPrincipal(3, "");
+    TPrincipal pca(3, "");
 
     //Normalise the spacepoints, charge weight and add to the PCA.
     for (auto& sp : sps) {
-
-      TVector3 sp_position = IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(sp);
-
-      double sp_coord[3];
-      sp_coord[0] = sp_position.X();
-      sp_coord[1] = sp_position.Y();
-      sp_coord[2] = sp_position.Z();
-
-      //Add to the PCA
-      pca->AddRow(sp_coord);
+      auto const sp_position = sp->position();
+      double sp_coord[3] = {sp_position.X(), sp_position.Y(), sp_position.Z()};
+      pca.AddRow(sp_coord);
     }
 
     //Evaluate the PCA
-    pca->MakePrincipals();
+    pca.MakePrincipals();
 
     //Get the Eigenvectors.
-    const TMatrixD* Eigenvectors = pca->GetEigenVectors();
+    const TMatrixD* Eigenvectors = pca.GetEigenVectors();
 
-    TVector3 Eigenvector = {(*Eigenvectors)[0][0], (*Eigenvectors)[1][0], (*Eigenvectors)[2][0]};
-
-    delete pca;
-
-    return Eigenvector;
+    return {(*Eigenvectors)[0][0], (*Eigenvectors)[1][0], (*Eigenvectors)[2][0]};
   }
 
   //Function to calculate the shower direction using a charge weight 3D PCA calculation.
-  TVector3 ShowerIncrementalTrackHitFinder::ShowerPCAVector(
+  geo::Vector_t ShowerIncrementalTrackHitFinder::ShowerPCAVector(
     const detinfo::DetectorClocksData& clockData,
     const detinfo::DetectorPropertiesData& detProp,
     const std::vector<art::Ptr<recob::SpacePoint>>& sps,
-    const art::FindManyP<recob::Hit>& fmh)
+    const art::FindManyP<recob::Hit>& fmh) const
   {
-
-    //Initialise the the PCA.
-    TPrincipal* pca = new TPrincipal(3, "");
+    TPrincipal pca(3, "");
 
     float TotalCharge = 0;
 
     //Normalise the spacepoints, charge weight and add to the PCA.
     for (auto& sp : sps) {
-
-      TVector3 sp_position = IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(sp);
+      auto const sp_position = sp->position();
 
       float wht = 1;
 
       if (fChargeWeighted) {
-
-        //Get the charge.
         float Charge = IShowerTool::GetLArPandoraShowerAlg().SpacePointCharge(sp, fmh);
-        //        std::cout << "Charge: " << Charge << std::endl;
-
-        //Get the time of the spacepoint
         float Time = IShowerTool::GetLArPandoraShowerAlg().SpacePointTime(sp, fmh);
 
         //Correct for the lifetime at the moment.
         Charge *= std::exp((sampling_rate(clockData) * Time) / (detProp.ElectronLifetime() * 1e3));
-        //        std::cout << "Charge: "<< Charge << std::endl;
 
         //Charge Weight
         wht *= std::sqrt(Charge / TotalCharge);
       }
 
-      double sp_coord[3];
-      sp_coord[0] = sp_position.X() * wht;
-      sp_coord[1] = sp_position.Y() * wht;
-      sp_coord[2] = sp_position.Z() * wht;
-
-      //Add to the PCA
-      pca->AddRow(sp_coord);
+      double sp_coord[3] = {sp_position.X() * wht, sp_position.Y() * wht, sp_position.Z() * wht};
+      pca.AddRow(sp_coord);
     }
 
     //Evaluate the PCA
-    pca->MakePrincipals();
+    pca.MakePrincipals();
 
     //Get the Eigenvectors.
-    const TMatrixD* Eigenvectors = pca->GetEigenVectors();
+    const TMatrixD* Eigenvectors = pca.GetEigenVectors();
 
-    TVector3 Eigenvector = {(*Eigenvectors)[0][0], (*Eigenvectors)[1][0], (*Eigenvectors)[2][0]};
-
-    delete pca;
-
-    return Eigenvector;
+    return {(*Eigenvectors)[0][0], (*Eigenvectors)[1][0], (*Eigenvectors)[2][0]};
   }
 
   //Function to remove the spacepoint with the highest residual until we have a track which matches the
@@ -627,23 +603,20 @@ namespace ShowerRecoTools {
     std::vector<art::Ptr<recob::SpacePoint>>& segment,
     const art::FindManyP<recob::Hit>& fmh)
   {
-
-    TVector3 primary_axis;
+    geo::Vector_t primary_axis;
     if (fChargeWeighted)
       primary_axis = ShowerPCAVector(clockData, detProp, segment, fmh);
     else
       primary_axis = ShowerPCAVector(segment);
 
-    TVector3 segment_centre;
+    geo::Point_t segment_centre;
     if (fChargeWeighted)
       segment_centre =
         IShowerTool::GetLArPandoraShowerAlg().ShowerCentre(clockData, detProp, segment, fmh);
     else
       segment_centre = IShowerTool::GetLArPandoraShowerAlg().ShowerCentre(segment);
 
-    double residual = CalculateResidual(segment, primary_axis, segment_centre);
-
-    return residual;
+    return CalculateResidual(segment, primary_axis, segment_centre);
   }
 
   double ShowerIncrementalTrackHitFinder::FitSegmentAndCalculateResidual(
@@ -653,23 +626,20 @@ namespace ShowerRecoTools {
     const art::FindManyP<recob::Hit>& fmh,
     int& max_residual_point)
   {
-
-    TVector3 primary_axis;
+    geo::Vector_t primary_axis;
     if (fChargeWeighted)
       primary_axis = ShowerPCAVector(clockData, detProp, segment, fmh);
     else
       primary_axis = ShowerPCAVector(segment);
 
-    TVector3 segment_centre;
+    geo::Point_t segment_centre;
     if (fChargeWeighted)
       segment_centre =
         IShowerTool::GetLArPandoraShowerAlg().ShowerCentre(clockData, detProp, segment, fmh);
     else
       segment_centre = IShowerTool::GetLArPandoraShowerAlg().ShowerCentre(segment);
 
-    double residual = CalculateResidual(segment, primary_axis, segment_centre, max_residual_point);
-
-    return residual;
+    return CalculateResidual(segment, primary_axis, segment_centre, max_residual_point);
   }
 
   bool ShowerIncrementalTrackHitFinder::RecursivelyReplaceLastSpacePointAndRefit(
@@ -699,20 +669,19 @@ namespace ShowerRecoTools {
 
   double ShowerIncrementalTrackHitFinder::CalculateResidual(
     std::vector<art::Ptr<recob::SpacePoint>>& sps,
-    TVector3& PCAEigenvector,
-    TVector3& TrackPosition)
+    geo::Vector_t const& PCAEigenvector,
+    geo::Point_t const& TrackPosition) const
   {
-
     double Residual = 0;
 
     for (auto const& sp : sps) {
 
       //Get the relative position of the spacepoint
-      TVector3 pos = IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(sp) - TrackPosition;
+      auto const pos = sp->position() - TrackPosition;
 
       //Gen the perpendicular distance
       double len = pos.Dot(PCAEigenvector);
-      double perp = (pos - len * PCAEigenvector).Mag();
+      double perp = (pos - len * PCAEigenvector).R();
 
       Residual += perp;
     }
@@ -721,22 +690,21 @@ namespace ShowerRecoTools {
 
   double ShowerIncrementalTrackHitFinder::CalculateResidual(
     std::vector<art::Ptr<recob::SpacePoint>>& sps,
-    TVector3& PCAEigenvector,
-    TVector3& TrackPosition,
-    int& max_residual_point)
+    geo::Vector_t const& PCAEigenvector,
+    geo::Point_t const& TrackPosition,
+    int& max_residual_point) const
   {
-
     double Residual = 0;
     double max_residual = -999;
 
     for (auto const& sp : sps) {
 
       //Get the relative position of the spacepoint
-      TVector3 pos = IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(sp) - TrackPosition;
+      auto const pos = sp->position() - TrackPosition;
 
       //Gen the perpendicular distance
       double len = pos.Dot(PCAEigenvector);
-      double perp = (pos - len * PCAEigenvector).Mag();
+      double perp = (pos - len * PCAEigenvector).R();
 
       Residual += perp;
 
@@ -749,8 +717,8 @@ namespace ShowerRecoTools {
   }
 
   std::vector<art::Ptr<recob::SpacePoint>>
-  ShowerIncrementalTrackHitFinder::CreateFakeShowerTrajectory(TVector3 start_position,
-                                                              TVector3 start_direction)
+  ShowerIncrementalTrackHitFinder::CreateFakeShowerTrajectory(geo::Point_t const& start_position,
+                                                              geo::Vector_t const& start_direction)
   {
     std::vector<art::Ptr<recob::SpacePoint>> fake_sps;
     std::vector<art::Ptr<recob::SpacePoint>> segment_a =
@@ -758,32 +726,26 @@ namespace ShowerRecoTools {
     fake_sps.insert(std::end(fake_sps), std::begin(segment_a), std::end(segment_a));
 
     //make a new segment:
-    TVector3 sp_position =
-      IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(fake_sps.back());
-    TVector3 direction = start_direction;
-    direction.RotateX(10. * 3.142 / 180.);
+    auto const sp_position = fake_sps.back()->position();
+    auto const direction = ROOT::Math::RotationX{10. * 3.142 / 180.}(start_direction);
     std::vector<art::Ptr<recob::SpacePoint>> segment_b =
       CreateFakeSPLine(sp_position, direction, 10);
     fake_sps.insert(std::end(fake_sps), std::begin(segment_b), std::end(segment_b));
 
     //Now make three branches that come from the end of the segment
-    TVector3 branching_position =
-      IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(fake_sps.back());
+    auto const branching_position = fake_sps.back()->position();
 
-    TVector3 direction_branch_a = direction;
-    direction_branch_a.RotateZ(15. * 3.142 / 180.);
+    auto const direction_branch_a = ROOT::Math::RotationZ{15. * 3.142 / 180.}(direction);
     std::vector<art::Ptr<recob::SpacePoint>> branch_a =
       CreateFakeSPLine(branching_position, direction_branch_a, 6);
     fake_sps.insert(std::end(fake_sps), std::begin(branch_a), std::end(branch_a));
 
-    TVector3 direction_branch_b = direction;
-    direction_branch_b.RotateY(20. * 3.142 / 180.);
+    auto const direction_branch_b = ROOT::Math::RotationY{20. * 3.142 / 180.}(direction);
     std::vector<art::Ptr<recob::SpacePoint>> branch_b =
       CreateFakeSPLine(branching_position, direction_branch_b, 10);
     fake_sps.insert(std::end(fake_sps), std::begin(branch_b), std::end(branch_b));
 
-    TVector3 direction_branch_c = direction;
-    direction_branch_c.RotateX(3. * 3.142 / 180.);
+    auto const direction_branch_c = ROOT::Math::RotationX{3. * 3.142 / 180.}(direction);
     std::vector<art::Ptr<recob::SpacePoint>> branch_c =
       CreateFakeSPLine(branching_position, direction_branch_c, 20);
     fake_sps.insert(std::end(fake_sps), std::begin(branch_c), std::end(branch_c));
@@ -792,8 +754,8 @@ namespace ShowerRecoTools {
   }
 
   std::vector<art::Ptr<recob::SpacePoint>> ShowerIncrementalTrackHitFinder::CreateFakeSPLine(
-    TVector3 start_position,
-    TVector3 start_direction,
+    geo::Point_t const& start_position,
+    geo::Vector_t const& start_direction,
     int npoints)
   {
     std::vector<art::Ptr<recob::SpacePoint>> fake_sps;
@@ -802,7 +764,7 @@ namespace ShowerRecoTools {
 
     double step_length = 0.2;
     for (double i_point = 0; i_point < npoints; i_point++) {
-      TVector3 new_position = start_position + i_point * step_length * start_direction;
+      auto const new_position = start_position + i_point * step_length * start_direction;
       Double32_t xyz[3] = {new_position.X(), new_position.Y(), new_position.Z()};
       Double32_t err[3] = {0., 0., 0.};
       recob::SpacePoint* sp = new recob::SpacePoint(xyz, err, 0, 1);
@@ -815,8 +777,8 @@ namespace ShowerRecoTools {
     const art::Event& Event,
     const art::FindManyP<recob::Hit>& dud_fmh)
   {
-    TVector3 start_position(50, 50, 50);
-    TVector3 start_direction(0, 0, 1);
+    geo::Point_t const start_position(50, 50, 50);
+    geo::Vector_t const start_direction(0, 0, 1);
     std::vector<art::Ptr<recob::SpacePoint>> fake_sps =
       CreateFakeShowerTrajectory(start_position, start_direction);
 

@@ -10,6 +10,11 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
@@ -78,10 +83,8 @@ namespace ShowerRecoTools {
     //If there is only one vertex good news we just say that is the start of the shower.
     if (vtx_cand.size() == 1) {
       art::Ptr<recob::Vertex> StartPositionVertex = vtx_cand[0];
-      double xyz[3] = {-999, -999, -999};
-      StartPositionVertex->XYZ(xyz);
-      TVector3 ShowerStartPosition = {xyz[0], xyz[1], xyz[2]};
-      TVector3 ShowerStartPositionErr = {-999, -999, -999};
+      auto ShowerStartPosition(StartPositionVertex->position());
+      geo::Point_t ShowerStartPositionErr = {-999, -999, -999};
       ShowerEleHolder.SetElement(
         ShowerStartPosition, ShowerStartPositionErr, fShowerStartPositionOutputLabel);
       return 0;
@@ -90,7 +93,7 @@ namespace ShowerRecoTools {
     //If we there have none then use the direction to find the neutrino vertex
     if (ShowerEleHolder.CheckElement(fShowerDirectionInputLabel)) {
 
-      TVector3 ShowerDirection = {-999, -999, -999};
+      geo::Vector_t ShowerDirection = {-999, -999, -999};
       ShowerEleHolder.GetElement(fShowerDirectionInputLabel, ShowerDirection);
 
       const art::FindManyP<recob::SpacePoint>& fmspp =
@@ -113,7 +116,7 @@ namespace ShowerRecoTools {
       auto const detProp =
         art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(Event, clockData);
 
-      TVector3 ShowerCentre = IShowerTool::GetLArPandoraShowerAlg().ShowerCentre(
+      auto ShowerCentre = IShowerTool::GetLArPandoraShowerAlg().ShowerCentre(
         clockData, detProp, spacePoints_pfp, fmh);
 
       //Order the Hits from the shower centre. The most negative will be the start position.
@@ -121,10 +124,9 @@ namespace ShowerRecoTools {
         spacePoints_pfp, ShowerCentre, ShowerDirection);
 
       //Set the start position.
-      TVector3 ShowerStartPosition =
-        IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(spacePoints_pfp[0]);
+      auto ShowerStartPosition = spacePoints_pfp[0]->position();
 
-      TVector3 ShowerStartPositionErr = {-999, -999, -999};
+      geo::Point_t ShowerStartPositionErr = {-999, -999, -999};
       ShowerEleHolder.SetElement(
         ShowerStartPosition, ShowerStartPositionErr, fShowerStartPositionOutputLabel);
 

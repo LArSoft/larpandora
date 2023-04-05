@@ -5,7 +5,11 @@
  *
  */
 
+#include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
+
+#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "cetlib_except/exception.h"
@@ -25,7 +29,6 @@
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/Wire.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 #include "larcore/Geometry/Geometry.h"
@@ -35,8 +38,6 @@
 #include "Objects/ParticleFlowObject.h"
 #include "Pandora/PandoraInternal.h"
 #include "Pandora/PdgTable.h"
-
-#include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 
 #include <iostream>
 #include <limits>

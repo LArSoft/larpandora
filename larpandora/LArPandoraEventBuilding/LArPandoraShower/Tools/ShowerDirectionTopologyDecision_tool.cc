@@ -12,6 +12,8 @@
 //LArSoft Includes
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
+#include "Math/VectorUtil.h"
+
 namespace ShowerRecoTools {
 
   class ShowerDirectionTopologyDecisionTool : public IShowerTool {
@@ -63,18 +65,18 @@ namespace ShowerRecoTools {
     }
 
     //Get the relevent products
-    TVector3 FirstShowerDirection;
-    TVector3 FirstShowerDirectionError;
+    geo::Vector_t FirstShowerDirection;
+    geo::Vector_t FirstShowerDirectionError;
     ShowerEleHolder.GetElementAndError(
       fFirstDirectionInputLabel, FirstShowerDirection, FirstShowerDirectionError);
 
-    TVector3 SecondShowerDirection;
-    TVector3 SecondShowerDirectionError;
+    geo::Vector_t SecondShowerDirection;
+    geo::Vector_t SecondShowerDirectionError;
     ShowerEleHolder.GetElementAndError(
       fSecondDirectionInputLabel, SecondShowerDirection, SecondShowerDirectionError);
 
     //Use the first tool if directions agree within the chosen angle
-    if (FirstShowerDirection.Angle(SecondShowerDirection) < fAngleCut) {
+    if (ROOT::Math::VectorUtil::Angle(FirstShowerDirection, SecondShowerDirection) < fAngleCut) {
       ShowerEleHolder.SetElement(
         FirstShowerDirection, FirstShowerDirectionError, fShowerDirectionOutputLabel);
     }

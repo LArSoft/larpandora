@@ -1,0 +1,15 @@
+BEGIN_PROLOG
+
+pandora_event_building :
+{
+    module_type: "LArPandoraExternalEventBuilding"
+
+    InputProducerLabel:  "pandoraPatRec:allOutcomes"
+    TrackProducerLabel:  "pandoraAllOutcomesTrack"
+    ShowerProducerLabel: "pandoraAllOutcomesShower"
+    HitProducerLabel:    "gaushit"
+
+    ShouldProduceT0s:     false
+}
+
+END_PROLOG

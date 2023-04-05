@@ -11,6 +11,9 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Algs/LArPandoraShowerAlg.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
@@ -28,8 +31,8 @@ namespace ShowerRecoTools {
   private:
     std::vector<art::Ptr<recob::SpacePoint>> FindTrackSpacePoints(
       std::vector<art::Ptr<recob::SpacePoint>>& spacePoints,
-      TVector3& showerStartPosition,
-      TVector3& showerDirection);
+      geo::Point_t const& showerStartPosition,
+      geo::Vector_t const& showerDirection) const;
 
     //Fcl paramters
     float fMaxProjectionDist;    //Maximum projection along shower direction.
@@ -80,10 +83,10 @@ namespace ShowerRecoTools {
       return 1;
     }
 
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, ShowerStartPosition);
 
-    TVector3 ShowerDirection = {-999, -999, -999};
+    geo::Vector_t ShowerDirection = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerDirectionInputLabel, ShowerDirection);
 
     // Get the assocated pfParicle Handle
@@ -116,8 +119,7 @@ namespace ShowerRecoTools {
       spacePoints, ShowerStartPosition, ShowerDirection);
 
     // Get only the space points from the track
-    std::vector<art::Ptr<recob::SpacePoint>> trackSpacePoints;
-    trackSpacePoints = FindTrackSpacePoints(spacePoints, ShowerStartPosition, ShowerDirection);
+    auto trackSpacePoints = FindTrackSpacePoints(spacePoints, ShowerStartPosition, ShowerDirection);
 
     // Get the hits associated to the space points and seperate them by planes
     std::vector<art::Ptr<recob::Hit>> trackHits;
@@ -135,8 +137,8 @@ namespace ShowerRecoTools {
 
   std::vector<art::Ptr<recob::SpacePoint>> Shower3DCylinderTrackHitFinder::FindTrackSpacePoints(
     std::vector<art::Ptr<recob::SpacePoint>>& spacePoints,
-    TVector3& showerStartPosition,
-    TVector3& showerDirection)
+    geo::Point_t const& showerStartPosition,
+    geo::Vector_t const& showerDirection) const
   {
 
     // Make a vector to hold the output space points

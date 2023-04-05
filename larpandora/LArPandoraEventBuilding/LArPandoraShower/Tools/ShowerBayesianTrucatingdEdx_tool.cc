@@ -17,7 +17,9 @@
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
 //ROOT Includes
+#include "TAxis.h"
 #include "TFile.h"
+#include "TH1.h"
 
 namespace ShowerRecoTools {
 

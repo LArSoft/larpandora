@@ -10,6 +10,11 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 
 namespace ShowerRecoTools {
@@ -51,7 +56,7 @@ namespace ShowerRecoTools {
     reco::shower::ShowerElementHolder& ShowerEleHolder)
   {
 
-    TVector3 ShowerCentre = {-999, -999, -999};
+    geo::Point_t ShowerCentre = {-999, -999, -999};
 
     //Get the start position and direction and center
     if (!ShowerEleHolder.CheckElement(fShowerStartPositionInputLabel)) {
@@ -85,7 +90,7 @@ namespace ShowerRecoTools {
       const art::FindManyP<recob::Hit>& fmh =
         ShowerEleHolder.GetFindManyP<recob::Hit>(spHandle, Event, fPFParticleLabel);
 
-      //Spacepoints
+      //SpacePoints
       std::vector<art::Ptr<recob::SpacePoint>> spacePoints_pfp = fmspp.at(pfparticle.key());
 
       //We cannot progress with no spacepoints.
@@ -99,18 +104,18 @@ namespace ShowerRecoTools {
       ShowerEleHolder.GetElement(fShowerCentreInputLabel, ShowerCentre);
     }
 
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, ShowerStartPosition);
 
-    TVector3 ShowerDirection = {-999, -999, -999};
+    geo::Vector_t ShowerDirection = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerDirectionInputLabel, ShowerDirection);
 
     //Get the projection
     double projection = ShowerDirection.Dot(ShowerStartPosition - ShowerCentre);
 
     //Get the position.
-    TVector3 ShowerNewStartPosition = projection * ShowerDirection + ShowerCentre;
-    TVector3 ShowerNewStartPositionErr = {-999, -999, -999};
+    auto ShowerNewStartPosition = projection * ShowerDirection + ShowerCentre;
+    geo::Point_t ShowerNewStartPositionErr = {-999, -999, -999};
 
     ShowerEleHolder.SetElement(
       ShowerNewStartPosition, ShowerNewStartPositionErr, fShowerStartPositionOutputLabel);

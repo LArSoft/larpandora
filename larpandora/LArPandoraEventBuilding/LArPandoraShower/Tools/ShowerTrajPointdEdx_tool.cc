@@ -13,10 +13,19 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/AnalysisBase/T0.h"
+#include "lardataobj/RecoBase/PFParticle.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 #include "larreco/Calorimetry/CalorimetryAlg.h"
+
+//ROOT
+#include "Math/VectorUtil.h"
+
+using ROOT::Math::VectorUtil::Angle;
 
 namespace ShowerRecoTools {
 
@@ -61,10 +70,13 @@ namespace ShowerRecoTools {
     bool
       fSCEInputCorrected; // Whether the input has already been corrected for spatial SCE distortions
 
+    bool fSumHitSnippets; // Whether to treat hits individually or only one hit per snippet
+
     art::InputTag fPFParticleLabel;
     int fVerbose;
 
     std::string fShowerStartPositionInputLabel;
+    std::string fInitialTrackHitsInputLabel;
     std::string fInitialTrackSpacePointsInputLabel;
     std::string fInitialTrackInputLabel;
     std::string fShowerdEdxOutputLabel;
@@ -87,9 +99,11 @@ namespace ShowerRecoTools {
     , fSCECorrectPitch(pset.get<bool>("SCECorrectPitch"))
     , fSCECorrectEField(pset.get<bool>("SCECorrectEField"))
     , fSCEInputCorrected(pset.get<bool>("SCEInputCorrected"))
+    , fSumHitSnippets(pset.get<bool>("SumHitSnippets"))
     , fPFParticleLabel(pset.get<art::InputTag>("PFParticleLabel"))
     , fVerbose(pset.get<int>("Verbose"))
     , fShowerStartPositionInputLabel(pset.get<std::string>("ShowerStartPositionInputLabel"))
+    , fInitialTrackHitsInputLabel(pset.get<std::string>("InitialTrackHitsInputLabel"))
     , fInitialTrackSpacePointsInputLabel(pset.get<std::string>("InitialTrackSpacePointsInputLabel"))
     , fInitialTrackInputLabel(pset.get<std::string>("InitialTrackInputLabel"))
     , fShowerdEdxOutputLabel(pset.get<std::string>("ShowerdEdxOutputLabel"))
@@ -145,7 +159,7 @@ namespace ShowerRecoTools {
       ShowerEleHolder.GetFindManyP<recob::Hit>(spHandle, Event, fPFParticleLabel);
 
     //Only consider hits in the same tpcs as the vertex.
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, ShowerStartPosition);
     geo::TPCID vtxTPC = fGeom->FindTPCAtPosition(ShowerStartPosition);
 
@@ -167,10 +181,10 @@ namespace ShowerRecoTools {
     std::map<int, std::vector<double>> dEdx_vecErr;
     std::map<int, int> num_hits;
 
-    for (geo::PlaneID plane_id : fGeom->IteratePlaneIDs()) {
-      dEdx_vec[plane_id.Plane] = {};
-      dEdx_vecErr[plane_id.Plane] = {};
-      num_hits[plane_id.Plane] = 0;
+    for (unsigned i = 0; i != fGeom->MaxPlanes(); ++i) {
+      dEdx_vec[i] = {};
+      dEdx_vecErr[i] = {};
+      num_hits[i] = 0;
     }
 
     auto const clockData =
@@ -178,8 +192,16 @@ namespace ShowerRecoTools {
     auto const detProp =
       art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(Event, clockData);
 
+    std::map<art::Ptr<recob::Hit>, std::vector<art::Ptr<recob::Hit>>> hitSnippets;
+    if (fSumHitSnippets) {
+      std::vector<art::Ptr<recob::Hit>> trackHits;
+      ShowerEleHolder.GetElement(fInitialTrackHitsInputLabel, trackHits);
+
+      hitSnippets = IShowerTool::GetLArPandoraShowerAlg().OrganizeHits(trackHits);
+    }
+
     //Loop over the spacepoints
-    for (auto const sp : tracksps) {
+    for (auto const& sp : tracksps) {
 
       //Get the associated hit
       std::vector<art::Ptr<recob::Hit>> hits = fmsp.at(sp.key());
@@ -190,6 +212,9 @@ namespace ShowerRecoTools {
         continue;
       }
       const art::Ptr<recob::Hit> hit = hits[0];
+
+      if (fSumHitSnippets && !hitSnippets.count(hit)) continue;
+
       double wirepitch = fGeom->WirePitch((geo::PlaneID)hit->WireID());
 
       //Only consider hits in the same tpc
@@ -198,8 +223,8 @@ namespace ShowerRecoTools {
       if (TPC != vtxTPC) { continue; }
 
       //Ignore spacepoints within a few wires of the vertex.
-      const TVector3 pos = IShowerTool::GetLArPandoraShowerAlg().SpacePointPosition(sp);
-      double dist_from_start = (pos - ShowerStartPosition).Mag();
+      auto const pos = sp->position();
+      double dist_from_start = (pos - ShowerStartPosition).R();
 
       if (fCutStartPosition) {
         if (dist_from_start < fMinDistCutOff * wirepitch) { continue; }
@@ -212,18 +237,16 @@ namespace ShowerRecoTools {
       double MinDist = 999;
       for (unsigned int traj = 0; traj < InitialTrack.NumberTrajectoryPoints(); ++traj) {
 
-        geo::Point_t TrajPositionPoint = InitialTrack.LocationAtPoint(traj);
-        TVector3 TrajPosition = {
-          TrajPositionPoint.X(), TrajPositionPoint.Y(), TrajPositionPoint.Z()};
-
         //ignore bogus info.
         auto flags = InitialTrack.FlagsAtPoint(traj);
         if (flags.isSet(recob::TrajectoryPointFlagTraits::NoPoint)) { continue; }
 
-        const TVector3 dist = pos - TrajPosition;
+        geo::Point_t const TrajPosition = InitialTrack.LocationAtPoint(traj);
 
-        if (dist.Mag() < MinDist && dist.Mag() < MaxDist * wirepitch) {
-          MinDist = dist.Mag();
+        auto const dist = (pos - TrajPosition).R();
+
+        if (dist < MinDist && dist < MaxDist * wirepitch) {
+          MinDist = dist;
           index = traj;
         }
       }
@@ -231,31 +254,25 @@ namespace ShowerRecoTools {
       //If there is no matching trajectory point then bail.
       if (index == 999) { continue; }
 
-      geo::Point_t TrajPositionPoint = InitialTrack.LocationAtPoint(index);
-      TVector3 TrajPosition = {TrajPositionPoint.X(), TrajPositionPoint.Y(), TrajPositionPoint.Z()};
-
-      geo::Point_t TrajPositionStartPoint = InitialTrack.LocationAtPoint(0);
-      TVector3 TrajPositionStart = {
-        TrajPositionStartPoint.X(), TrajPositionStartPoint.Y(), TrajPositionStartPoint.Z()};
+      geo::Point_t const TrajPosition = InitialTrack.LocationAtPoint(index);
+      geo::Point_t const TrajPositionStart = InitialTrack.LocationAtPoint(0);
 
       //Ignore values with 0 mag from the start position
-      if ((TrajPosition - TrajPositionStart).Mag() == 0) { continue; }
-      if ((TrajPosition - ShowerStartPosition).Mag() == 0) { continue; }
+      if ((TrajPosition - TrajPositionStart).R() == 0) { continue; }
+      if ((TrajPosition - ShowerStartPosition).R() == 0) { continue; }
 
-      if ((TrajPosition - TrajPositionStart).Mag() < fMinDistCutOff * wirepitch) { continue; }
+      if ((TrajPosition - TrajPositionStart).R() < fMinDistCutOff * wirepitch) { continue; }
 
       //Get the direction of the trajectory point
-      geo::Vector_t TrajDirection_vec = InitialTrack.DirectionAtPoint(index);
-      TVector3 TrajDirection = {
-        TrajDirection_vec.X(), TrajDirection_vec.Y(), TrajDirection_vec.Z()};
+      geo::Vector_t const TrajDirection = InitialTrack.DirectionAtPoint(index);
 
       //If the direction is in the same direction as the wires within some tolerance the hit finding struggles. Let remove these.
       // Note that we project in the YZ plane to make sure we are not cutting on
       // the angle into the wire planes, that should be done by the shaping time cut
-      TVector3 TrajDirectionYZ = {0, TrajDirection_vec.Y(), TrajDirection_vec.Z()};
-      TVector3 PlaneDirection = fGeom->Plane(planeid).GetIncreasingWireDirection();
+      geo::Vector_t const TrajDirectionYZ{0, TrajDirection.Y(), TrajDirection.Z()};
+      auto const PlaneDirection = fGeom->Plane(planeid).GetIncreasingWireDirection();
 
-      if (std::abs((TMath::Pi() / 2 - TrajDirectionYZ.Angle(PlaneDirection))) < fMinAngleToWire) {
+      if (std::abs((TMath::Pi() / 2 - Angle(TrajDirectionYZ, PlaneDirection))) < fMinAngleToWire) {
         if (fVerbose) mf::LogWarning("ShowerTrajPointdEdx") << "remove from angle cut" << std::endl;
         continue;
       }
@@ -271,13 +288,13 @@ namespace ShowerRecoTools {
         continue;
       }
 
-      if ((TrajPosition - TrajPositionStart).Mag() > dEdxTrackLength) { continue; }
+      if ((TrajPosition - TrajPositionStart).R() > dEdxTrackLength) { continue; }
 
       //Iterate the number of hits on the plane
       ++num_hits[planeid.Plane];
 
       //If we still exist then we can be used in the calculation. Calculate the 3D pitch
-      double trackpitch = (TrajDirection * (wirepitch / TrajDirection.Dot(PlaneDirection))).Mag();
+      double trackpitch = (TrajDirection * (wirepitch / TrajDirection.Dot(PlaneDirection))).R();
 
       if (fSCECorrectPitch) {
         trackpitch = IShowerTool::GetLArPandoraShowerAlg().SCECorrectPitch(
@@ -285,7 +302,12 @@ namespace ShowerRecoTools {
       }
 
       //Calculate the dQdx
-      double dQdx = hit->Integral() / trackpitch;
+      double dQdx = hit->Integral();
+      if (fSumHitSnippets) {
+        for (const art::Ptr<recob::Hit> secondaryHit : hitSnippets[hit])
+          dQdx += secondaryHit->Integral();
+      }
+      dQdx /= trackpitch;
 
       //Calculate the dEdx
       double localEField = detProp.Efield();
@@ -322,7 +344,7 @@ namespace ShowerRecoTools {
     //If there is very large dEdx we have either calculated it wrong (probably) or the Electron is coming to end.
     //Assumes hits are ordered!
     std::map<int, std::vector<double>> dEdx_vec_cut;
-    for (geo::PlaneID plane_id : fGeom->IteratePlaneIDs()) {
+    for (geo::PlaneID plane_id : fGeom->Iterate<geo::PlaneID>()) {
       dEdx_vec_cut[plane_id.Plane] = {};
     }
 

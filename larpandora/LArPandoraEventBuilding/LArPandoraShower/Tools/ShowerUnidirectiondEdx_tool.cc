@@ -11,6 +11,8 @@
 #include "art/Utilities/ToolMacros.h"
 
 //LArSoft Includes
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraShower/Tools/IShowerTool.h"
 #include "larreco/Calorimetry/CalorimetryAlg.h"
 
@@ -37,6 +39,7 @@ namespace ShowerRecoTools {
       dEdxTrackLength;    //Max length from a hit can be to the start point in cm.
     bool fMaxHitPlane;    //Set the best planes as the one with the most hits
     bool fMissFirstPoint; //Do not use any hits from the first wire.
+    bool fSumHitSnippets; // Whether to treat hits individually or only one hit per snippet
     std::string fShowerStartPositionInputLabel;
     std::string fInitialTrackHitsInputLabel;
     std::string fShowerDirectionInputLabel;
@@ -51,6 +54,7 @@ namespace ShowerRecoTools {
     , fdEdxTrackLength(pset.get<float>("dEdxTrackLength"))
     , fMaxHitPlane(pset.get<bool>("MaxHitPlane"))
     , fMissFirstPoint(pset.get<bool>("MissFirstPoint"))
+    , fSumHitSnippets(pset.get<bool>("SumHitSnippets"))
     , fShowerStartPositionInputLabel(pset.get<std::string>("ShowerStartPositionInputLabel"))
     , fInitialTrackHitsInputLabel(pset.get<std::string>("InitialTrackHitsInputLabel"))
     , fShowerDirectionInputLabel(pset.get<std::string>("ShowerDirectionInputLabel"))
@@ -93,13 +97,13 @@ namespace ShowerRecoTools {
       return 0;
     }
 
-    TVector3 ShowerStartPosition = {-999, -999, -999};
+    geo::Point_t ShowerStartPosition = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, ShowerStartPosition);
 
-    TVector3 showerDir = {-999, -999, -999};
+    geo::Vector_t showerDir = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerDirectionInputLabel, showerDir);
 
-    geo::TPCID vtxTPC = fGeom->FindTPCAtPosition(ShowerStartPosition);
+    geo::TPCID vtxTPC = fGeom->FindTPCAtPosition(geo::vect::toPoint(ShowerStartPosition));
 
     // Split the track hits per plane
     std::vector<double> dEdxVec;
@@ -130,6 +134,10 @@ namespace ShowerRecoTools {
     for (unsigned int plane = 0; plane < numPlanes; ++plane) {
       std::vector<art::Ptr<recob::Hit>> trackPlaneHits = trackHits.at(plane);
 
+      std::map<art::Ptr<recob::Hit>, std::vector<art::Ptr<recob::Hit>>> hitSnippets;
+      if (fSumHitSnippets)
+        hitSnippets = IShowerTool::GetLArPandoraShowerAlg().OrganizeHits(trackPlaneHits);
+
       if (trackPlaneHits.size()) {
 
         double dEdx = -999;
@@ -139,9 +147,10 @@ namespace ShowerRecoTools {
 
         //Calculate the pitch
         double wirepitch = fGeom->WirePitch(trackPlaneHits.at(0)->WireID().planeID());
-        double angleToVert = fGeom->WireAngleToVertical(fGeom->Plane(plane).View(),
-                                                        trackPlaneHits[0]->WireID().planeID()) -
-                             0.5 * TMath::Pi();
+        double angleToVert =
+          fGeom->WireAngleToVertical(fGeom->Plane(geo::PlaneID{0, 0, plane}).View(),
+                                     trackPlaneHits[0]->WireID().planeID()) -
+          0.5 * TMath::Pi();
         double cosgamma =
           std::abs(std::sin(angleToVert) * showerDir.Y() + std::cos(angleToVert) * showerDir.Z());
 
@@ -156,13 +165,22 @@ namespace ShowerRecoTools {
 
           for (auto const& hit : trackPlaneHits) {
 
+            if (fSumHitSnippets && !hitSnippets.count(hit)) continue;
+
             // Get the wire for each hit
             int w1 = hit->WireID().Wire;
             if (fMissFirstPoint && w0 == w1) { continue; }
 
             //Ignore hits that are too far away.
             if (std::abs((w1 - w0) * pitch) < dEdxTrackLength) {
-              vQ.push_back(hit->Integral());
+
+              double q = hit->Integral();
+              if (fSumHitSnippets) {
+                for (const art::Ptr<recob::Hit> secondaryHit : hitSnippets[hit])
+                  q += secondaryHit->Integral();
+              }
+
+              vQ.push_back(q);
               totQ += hit->Integral();
               avgT += hit->PeakTime();
               ++nhits;
