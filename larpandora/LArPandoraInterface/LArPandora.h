@@ -12,6 +12,8 @@
 #include "larpandora/LArPandoraInterface/LArPandoraInput.h"
 #include "larpandora/LArPandoraInterface/LArPandoraOutput.h"
 
+#include "larpandora/LArPandoraInterface/LArPandoraHitCollectionTool.h"
+
 #include <string>
 
 namespace lar_pandora {
@@ -34,6 +36,8 @@ namespace lar_pandora {
   protected:
     void CreatePandoraInput(art::Event& evt, IdToHitMap& idToHitMap);
     void ProcessPandoraOutput(art::Event& evt, const IdToHitMap& idToHitMap);
+
+    fhicl::ParameterSet ConstructHitCollectionToolParameterSet(const fhicl::ParameterSet& pset);
 
     std::string m_configFile; ///< The config file
 
@@ -68,6 +72,8 @@ namespace lar_pandora {
     bool
       m_disableRealDataCheck; ///< Whether to check if the input file contains real data before accessing MC information
     bool m_lineGapsCreated; ///< Book-keeping: whether line gap creation has been called
+
+    std::unique_ptr<IHitCollectionTool> m_collectHitsTool; ///< art tool used to collect the hits
 
     LArPandoraInput::Settings m_inputSettings;   ///< The lar pandora input settings
     LArPandoraOutput::Settings m_outputSettings; ///< The lar pandora output settings
