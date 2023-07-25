@@ -237,9 +237,8 @@ namespace lar_pandora {
       art::Ptr<recob::Track> pTrack(makeTrackPtr(outputTracks->size() - 1));
 
       // Output associations, after output objects are in place
-      util::CreateAssn(*this, evt, pTrack, pPFParticle, *(outputParticlesToTracks.get()));
-      util::CreateAssn(
-        *this, evt, *(outputTracks.get()), hitsInParticle, *(outputTracksToHits.get()));
+      util::CreateAssn(evt, pTrack, pPFParticle, *(outputParticlesToTracks.get()));
+      util::CreateAssn(evt, *(outputTracks.get()), hitsInParticle, *(outputTracksToHits.get()));
 
       //ATTN: metadata added with index from space points if available, null for others
       for (unsigned int hitIndex = 0; hitIndex < hitsInParticle.size(); hitIndex++) {

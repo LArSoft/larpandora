@@ -489,10 +489,10 @@ public:
   {
     bool checked = true;
     for (auto const& showerprop : showerproperties) {
-      checked *= showerprop.second->CheckShowerElement();
+      checked = checked && showerprop.second->CheckShowerElement();
     }
     for (auto const& showerdataprod : showerdataproducts) {
-      checked *= showerdataprod.second->CheckShowerElement();
+      checked = checked && showerdataprod.second->CheckShowerElement();
     }
     return checked;
   }

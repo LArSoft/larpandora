@@ -226,11 +226,10 @@ namespace lar_pandora {
         evt, m_pfParticleLabel, particleToClustersIter->second, hitsInParticle);
 
       // Output associations, after output objects are in place
-      util::CreateAssn(*this, evt, pShower, pPFParticle, *(outputParticlesToShowers.get()));
-      util::CreateAssn(*this, evt, pPCAxis, pPFParticle, *(outputParticlesToPCAxes.get()));
-      util::CreateAssn(
-        *this, evt, *(outputShowers.get()), hitsInParticle, *(outputShowersToHits.get()));
-      util::CreateAssn(*this, evt, pPCAxis, pShower, *(outputShowersToPCAxes.get()));
+      util::CreateAssn(evt, pShower, pPFParticle, *(outputParticlesToShowers.get()));
+      util::CreateAssn(evt, pPCAxis, pPFParticle, *(outputParticlesToPCAxes.get()));
+      util::CreateAssn(evt, *(outputShowers.get()), hitsInParticle, *(outputShowersToHits.get()));
+      util::CreateAssn(evt, pPCAxis, pShower, *(outputShowersToPCAxes.get()));
     }
 
     mf::LogDebug("LArPandora") << "   Number of new showers: " << outputShowers->size()

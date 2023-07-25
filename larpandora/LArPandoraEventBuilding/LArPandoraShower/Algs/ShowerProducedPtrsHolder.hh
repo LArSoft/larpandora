@@ -405,7 +405,7 @@ public:
     bool checked = true;
     for (auto const& showerproductPtr : showerproductPtrs) {
       if (showerproductPtr.first == "shower") { continue; }
-      checked *= selement_holder.CheckElement(showerproductPtr.first);
+      checked = checked && selement_holder.CheckElement(showerproductPtr.first);
     }
     return checked;
   }
