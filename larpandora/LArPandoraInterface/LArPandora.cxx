@@ -26,6 +26,7 @@
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Vertex.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
 
 #include "nusimdata/SimulationBase/MCParticle.h"
 
@@ -177,7 +178,9 @@ namespace lar_pandora {
     // ATTN Should complete gap creation in begin job callback, but channel status service functionality unavailable at that point
     if (!m_lineGapsCreated && m_enableDetectorGaps) {
       LArPandoraInput::CreatePandoraReadoutGaps(
-        evt.time().value(), m_inputSettings, m_driftVolumeMap);
+        *(art::ServiceHandle<lariov::ChannelStatusService>()->DataFor(evt)),
+        m_inputSettings,
+        m_driftVolumeMap);
       m_lineGapsCreated = true;
     }
 

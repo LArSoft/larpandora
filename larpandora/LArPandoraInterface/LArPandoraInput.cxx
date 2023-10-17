@@ -281,7 +281,7 @@ namespace lar_pandora {
 
   //------------------------------------------------------------------------------------------------------------------------------------------
 
-  void LArPandoraInput::CreatePandoraReadoutGaps(lariov::DBTimeStamp_t ts,
+  void LArPandoraInput::CreatePandoraReadoutGaps(lariov::ChannelStatusData const& channelStatus,
                                                  const Settings& settings,
                                                  const LArDriftVolumeMap& driftVolumeMap)
   {
@@ -295,8 +295,6 @@ namespace lar_pandora {
     const pandora::Pandora* pPandora(settings.m_pPrimaryPandora);
 
     art::ServiceHandle<geo::Geometry const> theGeometry;
-    const lariov::ChannelStatusProvider& channelStatus(
-      art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider());
 
     LArPandoraDetectorType* detType(detector_functions::GetDetectorType());
 
@@ -309,7 +307,7 @@ namespace lar_pandora {
       for (unsigned int iwire = 0; iwire < nWires; ++iwire) {
         const raw::ChannelID_t channel(
           theGeometry->PlaneWireToChannel(geo::WireID{plane.ID(), iwire}));
-        const bool isBadChannel(channelStatus.IsBad(ts, channel));
+        const bool isBadChannel(channelStatus.IsBad(channel));
         const bool isLastWire(nWires == (iwire + 1));
 
         if (isBadChannel && (firstBadWire < 0)) firstBadWire = iwire;

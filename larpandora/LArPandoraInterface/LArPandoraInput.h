@@ -7,6 +7,7 @@
 #ifndef LAR_PANDORA_INPUT_H
 #define LAR_PANDORA_INPUT_H 1
 
+#include "larevt/CalibrationDBI/IOVData/ChannelStatusData.h"
 #include "larevt/CalibrationDBI/Interface/CalibrationDBIFwd.h"
 #include "larpandora/LArPandoraInterface/ILArPandora.h"
 #include "larpandora/LArPandoraInterface/LArPandoraGeometry.h"
@@ -96,7 +97,7 @@ namespace lar_pandora {
      *  @param  settings the settings
      *  @param  driftVolumeMap the mapping from volume id to drift volume
      */
-    static void CreatePandoraReadoutGaps(lariov::DBTimeStamp_t ts,
+    static void CreatePandoraReadoutGaps(lariov::ChannelStatusData const& channelStatus,
                                          const Settings& settings,
                                          const LArDriftVolumeMap& driftVolumeMap);
 
