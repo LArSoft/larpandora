@@ -161,6 +161,9 @@ showertrackdirection:{
     UsePositionInfo:  true #Don't use the directionAt point rather than definition above.
     #i.e. ((Position of traj point + 1) - (Position of traj point)
     DebugEVD:         false
+    InitialTrackInputLabel: "InitialTrack"
+    ShowerStartPositionInputLabel: "ShowerStartPosition"
+    ShowerDirectionOutputLabel: "ShowerDirection"
 }
 
 showertracktrajpointdirection: {
