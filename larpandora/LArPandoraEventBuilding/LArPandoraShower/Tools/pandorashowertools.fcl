@@ -362,6 +362,26 @@ showerlengthpercentile:{
     ShowerOpeningAngleOutputLabel: "ShowerOpeningAngle"
 }
 
+showerrefinedpcadirection:{
+    tool_type: ShowerRefinedPCADirection
+    BaseTools: @local::showerbasetools
+    # PFParticleLabel: "pandora"
+    ChargeWeighted: true
+    QuadraticLongitudinalWeight: false
+    QuadraticTransverseWeight: true
+    MinPCAPoints: 10
+    MaxIterations: 50
+    ConvergenceAngle: 0.01
+    TransverseScale: 3.
+    LongitudinalScale: 7.
+    DistanceFloor: 1.
+    ShowerStartPositionInputLabel: "ShowerStartPosition"
+    ShowerDirectionInputLabel: "ShowerDirection"
+    ShowerDirectionOutputLabel: "ShowerDirection"
+    ShowerCentreOutputLabel: "ShowerCentre"
+    ShowerPCAOutputLabel: "ShowerPCA"
+}
+
 showerpcaeigenvaluelength:{
     tool_type: ShowerPCAEigenvalueLength
     BaseTools: @local::showerbasetools
