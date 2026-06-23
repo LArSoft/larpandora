@@ -106,11 +106,11 @@ namespace ShowerRecoTools {
       auto const pos = sp->position() - StartPosition;
       if (pos.R() == 0) { continue; }
 
-      sumX = pos.X();
+      sumX += pos.X();
       sumX2 += pos.X() * pos.X();
-      sumY = pos.Y();
+      sumY += pos.Y();
       sumY2 += pos.Y() * pos.Y();
-      sumZ = pos.Z();
+      sumZ += pos.Z();
       sumZ2 += pos.Z() * pos.Z();
     }
 
