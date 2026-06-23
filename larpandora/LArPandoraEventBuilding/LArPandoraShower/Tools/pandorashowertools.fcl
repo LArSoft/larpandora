@@ -20,6 +20,7 @@ showerpcadirection:{
     UseStartPosition: true #The direction of the PCA is in the direction of
     #(Shower Center - Start Position)
     ChargeWeighted:   false #Apply a charge weighting in the PCA.
+    WritePCAxis:      true #Write the PCA to the event as a PCAxis product
     ShowerStartPositionInputLabel: "ShowerStartPosition"
     ShowerDirectionOutputLabel: "ShowerDirection"
     ShowerCentreOutputLabel: "ShowerCentre"
@@ -366,6 +367,7 @@ showerrefinedpcadirection:{
     tool_type: ShowerRefinedPCADirection
     BaseTools: @local::showerbasetools
     # PFParticleLabel: "pandora"
+    WritePCAxis: true
     ChargeWeighted: true
     QuadraticLongitudinalWeight: false
     QuadraticTransverseWeight: true

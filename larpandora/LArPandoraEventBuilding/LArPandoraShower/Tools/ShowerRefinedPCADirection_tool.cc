@@ -67,6 +67,7 @@ namespace ShowerRecoTools {
     //fcl
     art::InputTag fPFParticleLabel;
     int fVerbose;
+    bool fWritePCAxis;
     bool fChargeWeighted;
     bool fQuadraticLongitudinalWeight;
     bool fQuadraticTransverseWeight;
@@ -88,6 +89,7 @@ namespace ShowerRecoTools {
     : IShowerTool(pset.get<fhicl::ParameterSet>("BaseTools"))
     , fPFParticleLabel(pset.get<art::InputTag>("PFParticleLabel"))
     , fVerbose(pset.get<int>("Verbose"))
+    , fWritePCAxis(pset.get<bool>("WritePCAxis"))
     , fChargeWeighted(pset.get<bool>("ChargeWeighted"))
     , fQuadraticLongitudinalWeight(pset.get<bool>("QuadraticLongitudinalWeight"))
     , fQuadraticTransverseWeight(pset.get<bool>("QuadraticTransverseWeight"))
@@ -106,6 +108,8 @@ namespace ShowerRecoTools {
 
   void ShowerRefinedPCADirection::InitialiseProducers()
   {
+    if (!fWritePCAxis)
+      return;
     InitialiseProduct<std::vector<recob::PCAxis>>(fShowerPCAOutputLabel);
     InitialiseProduct<art::Assns<recob::Shower, recob::PCAxis>>("ShowerPCAxisAssn");
     InitialiseProduct<art::Assns<recob::PFParticle, recob::PCAxis>>("PFParticlePCAxisAssn");
@@ -136,7 +140,7 @@ namespace ShowerRecoTools {
     {
       if (fVerbose)
         mf::LogError("ShowerRefinedPCADirection") << "Not enough spacepoints for PCA (" << spacePoints.size() << ")" << std::endl;
-      return 1;
+      return 0;
     }
 
     geo::Point_t startPosition = {-999, -999, -999};
@@ -144,7 +148,6 @@ namespace ShowerRecoTools {
 
     geo::Vector_t currentDirection = {-999, -999, -999};
     ShowerEleHolder.GetElement(fShowerDirectionInputLabel, currentDirection);
-    std::cout << "!!!!!!: Seed =  " << currentDirection.X() << ", " << currentDirection.Y() << ", " << currentDirection.Z() << "\n";
 
     if (currentDirection.R() == 0.)
     {
@@ -174,17 +177,21 @@ namespace ShowerRecoTools {
       std::vector<double> weights = CalculateWeights(spacePoints, startPosition, currentDirection, clockData, detProp, fmh);
       PCAResult nextResult = CalculateWeightedPCA(spacePoints, weights);
 
-      if (nextResult.nPoints < static_cast<int>(fMinPCAPoints) || nextResult.direction.R() == 0.) {
+      if (nextResult.nPoints < static_cast<int>(fMinPCAPoints) || nextResult.direction.R() == 0.)
+      {
         if (!foundWeightedSolution)
         {
           if (fVerbose)
-            mf::LogError("ShowerRefinedPCADirection") << "Unable to calculate a weighted PCA from the seed direction" << std::endl;
-          return 1;
+            mf::LogWarning("ShowerRefinedPCADirection")
+              << "Unable to calculate a weighted PCA from the seed direction, keeping the seed PCA" << std::endl;
+          return nextResult.direction.R() == 0. ? 1 : 0;
         }
 
         if (fVerbose)
-          mf::LogWarning("ShowerRefinedPCADirection") << "Weighted PCA dropped below the minimum number of usable spacepoints, "
-                                                      << "using the previous successful iteration" << std::endl;
+          mf::LogWarning("ShowerRefinedPCADirection")
+            << "Weighted PCA dropped below the minimum number of usable spacepoints (" << fMinPCAPoints << "), "
+            << "using the previous successful iteration" << std::endl;
+
         break;
       }
 
@@ -198,13 +205,11 @@ namespace ShowerRecoTools {
       if (std::acos(dot) < fConvergenceAngle || iteration + 1 == fMaxIterations)
       {
         if (fVerbose)
-          mf::LogInfo("ShowerRefinedPCADirection") << "Finished at " << iteration + 1 << " / " << fMaxIterations << std::endl;
+          mf::LogInfo("ShowerRefinedPCADirection")
+            << "Finished PCA refinement at iteration " << iteration + 1 << " / " << fMaxIterations << std::endl;
         break;
       }
     }
-
-    if (!foundWeightedSolution)
-      return 1;
 
     //Not implementing errors
     geo::Point_t showerCentreErr = {-999, -999, -999};
@@ -213,8 +218,6 @@ namespace ShowerRecoTools {
     ShowerEleHolder.SetElement(currentResult.centre, showerCentreErr, fShowerCentreOutputLabel);
     ShowerEleHolder.SetElement(currentResult.pca, fShowerPCAOutputLabel);
     ShowerEleHolder.SetElement(currentDirection, showerDirectionErr, fShowerDirectionOutputLabel);
-
-    std::cout << "!!!!!!: Refined =  " << currentDirection.X() << ", " << currentDirection.Y() << ", " << currentDirection.Z() << "\n";
 
     return 0;
   }
@@ -361,6 +364,9 @@ namespace ShowerRecoTools {
   int ShowerRefinedPCADirection::AddAssociations(
     const art::Ptr<recob::PFParticle>& pfpPtr, art::Event& Event, reco::shower::ShowerElementHolder& ShowerEleHolder)
   {
+    if (!fWritePCAxis)
+      return 0;
+
     if (!ShowerEleHolder.CheckElement(fShowerPCAOutputLabel))
     {
       if (fVerbose)
