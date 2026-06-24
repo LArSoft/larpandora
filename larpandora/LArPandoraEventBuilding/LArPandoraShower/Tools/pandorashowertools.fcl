@@ -369,11 +369,11 @@ showerrefinedpcadirection:{
     # PFParticleLabel: "pandora"
     WritePCAxis: true
     ChargeWeighted: true
-    QuadraticLongitudinalWeight: false
+    QuadraticLongitudinalWeight: true
     QuadraticTransverseWeight: true
     MinPCAPoints: 10
     MaxIterations: 50
-    ConvergenceAngle: 0.01
+    ConvergenceAngle: 0.005
     TransverseScale: 3.
     LongitudinalScale: 7.
     DistanceFloor: 1.
