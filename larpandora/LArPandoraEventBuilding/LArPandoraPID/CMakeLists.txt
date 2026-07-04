@@ -8,36 +8,16 @@ cet_add_compiler_flags(CXX -Wno-pedantic)
 cet_build_plugin(PandoraPID art::EDProducer
   LIBRARIES
     PRIVATE
-      torch
-      torch_cpu      
-      Eigen3::Eigen    
-      larcorealg::Geometry
-      larcore::Geometry_Geometry_service
-      larsim::Simulation 
-      lardataobj::Simulation
-      lardataobj::RawData
-      lardataobj::RecoBase
-      lardataobj::AnalysisBase
-      lardata::Utilities
-      lardataalg::DetectorInfo
-      nusimdata::SimulationBase
-      larsim::MCCheater_BackTrackerService_service           
-      larsim::MCCheater_ParticleInventoryService_service
-      larsim::Utils
-      ROOT::Core
-      art::Persistency_Common
-      art::Persistency_Provenance
       art::Utilities
-      canvas::canvas
-      messagefacility::MF_MessageLogger
-      fhiclcpp::fhiclcpp
-      cetlib::cetlib
-      larreco::RecoAlg
+      Eigen3::Eigen    
+      lardataobj::RecoBase
       larpandora::LArPandoraUtils
       larpandora::LArPandoraEventBuilding_LArPandoraPID_Ivysaurus_Managers    
-      larpandora::LArPandoraEventBuilding_LArPandoraPID_Ivysaurus_TensorFlow    
+      larpandora::LArPandoraEventBuilding_LArPandoraPID_Ivysaurus_Evaluator
       larpandora::LArPandoraInterface
-      larreco::Calorimetry      
+      larreco::Calorimetry
+      torch
+      torch_cpu   
 )
 
 

@@ -1,5 +1,5 @@
 /**
- *  @file   larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Tensorflow/IvysaurusEvaluator.h
+ *  @file   larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Evaluator/IvysaurusEvaluator.h
  *
  *  @brief  Class to run the Ivysaurus PID
  */
@@ -38,12 +38,11 @@ public:
         float m_pionScore;     ///< Pion PID score
         float m_electronScore; ///< Electron PID score
         float m_photonScore;   ///< Photon PID score
-        int m_particleType;    ///< particle type (0,1,2,3,4=muon,proton,pion,electron, photon)
 
         /**
          *  @brief  Default constructor
          */        
-        IvysaurusScores() : m_muonScore(-1.f), m_protonScore(-1.f), m_pionScore(-1.f), m_electronScore(-1.f), m_photonScore(-1.f), m_particleType(-1) {};
+        IvysaurusScores() : m_muonScore(-1.f), m_protonScore(-1.f), m_pionScore(-1.f), m_electronScore(-1.f), m_photonScore(-1.f) {};
     };
 
     /**

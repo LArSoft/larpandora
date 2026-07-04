@@ -1,5 +1,5 @@
 /**
- *  @file   larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Modules/IvysaurusTrainingFiles_module.cc
+ *  @file   larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Training/IvysaurusTrainingFiles_module.cc
  *
  *  @brief  Module to create the training files for the ivysaurus PID
  */
@@ -11,13 +11,8 @@
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/PFPVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/TrackVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/ShowerVarManager.h"
-#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
 // ROOT
 #include "TTree.h"
-#include "TVector3.h"
-// C++
-#include <fstream>
-#include <string>
 
 namespace ivysaurus
 {
@@ -119,28 +114,19 @@ DEFINE_ART_MODULE(IvysaurusTrainingFiles)
 } // namespace ivysaurus
 
 //------------------------------------------------------------------------------------------------------------------------------------------
-// implementation follows
-
+// ART
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
+#include "fhiclcpp/ParameterSet.h"
+// LArSoft
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-
+#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
 #include "larpandora/LArPandoraUtils/PandoraEventUtils.h"
 #include "larpandora/LArPandoraUtils/PandoraHitUtils.h"
 #include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
-#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
-
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "larsim/Utils/TruthMatchUtils.h"
-
-#include <iostream>
-#include <random>
 
 namespace ivysaurus
 {

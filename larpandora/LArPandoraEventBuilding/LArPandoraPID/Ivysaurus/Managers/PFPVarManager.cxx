@@ -6,22 +6,11 @@
 // ART
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "canvas/Persistency/Common/FindManyP.h"
 // LArSoft
-#include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/PlaneGeo.h"
-#include "larcorealg/Geometry/TPCGeo.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/PFPVarManager.h"
 #include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
-// ROOT
-#include "TVector3.h"
-//C++
-#include <vector>
-#include <string>
-#include <random>
 
 namespace ivysaurus
 {

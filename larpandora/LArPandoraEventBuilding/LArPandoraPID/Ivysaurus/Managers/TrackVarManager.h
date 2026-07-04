@@ -7,18 +7,11 @@
 #define TRACK_VAR_MANAGER_H
 // ART
 #include "art/Framework/Principal/Event.h"
-#include "canvas/Persistency/Common/FindManyP.h"
 // LArSoft
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Shower.h"
 #include "larreco/Calorimetry/CalorimetryAlg.h"
-//ROOT
-#include "TVector3.h"
-// C++
-#include <vector>
-#include <string>
-#include <map>
 
 namespace ivysaurus
 {

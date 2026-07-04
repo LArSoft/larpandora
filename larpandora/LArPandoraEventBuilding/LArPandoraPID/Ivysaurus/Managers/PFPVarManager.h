@@ -7,15 +7,8 @@
 #define PFP_VAR_MANAGER_H
 // ART
 #include "art/Framework/Principal/Event.h"
-#include "canvas/Persistency/Common/FindManyP.h"
 // LArSoft
 #include "lardataobj/RecoBase/PFParticle.h"
-// ROOT
-#include "TVector3.h"
-// C++
-#include <vector>
-#include <string>
-#include <map>
 
 namespace ivysaurus
 {

@@ -1,8 +1,11 @@
 /**
- *  @file   larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Tensorflow/IvysaurusEvaluator.cxx
+ *  @file   larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Evaluator/IvysaurusEvaluator.cxx
  *
  *  @brief  Class to run the Ivysaurus PID
  */
+// C++
+#include <torch/script.h>
+#include <torch/torch.h>
 // ART
 #include "art/Framework/Principal/Event.h"
 // LArSoft
@@ -14,10 +17,7 @@
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/TrackVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/ShowerVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
-#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/TensorFlow/IvysaurusEvaluator.h"
-// C++
-#include <torch/script.h>
-#include <torch/torch.h>
+#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Evaluator/IvysaurusEvaluator.h"
 
 namespace ivysaurus
 {
@@ -64,7 +64,7 @@ IvysaurusEvaluator::IvysaurusEvaluator(fhicl::ParameterSet const &pset) :
     }    
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------    
 
 ivysaurus::IvysaurusEvaluator::IvysaurusScores ivysaurus::IvysaurusEvaluator::IvysaurusUseEvaluate(const art::Event &evt, 
     const art::Ptr<recob::PFParticle> &pfparticle)
@@ -121,24 +121,10 @@ ivysaurus::IvysaurusEvaluator::IvysaurusScores ivysaurus::IvysaurusEvaluator::Iv
     ivysaurusScores.m_electronScore = probs[0][3].item<float>();
     ivysaurusScores.m_photonScore = probs[0][4].item<float>();
 
-    float highestScore = -std::numeric_limits<float>::max();
-    int count = 0;
-    for (float score : {ivysaurusScores.m_muonScore, ivysaurusScores.m_protonScore, ivysaurusScores.m_pionScore, 
-        ivysaurusScores.m_electronScore, ivysaurusScores.m_photonScore})
-    {
-        if (score > highestScore)
-        {
-            highestScore = score;
-            ivysaurusScores.m_particleType = count;
-        }
-
-        ++count;
-    }
-
     return ivysaurusScores;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------    
 
 bool IvysaurusEvaluator::IsContained(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle)
 {
@@ -160,7 +146,7 @@ bool IvysaurusEvaluator::IsContained(const art::Event &evt, const art::Ptr<recob
     return true;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------    
 
 std::map<IvysaurusUtils::PandoraView, torch::Tensor> IvysaurusEvaluator::ObtainInputGridTensorMap(const std::map<IvysaurusUtils::PandoraView, GridManager::Grid> &gridMap)
 {
@@ -186,7 +172,7 @@ std::map<IvysaurusUtils::PandoraView, torch::Tensor> IvysaurusEvaluator::ObtainI
     return tensorViewMap;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------    
 
 std::map<IvysaurusUtils::PandoraView, torch::Tensor> IvysaurusEvaluator::ObtainGridMaskMap(const std::map<IvysaurusUtils::PandoraView, GridManager::Grid> &gridMap)
 {
@@ -212,7 +198,7 @@ std::map<IvysaurusUtils::PandoraView, torch::Tensor> IvysaurusEvaluator::ObtainG
     return maskMap;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------    
 
 torch::Tensor IvysaurusEvaluator::ObtainInputTrackTensor(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle)
 {
@@ -250,7 +236,7 @@ torch::Tensor IvysaurusEvaluator::ObtainInputTrackTensor(const art::Event &evt, 
     return trackVarTensor;
 }
 
-// /////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------    
 
 torch::Tensor IvysaurusEvaluator::ObtainInputShowerTensor(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle)
 {
@@ -275,4 +261,5 @@ torch::Tensor IvysaurusEvaluator::ObtainInputShowerTensor(const art::Event &evt,
     return showerVarTensor;
 }
 
-}
+} // namespace ivysaurus
+

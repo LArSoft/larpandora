@@ -8,19 +8,12 @@
 #define GRIDMANAGER_H
 // ART
 #include "art/Framework/Principal/Event.h"
-#include "canvas/Persistency/Common/FindManyP.h"
 // LArSoft
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
 #include "larreco/Calorimetry/CalorimetryAlg.h"
-// ROOT
-#include "TVector3.h"
-// C++
-#include <vector>
-#include <string>
-#include <map>
 
 namespace ivysaurus
 {
@@ -81,7 +74,7 @@ class GridManager
           /**
            *  @brief  Determine whether an input position is inside the grid (function consideres hit width)
            *
-            *  @param position the input hit position
+           *  @param position the input hit position
            *  @param width the input hit width
            *
            *  @return whether the hit lies within the grid
@@ -90,7 +83,7 @@ class GridManager
 
            /**
             *  @brief  Add an input hit's energy to the grid
-             *
+            *
             *  @param position the input hit position
             *  @param width the input hit width
             *  @param energy the input hit energy (corrected)
