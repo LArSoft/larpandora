@@ -1,20 +1,13 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// Class:       IvysaurusEvaluator
-// Authors:     R.Sulej (Robert.Sulej@cern.ch), from DUNE, FNAL/NCBJ, Sept. 2017
-//              P.Plonski,                      from DUNE, WUT, Sept. 2017
-//              S.Alonso-Monsalve,              from DUNE, CERN, Aug. 2018
-// Iterface to run Tensorflow graph saved to a file. First attempts, quite functional.
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/**
+ *  @file   larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Tensorflow/IvysaurusEvaluator.cxx
+ *
+ *  @brief  Class to run the Ivysaurus PID
+ */
+// ART
 #include "art/Framework/Principal/Event.h"
-
-#include <torch/script.h>
-#include <torch/torch.h>
-
+// LArSoft
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/PFParticleMetadata.h"
-
 #include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/GridManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/PFPVarManager.h"
@@ -22,8 +15,9 @@
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/ShowerVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/TensorFlow/IvysaurusEvaluator.h"
-
-/////////////////////////////////////////////////////////////
+// C++
+#include <torch/script.h>
+#include <torch/torch.h>
 
 namespace ivysaurus
 {
@@ -108,13 +102,8 @@ ivysaurus::IvysaurusEvaluator::IvysaurusScores ivysaurus::IvysaurusEvaluator::Iv
     std::map<IvysaurusUtils::PandoraView, torch::Tensor> startMaskMap = this->ObtainGridMaskMap(startGridMap);
     std::map<IvysaurusUtils::PandoraView, torch::Tensor> endMaskMap = this->ObtainGridMaskMap(endGridMap); 
     
-    // Obtain the input track variable tensors (PFPVars included in track)
     torch::Tensor trackVarTensor = ObtainInputTrackTensor(evt, pfparticle);
-
-    // Obtain the input shower variable tensors
     torch::Tensor showerVarTensor = ObtainInputShowerTensor(evt, pfparticle);
-
-    // Run the model
     const bool isContained = this->IsContained(evt, pfparticle);
     torch::jit::script::Module &ivysaurus = isContained ? m_containedModel : m_exitingModel;
     torch::NoGradGuard guard;
@@ -125,8 +114,6 @@ ivysaurus::IvysaurusEvaluator::IvysaurusScores ivysaurus::IvysaurusEvaluator::Iv
             startGridTensorMap.at(IvysaurusUtils::TPC_VIEW_W), startMaskMap.at(IvysaurusUtils::TPC_VIEW_W),
             endGridTensorMap.at(IvysaurusUtils::TPC_VIEW_W), endMaskMap.at(IvysaurusUtils::TPC_VIEW_W),
             trackVarTensor, showerVarTensor}).toTensor();
-        
-    // Remember to softmax!
     torch::Tensor probs = torch::softmax(output, 1);
     ivysaurusScores.m_muonScore = probs[0][0].item<float>();
     ivysaurusScores.m_protonScore = probs[0][1].item<float>();
@@ -136,7 +123,6 @@ ivysaurus::IvysaurusEvaluator::IvysaurusScores ivysaurus::IvysaurusEvaluator::Iv
 
     float highestScore = -std::numeric_limits<float>::max();
     int count = 0;
-
     for (float score : {ivysaurusScores.m_muonScore, ivysaurusScores.m_protonScore, ivysaurusScores.m_pionScore, 
         ivysaurusScores.m_electronScore, ivysaurusScores.m_photonScore})
     {

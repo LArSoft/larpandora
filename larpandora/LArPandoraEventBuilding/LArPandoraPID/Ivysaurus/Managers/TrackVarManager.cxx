@@ -1,37 +1,33 @@
-////////////////////////////////////////////////////////////////////////
-/// \file    TrackVarManager.cxx
-/// \brief   A class to manage the Ivysaurus 2D track variable input 
-/// \author  Isobel Mawby - i.mawby1@lancaster.ac.uk
-////////////////////////////////////////////////////////////////////////
-
-#include <vector>
-#include <string>
-#include <random>
-
-#include "TVector3.h"
-
+/**
+ *  @file  larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/TrackVarManager.h
+ *
+ *  @brief A class to manage the Ivysaurus track variables input 
+ *
+ */
+// ART
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/FindManyP.h"
-
+// LArSoft
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
-
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Shower.h"
-
 #include "larpandora/LArPandoraInterface/LArPandoraGeometry.h"
-
-#include "larreco/Calorimetry/CalorimetryAlg.h"
-#include "larreco/RecoAlg/TrackMomentumCalculator.h"
-
 #include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
 #include "larpandora/LArPandoraUtils/PandoraHitUtils.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/TrackVarManager.h"
+#include "larreco/Calorimetry/CalorimetryAlg.h"
+#include "larreco/RecoAlg/TrackMomentumCalculator.h"
+// ROOT
+#include "TVector3.h"
+// C++
+#include <vector>
+#include <string>
+#include <random>
 
 namespace ivysaurus
 {
@@ -50,8 +46,7 @@ TrackVarManager::TrackVars::TrackVars() :
 {
 }
 
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 TrackVarManager::TrackVarManager(const fhicl::ParameterSet& pset) :
     m_recoModuleLabel(pset.get<std::string>("RecoModuleLabel")),
@@ -85,13 +80,13 @@ TrackVarManager::TrackVarManager(const fhicl::ParameterSet& pset) :
 {
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 TrackVarManager::~TrackVarManager()
 {
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 bool TrackVarManager::EvaluateTrackVars(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, 
     TrackVarManager::TrackVars &trackVars) const
@@ -109,7 +104,7 @@ bool TrackVarManager::EvaluateTrackVars(const art::Event &evt, const art::Ptr<re
     return true;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void TrackVarManager::FillHierarchyInfo(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, 
     TrackVarManager::TrackVars &trackVars) const
@@ -144,8 +139,8 @@ void TrackVarManager::FillHierarchyInfo(const art::Event &evt, const art::Ptr<re
         if (static_cast<int>(hits.size()) > highestHits)
         {
             highestHits = hits.size();
-            highestHitEnergy = GetChildEnergy(evt, pfparticle);
-            highestHitTrackScore = this->GetTrackScore(evt, pfparticle);
+            highestHitEnergy = this->GetPFPEnergy(evt, childPFP);
+            highestHitTrackScore = this->GetTrackScore(evt, childPFP);
         }
     }
     
@@ -161,9 +156,9 @@ void TrackVarManager::FillHierarchyInfo(const art::Event &evt, const art::Ptr<re
     }
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
-float TrackVarManager::GetChildEnergy(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle) const
+float TrackVarManager::GetPFPEnergy(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle) const
 {
     auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
     auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
@@ -174,7 +169,7 @@ float TrackVarManager::GetChildEnergy(const art::Event &evt, const art::Ptr<reco
     return energy;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 float TrackVarManager::GetTrackScore(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle) const
 {
@@ -189,7 +184,7 @@ float TrackVarManager::GetTrackScore(const art::Event &evt, const art::Ptr<recob
     return trackScore;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void TrackVarManager::FillTrackLength(const art::Ptr<recob::Track> &track, TrackVarManager::TrackVars &trackVars) const
 {
@@ -197,12 +192,11 @@ void TrackVarManager::FillTrackLength(const art::Ptr<recob::Track> &track, Track
     trackVars.SetTrackLength(trackLength);
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 // This is copied from Dom's Pandizzle module
 // Follows the MicroBooNE method for MCS    
 void TrackVarManager::FillWobble(const art::Ptr<recob::Track> &track, TrackVarManager::TrackVars &trackVars) const
 {
-  //Get the number of points
   size_t NPoints = track->NumberTrajectoryPoints();
   //Store the directions between adjacent points on a vector
   std::vector<TVector3> directions;
@@ -239,7 +233,7 @@ void TrackVarManager::FillWobble(const art::Ptr<recob::Track> &track, TrackVarMa
     direction_second.SetY(0);
     double dot_product = direction_first.Dot(direction_second);
     dot_product = std::min(std::max(dot_product,-1.),1.);
-    double angle = acos(dot_product) * 180/3.142;
+    double angle = acos(dot_product) * 180/M_PI;
 
     //define +x as a +angle
     if (direction_second.X() < 0) angle*=-1;
@@ -256,7 +250,7 @@ void TrackVarManager::FillWobble(const art::Ptr<recob::Track> &track, TrackVarMa
 
   double angle_var = 0;
   for (size_t i_angle = 0; i_angle < deflection_angles.size(); i_angle++){
-    angle_var = (deflection_angles[i_angle] - angle_mean)*(deflection_angles[i_angle] - angle_mean);
+    angle_var += (deflection_angles[i_angle] - angle_mean)*(deflection_angles[i_angle] - angle_mean);
   }
 
   if (deflection_angles.size() > 1) angle_var /= (deflection_angles.size()-1);
@@ -266,7 +260,7 @@ void TrackVarManager::FillWobble(const art::Ptr<recob::Track> &track, TrackVarMa
       trackVars.SetWobble(sqrt(angle_var));
 }
     
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void TrackVarManager::FillTrackMomentum(const art::Ptr<recob::Track> &track, 
     TrackVarManager::TrackVars &trackVars) const
@@ -280,12 +274,14 @@ void TrackVarManager::FillTrackMomentum(const art::Ptr<recob::Track> &track,
     float byMCS = trackMomCalc.GetMomentumMultiScatterChi2(track, true);
     byMCS = (byMCS - m_intTrkMomMCS) / m_gradTrkMomMCS;
 
-    const float comparison = std::fabs(byRange - byMCS) / byRange;
-
-    trackVars.SetMomentumComparison(comparison);
+    if (byRange > std::numeric_limits<float>::epsilon())
+    {
+        const float comparison = std::fabs(byRange - byMCS) / byRange;
+        trackVars.SetMomentumComparison(comparison);
+    }
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void TrackVarManager::NormaliseTrackVars(TrackVarManager::TrackVars &trackVars) const
 {
@@ -322,18 +318,20 @@ void TrackVarManager::NormaliseTrackVars(TrackVarManager::TrackVars &trackVars) 
     trackVars.SetIsNormalised(true);
 }
     
-/////////////////////////////////////////////////////////////    
-    
+//------------------------------------------------------------------------------------------------------------------------------------------
+
 float TrackVarManager::NormaliseTrackVar(const std::pair<float, bool> &inputTrackVar, const float mean, const float std) const
 {
     // Is still on default value...
     if (!inputTrackVar.second)
-        throw cet::exception("ivysaur::TrackVarManager::NormaliseTrackVar: ") << "can't normalise a variables that wasn't set";  
+        throw cet::exception("ivysaurus::TrackVarManager::NormaliseTrackVar: ") << "can't normalise a variables that wasn't set";  
+
+    if (std < std::numeric_limits<float>::epsilon())
+        throw cet::exception("ivysaurus::TrackVarManager::NormaliseTrackVar") << "can't normalise with a std equal to 0!";
     
     const float normalised((inputTrackVar.first - mean) / std);
     return normalised;
 }
 
-/////////////////////////////////////////////////////////////
+} // namespace ivysaurus
 
-}

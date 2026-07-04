@@ -19,6 +19,5 @@ std::vector<art::Ptr<recob::Hit>> PandoraClusterUtils::GetHits(const art::Ptr<re
 }
 
 
-} // namespace dune_ana
-
+} // namespace lar_pandora
 

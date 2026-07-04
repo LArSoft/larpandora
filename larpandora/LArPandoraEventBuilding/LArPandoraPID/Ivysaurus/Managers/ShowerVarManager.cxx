@@ -1,37 +1,33 @@
-////////////////////////////////////////////////////////////////////////
-/// \file    ShowerVarManager.cxx
-/// \brief   A class to manage the Ivysaurus 2D shower variable input 
-/// \author  Isobel Mawby - i.mawby1@lancaster.ac.uk
-////////////////////////////////////////////////////////////////////////
-
-#include <vector>
-#include <string>
-#include <random>
-
-#include "TVector3.h"
-
+/**
+ *  @file  larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/ShowerVarManager.h
+ *
+ *  @brief A class to manage the Ivysaurus shower variables input 
+ *
+ */
+// ART
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/FindManyP.h"
-
+// LArSoft
 #include "larcore/Geometry/Geometry.h"
-
 #include "larcorealg/Geometry/PlaneGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
-
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/Shower.h"
-
+#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/ShowerVarManager.h"
+#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
 #include "larpandora/LArPandoraInterface/LArPandoraGeometry.h"
-
 #include "larpandora/LArPandoraUtils/PandoraEventUtils.h"
 #include "larpandora/LArPandoraUtils/PandoraHitUtils.h"
 #include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
 #include "larpandora/LArPandoraUtils/PandoraShowerUtils.h"
-#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/ShowerVarManager.h"
-#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
+// ROOT
+#include "TVector3.h"
+// C++
+#include <vector>
+#include <string>
+#include <random>
 
 namespace ivysaurus
 {
@@ -46,8 +42,7 @@ ShowerVarManager::ShowerVars::ShowerVars() :
 {
 }
 
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 ShowerVarManager::ShowerVarManager(const fhicl::ParameterSet& pset) :
     m_recoModuleLabel(pset.get<std::string>("RecoModuleLabel")),
@@ -67,13 +62,13 @@ ShowerVarManager::ShowerVarManager(const fhicl::ParameterSet& pset) :
 {
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------    
 
 ShowerVarManager::~ShowerVarManager()
 {
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 bool ShowerVarManager::EvaluateShowerVars(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, 
     ShowerVarManager::ShowerVars &showerVars) const
@@ -95,7 +90,7 @@ bool ShowerVarManager::EvaluateShowerVars(const art::Event &evt, const art::Ptr<
     return true;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 bool ShowerVarManager::GetParentEndpoint(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, TVector3 &parentEnd) const
 {
@@ -137,7 +132,7 @@ bool ShowerVarManager::GetParentEndpoint(const art::Event &evt, const art::Ptr<r
     return true;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void ShowerVarManager::FillDisplacement(const art::Event &evt, const TVector3 &parentEndpoint, const art::Ptr<recob::Shower> &shower, 
     ShowerVarManager::ShowerVars &showerVars) const
@@ -154,7 +149,7 @@ void ShowerVarManager::FillDisplacement(const art::Event &evt, const TVector3 &p
     showerVars.SetDCA(dca);
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void ShowerVarManager::FillTrackStub(const art::Event &evt, const art::Ptr<recob::Shower> shower, 
     ShowerVarManager::ShowerVars &showerVars) const
@@ -174,7 +169,7 @@ void ShowerVarManager::FillTrackStub(const art::Event &evt, const art::Ptr<recob
     showerVars.SetTrackStubLength(trackStubLength);
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void ShowerVarManager::FillAvSeparation(const art::Event &evt, const TVector3 &parentEndpoint, const art::Ptr<recob::PFParticle> &pfparticle, 
     const art::Ptr<recob::Shower> &shower, ShowerVarManager::ShowerVars &showerVars) const
@@ -212,7 +207,7 @@ void ShowerVarManager::FillAvSeparation(const art::Event &evt, const TVector3 &p
     showerVars.SetNuVertexAvSeparation(nuVertexAvSeparation);
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void ShowerVarManager::FillChargeAsymmetry(const art::Event &evt, const TVector3 &parentEndpoint, const art::Ptr<recob::Shower> &shower, 
     ShowerVarManager::ShowerVars &showerVars) const
@@ -248,7 +243,7 @@ void ShowerVarManager::FillChargeAsymmetry(const art::Event &evt, const TVector3
     showerVars.SetNuVertexChargeAsymmetry(maxChargeAsymmetry);
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 float ShowerVarManager::GetViewChargeAsymmetry(const art::Event &evt, const TVector3 &parentEndpoint, const TVector3 &showerDirection, 
     const std::vector<art::Ptr<recob::Hit>> &viewHits, const IvysaurusUtils::PandoraView &pandoraView) const
@@ -284,8 +279,8 @@ float ShowerVarManager::GetViewChargeAsymmetry(const art::Event &evt, const TVec
 
     return std::fabs(chargeAsymmetry);
 }
-
-/////////////////////////////////////////////////////////////
+    
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void ShowerVarManager::NormaliseShowerVars(ShowerVarManager::ShowerVars &showerVars) const
 {
@@ -310,18 +305,20 @@ void ShowerVarManager::NormaliseShowerVars(ShowerVarManager::ShowerVars &showerV
     showerVars.SetIsNormalised(true);
 }
 
-/////////////////////////////////////////////////////////////    
+//------------------------------------------------------------------------------------------------------------------------------------------
     
 float ShowerVarManager::NormaliseShowerVar(const std::pair<float, bool> &inputShowerVar, const float mean, const float std) const
 {
     // Is still on default value...
     if (!inputShowerVar.second)
-        throw cet::exception("ivysaur::ShowerVarManager::NormaliseShowerVar: ") << "can't normalise a variables that wasn't set";
+        throw cet::exception("ivysaurus::ShowerVarManager::NormaliseShowerVar: ") << "can't normalise a variables that wasn't set";
+
+    if (std < std::numeric_limits<float>::epsilon())
+        throw cet::exception("ivysaurus::ShowerVarManager::NormaliseShowerVar") << "can't normalise with a std equal to 0!";
     
     const float normalised((inputShowerVar.first - mean) / std);
     return normalised;
 }
 
-/////////////////////////////////////////////////////////////    
-
 } //namespace ivysaurus
+

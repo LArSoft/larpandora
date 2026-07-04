@@ -1,27 +1,23 @@
 /**
- *  @file   dunereco/Ivysaurus/Modules/IvysaurusTrainingFiles_module.cc
+ *  @file   larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Modules/IvysaurusTrainingFiles_module.cc
  *
- *  @brief  This module uses the analysis utilities to demonstrate 
- *          some of their usage. This can be used as a basis for 
- *          writing analysis code using these tools
+ *  @brief  Module to create the training files for the ivysaurus PID
  */
-
+// ART
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-
-#include "TTree.h"
-#include "TVector3.h"
-
+// LArSoft
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/GridManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/PFPVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/TrackVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/ShowerVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
-
+// ROOT
+#include "TTree.h"
+#include "TVector3.h"
+// C++
 #include <fstream>
 #include <string>
-
-//------------------------------------------------------------------------------------------------------------------------------------------
 
 namespace ivysaurus
 {
@@ -43,10 +39,8 @@ public:
    void Reset();
 
 private:
-
   // Trees
   TTree *m_tree;
-
   // Tree variables
   int m_run;
   int m_subrun;
@@ -189,7 +183,6 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
 
     for (const art::Ptr<recob::PFParticle> &pfparticle : pfparticles)
     {
-        // Make some checks first
         if (!lar_pandora::PandoraPFParticleUtils::HasTrack(pfparticle, evt, m_recoModuleLabel, m_trackModuleLabel) &&
             !lar_pandora::PandoraPFParticleUtils::HasShower(pfparticle, evt, m_recoModuleLabel, m_showerModuleLabel))
         {
@@ -207,12 +200,9 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         m_event = evt.event();
         m_isPrimary = (std::find(nuChildPFPs.begin(), nuChildPFPs.end(), pfparticle) != nuChildPFPs.end());
 
-        ////////////////////////////////////////////
         // First, let's get the truth information...
-        ////////////////////////////////////////////  
         const std::vector<art::Ptr<recob::Hit>> pfpHits = lar_pandora::PandoraPFParticleUtils::GetHits(pfparticle, evt, m_recoModuleLabel);
         const std::vector<art::Ptr<recob::Hit>> eventHitList = lar_pandora::PandoraEventUtils::GetHits(evt, m_hitModuleLabel);
-
         auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService>()->DataFor(evt);
         const int g4id = TruthMatchUtils::TrueParticleIDFromTotalRecoHits(clockData, pfpHits, 1);
 
@@ -233,53 +223,29 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
             continue;
         }
 
-        ////////////////////////////////////////////
         // Apply truth quality cuts
-        ////////////////////////////////////////////  
         if ((m_completeness < m_completenessThreshold) || (m_purity < m_purityThreshold))
             continue;
 
-
-        ////////////////////////////////////////////
         // Skip if we think it is a DR
-        //////////////////////////////////////////// 
         std::vector<int> candidateDeltas = this->GetDeltaRays(evt);
         if (std::find(candidateDeltas.begin(), candidateDeltas.end(), pfparticle->Self()) != candidateDeltas.end())
-        {
             continue;
-        }
         
-        ////////////////////////////////////////////
-        // Now, get the endpoints
-        ////////////////////////////////////////////
+        // Fill generic vars
         if (lar_pandora::PandoraPFParticleUtils::HasTrack(pfparticle, evt, m_recoModuleLabel, m_trackModuleLabel))
         {
             const art::Ptr<recob::Track> track = lar_pandora::PandoraPFParticleUtils::GetTrack(pfparticle, evt, m_recoModuleLabel, m_trackModuleLabel);           
             m_endX = track->End().X(); m_endY = track->End().Y(); m_endZ = track->End().Z();            
         }
-      
-        ////////////////////////////////////////////
-        // Now, get space points into file.. 
-        ////////////////////////////////////////////
         m_nSpacePoints = spacepoints.size();
 
-        ////////////////////////////////////////////
-        // Initialise grids...
-        ////////////////////////////////////////////
-        // This is just creating the grid and filling the hit list.
+        // Grids
         GridManager::GridMap gridMapStart = m_gridManager.ObtainGridMap(evt, pfparticle, true);
-
-        if (gridMapStart.size() != 3)
-            continue;
-
+        if (gridMapStart.size() != 3) { continue; }
         GridManager::GridMap gridMapEnd = m_gridManager.ObtainGridMap(evt, pfparticle, false);
+        if (gridMapEnd.size() != 3) { continue; }
 
-        if (gridMapEnd.size() != 3)
-            continue;
-
-        ////////////////////////////////////////////
-        // Set vars
-        ////////////////////////////////////////////
         for (IvysaurusUtils::PandoraView pandoraView : {IvysaurusUtils::PandoraView::TPC_VIEW_U,
              IvysaurusUtils::PandoraView::TPC_VIEW_V, IvysaurusUtils::PandoraView::TPC_VIEW_W})
         {
@@ -304,17 +270,13 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
             }
         }
 
-        ////////////////////////////////////////////
         // Now fill the pfp variables
-        //////////////////////////////////////////// 
         PFPVarManager::PFPVars pfpVars;
         m_pfpVarManager.EvaluatePFPVars(evt, pfparticle, pfpVars);
         m_pfpN2DHits = pfpVars.GetN2DHits();
         m_pfpTrackShowerScore = pfpVars.GetTrackShowerScore();
 
-        ////////////////////////////////////////////
         // Now fill the track variables
-        ////////////////////////////////////////////  
         TrackVarManager::TrackVars trackVars;
         m_trackVarsSuccessful = m_trackVarManager.EvaluateTrackVars(evt, pfparticle, trackVars) ? 1 : 0;
         m_nTrackChildren = trackVars.GetNTrackChildren().first;
@@ -327,9 +289,7 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         m_trackWobble = trackVars.GetWobble().first;
         m_trackMomComparison = trackVars.GetMomentumComparison().first;
 
-        ////////////////////////////////////////////
         // Now fill the shower variables
-        ////////////////////////////////////////////  
         ShowerVarManager::ShowerVars showerVars;
         m_showerVarsSuccessful = m_showerVarManager.EvaluateShowerVars(evt, pfparticle, showerVars) ? 1 : 0;
         m_showerDisplacement = showerVars.GetDisplacement().first;
@@ -338,10 +298,7 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         m_nuVertexAvSeparation = showerVars.GetNuVertexAvSeparation().first;
         m_nuVertexChargeAsymmetry = showerVars.GetNuVertexChargeAsymmetry().first;
 
-
-        ////////////////////////////////////////////
         // Finally, plotting stuff
-        ////////////////////////////////////////////
         if (m_writeVisualisationInfo)
         {
             // Grid boundaries
@@ -392,7 +349,6 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         m_tree->Fill();
     }
 }
-
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -540,7 +496,6 @@ void IvysaurusTrainingFiles::Reset()
 
 void IvysaurusTrainingFiles::beginJob()
 {
-    // Implementation of optional member function here.
     art::ServiceHandle<art::TFileService> tfs;
     m_tree = tfs->make<TTree>("ivysaur", "Ivysaur");
     // General PFP

@@ -1,13 +1,11 @@
-#ifndef IVYSAURUSUTILS_H_SEEN
-#define IVYSAURUSUTILS_H_SEEN
-
-///////////////////////////////////////////////
-// IvysaurusUtils.h
-//
-// Isobel Mawby i.mawby1@lancaster.ac.uk
-///////////////////////////////////////////////
-
-// Framework
+/**
+ *  @file   larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h
+ *
+ *  @brief  Helpers used by the Ivysaurus PID
+ */
+#ifndef IVYSAURUS_UTILS_H
+#define IVYSAURUS_UTILS_H
+// ART
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h" 
 #include "art/Framework/Principal/Handle.h" 
@@ -16,7 +14,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
 #include "messagefacility/MessageLogger/MessageLogger.h" 
 #include "canvas/Persistency/Common/FindManyP.h"
-
 // LArSoft
 #include "nusimdata/SimulationBase/MCParticle.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -24,19 +21,33 @@
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "larsim/Utils/TruthMatchUtils.h"
-
-// c++
+// ROOT
+#include "TVector3.h"
+//C++
+#include <string>
 #include <vector>
-#include <map>
 
 namespace IvysaurusUtils
 {
     enum PandoraView {TPC_VIEW_U, TPC_VIEW_V, TPC_VIEW_W};
 
-    // Function to project a 3D coordinate into a specified Pandora 2D view
+    /**
+     *  @brief  Project a 3D coordinate into an input Pandora 2D view
+     *
+     *  @param inputPosition3D the input 3D coordinate
+     *  @param pandoraView the input Pandora 2D view
+     *
+     *  @return the projected 2D position
+     */        
     const TVector3 ProjectIntoPandoraView(const TVector3 &inputPosition3D, const PandoraView pandoraView);
 
-    // Function to obtain the Pandora view of a LArSoft hit
+    /**
+     *  @brief  Obtain the Pandora view of a LArSoft hit
+     *
+     *  @param hit the input LArSoft hit
+     *
+     *  @return the Pandora view
+     */ 
     const PandoraView GetPandora2DView(const art::Ptr<recob::Hit> &hit);
 
     void ObtainPandoraHitPositionAndWidth(const art::Event &evt, const art::Ptr<recob::Hit> hit, 
@@ -65,4 +76,4 @@ namespace IvysaurusUtils
         const std::string &recoModuleLabel, TVector3 &direction);
 }
 
-#endif
+#endif // IVYSAURUS_UTILS_H

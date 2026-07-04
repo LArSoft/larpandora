@@ -1,30 +1,27 @@
-////////////////////////////////////////////////////////////////////////
-/// \file    TrackVarManager.cxx
-/// \brief   A class to manage the Ivysaurus 2D track variable input 
-/// \author  Isobel Mawby - i.mawby1@lancaster.ac.uk
-////////////////////////////////////////////////////////////////////////
-
-#include <vector>
-#include <string>
-#include <random>
-
-#include "TVector3.h"
-
+/**
+ *  @file  larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/PFPVarManager.h
+ *
+ *  @brief A class to manage the Ivysaurus pfp variables input 
+ */
+// ART
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/FindManyP.h"
-
+// LArSoft
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
 #include "larcorealg/Geometry/TPCGeo.h"
-
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/Hit.h"
-
-#include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/PFPVarManager.h"
+#include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
+// ROOT
+#include "TVector3.h"
+//C++
+#include <vector>
+#include <string>
+#include <random>
 
 namespace ivysaurus
 {
@@ -36,8 +33,7 @@ PFPVarManager::PFPVars::PFPVars() :
 {
 }
 
-/////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------    
 
 PFPVarManager::PFPVarManager(const fhicl::ParameterSet& pset) :
     m_recoModuleLabel(pset.get<std::string>("RecoModuleLabel")),
@@ -48,24 +44,22 @@ PFPVarManager::PFPVarManager(const fhicl::ParameterSet& pset) :
 {
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 PFPVarManager::~PFPVarManager()
 {
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
-bool PFPVarManager::EvaluatePFPVars(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, 
+void PFPVarManager::EvaluatePFPVars(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, 
     PFPVarManager::PFPVars &pfpVars) const
 {
     FillTrackShowerScore(evt, pfparticle, pfpVars);
     FillN2DHits(evt, pfparticle, pfpVars);
-
-    return true;
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void PFPVarManager::FillTrackShowerScore(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, PFPVarManager::PFPVars &pfpVars) const
 {
@@ -79,15 +73,15 @@ void PFPVarManager::FillTrackShowerScore(const art::Event &evt, const art::Ptr<r
     }
 }
 
-/////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void PFPVarManager::FillN2DHits(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, PFPVarManager::PFPVars &pfpVars) const
 {
     const std::vector<art::Ptr<recob::Hit>> pfpHits = lar_pandora::PandoraPFParticleUtils::GetHits(pfparticle, evt, m_recoModuleLabel);
     pfpVars.SetN2DHits(pfpHits.size());
 }
- 
-/////////////////////////////////////////////////////////////
+
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void PFPVarManager::NormalisePFPVars(PFPVarManager::PFPVars &pfpVars) const
 {
@@ -99,7 +93,7 @@ void PFPVarManager::NormalisePFPVars(PFPVarManager::PFPVars &pfpVars) const
     pfpVars.SetIsNormalised(true);
 }
 
-/////////////////////////////////////////////////////////////    
+//------------------------------------------------------------------------------------------------------------------------------------------
     
 float PFPVarManager::NormalisePFPVar(const float &inputPFPVar, const float mean, const float std) const
 {
@@ -107,6 +101,5 @@ float PFPVarManager::NormalisePFPVar(const float &inputPFPVar, const float mean,
     return normalised;
 }
 
-/////////////////////////////////////////////////////////////
+} // namespace ivysaurus
 
-}

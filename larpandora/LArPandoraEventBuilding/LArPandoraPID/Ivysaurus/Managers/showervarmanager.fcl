@@ -5,11 +5,11 @@ BEGIN_PROLOG
 showervar_manager:
 {
   RecoModuleLabel:   "pandora"
-  TrackModuleLabel: "pandoraTrack"  
+  TrackModuleLabel:  "pandoraTrack"  
   ShowerModuleLabel: "pandoraShower"
   HitModuleLabel:    "hitfd"
 
-  DisplacementMean:    35.9138
+  DisplacementMean:    35.9138 # Calculate offline in training pre-processing script
   DisplacementStd:     78.6049
   DCAMean:             19.5538
   DCAStd:              53.3346
@@ -22,3 +22,4 @@ showervar_manager:
 }
 
 END_PROLOG
+

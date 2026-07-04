@@ -10,12 +10,12 @@ trackvar_manager:
   CalorimetryAlg:      @local::dune10kt_calorimetryalgmc
   MinTrackLengthMCS:   100.0
   MaxTrackLengthMCS:   1350.0
-  IntTrkMomRange:      0.0
+  IntTrkMomRange:      0.0  # In recent production, these values are removed (do this here for consistency)
   GradTrkMomRange:     1.0
   IntTrkMomMCS:        0.0
-  GradTrkMomMCS:       1.0                 #uncalibrated? welp.
+  GradTrkMomMCS:       1.0                 
 
-  NTrackChildrenMean:     0.1309
+  NTrackChildrenMean:     0.1309  # Calculate offline in training pre-processing script
   NTrackChildrenStd:      0.3938 
   NShowerChildrenMean:    0.0466
   NShowerChildrenStd:     0.2163  
@@ -38,3 +38,4 @@ trackvar_manager:
 }
 
 END_PROLOG
+

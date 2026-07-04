@@ -40,7 +40,7 @@ public:
     static std::vector<art::Ptr<recob::Hit>> GetHits(const art::Ptr<recob::Cluster> &pCluster, const art::Event &evt, const std::string &label);
 };
 
-} // namespace dune_ana
+} // namespace lar_pandora
 
 #endif // PANDORA_CLUSTER_UTILS_H
 

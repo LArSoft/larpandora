@@ -79,7 +79,7 @@ template <typename T, typename U> art::Ptr<T> PandoraUtilsBase::GetAssocProduct(
 }
 
 
-} // namespace dune_ana
+} // namespace lar_pandora
 
 #endif // PANDORA_UTILS_BASE_H
 
