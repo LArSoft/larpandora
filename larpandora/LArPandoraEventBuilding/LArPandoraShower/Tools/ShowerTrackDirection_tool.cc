@@ -63,7 +63,7 @@ namespace ShowerRecoTools {
     }
 
     //Check the start position is set.
-    if (fUsePandoraVertex && !ShowerEleHolder.CheckElement(fShowerDirectionOutputLabel)) {
+    if (fUsePandoraVertex && !ShowerEleHolder.CheckElement(fShowerStartPositionInputLabel)) {
       if (fVerbose)
         mf::LogError("ShowerTrackDirection") << "Start position not set, returning " << std::endl;
       return 0;

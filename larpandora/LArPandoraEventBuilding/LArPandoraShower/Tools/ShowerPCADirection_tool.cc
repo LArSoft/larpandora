@@ -38,7 +38,7 @@ namespace ShowerRecoTools {
   private:
     void InitialiseProducers() override;
 
-    //Function to add the assoctions
+    //Function to add the associations
     int AddAssociations(const art::Ptr<recob::PFParticle>& pfpPtr,
                         art::Event& Event,
                         reco::shower::ShowerElementHolder& ShowerEleHolder) override;

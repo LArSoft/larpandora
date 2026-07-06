@@ -44,7 +44,7 @@ namespace ShowerRecoTools {
   private:
     void InitialiseProducers() override;
 
-    //Function to add the assoctions
+    //Function to add the associations
     int AddAssociations(
       const art::Ptr<recob::PFParticle>& pfpPtr, art::Event& Event, reco::shower::ShowerElementHolder& ShowerEleHolder) override;
 
@@ -118,6 +118,16 @@ namespace ShowerRecoTools {
   int ShowerRefinedPCADirection::CalculateElement(
     const art::Ptr<recob::PFParticle>& pfparticle, art::Event& Event, reco::shower::ShowerElementHolder& ShowerEleHolder)
   {
+    if (std::abs(fLongitudinalScale) <= std::numeric_limits<double>::epsilon() ||
+        std::abs(fTransverseScale) <= std::numeric_limits<double>::epsilon())
+    {
+      if (fVerbose)
+        mf::LogError("ShowerReginedPCADirection")
+          << "Longitudinal or transverse scale parameter is too small ("
+          << fLongitudinalScale << ", " << fTransverseScale << ")" << std::endl;
+      return 1;
+    }
+
     if (!ShowerEleHolder.CheckElement(fShowerStartPositionInputLabel))
     {
       if (fVerbose)

@@ -102,9 +102,9 @@ namespace ShowerRecoTools {
     for (auto const& sp : intitaltrack_sp) {
 
       //Get the direction relative to the start positon
-      auto const pos = (sp->position() - StartPosition).Unit();
-      if (pos.R() == 0) { continue; }
-      meanDir += pos;
+      auto const dir = (sp->position() - StartPosition).Unit();
+      if (dir.R() == 0) { continue; }
+      meanDir += dir;
       ++N;
     }
 
