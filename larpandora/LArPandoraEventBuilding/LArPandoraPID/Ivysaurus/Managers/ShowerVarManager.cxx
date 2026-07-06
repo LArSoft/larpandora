@@ -89,7 +89,7 @@ bool ShowerVarManager::GetParentEndpoint(const art::Event &evt, const art::Ptr<r
     unsigned int parentSelf(pfparticle->Parent());
     const std::vector<art::Ptr<recob::PFParticle>> &pfps = lar_pandora::PandoraEventUtils::GetPFParticles(evt, m_recoModuleLabel);
     
-    for (art::Ptr<recob::PFParticle> pfp : pfps)
+    for (const art::Ptr<recob::PFParticle> pfp : pfps)
     {
         if (pfp->Self() == parentSelf)
         {
@@ -255,12 +255,12 @@ float ShowerVarManager::GetViewChargeAsymmetry(const art::Event &evt, const TVec
         float width = 0.f;
         TVector3 hitPosition = TVector3(0.f, 0.f, 0.f);
         IvysaurusUtils::ObtainPandoraHitPositionAndWidth(evt, viewHit, pandoraView, hitPosition, width);
-        const float l = orthAxis.Dot(hitPosition - viewEndpoint);
+        const float lCoord = orthAxis.Dot(hitPosition - viewEndpoint);
         float charge = std::fabs(lar_pandora::PandoraHitUtils::LifetimeCorrectedTotalHitCharge(clockData, detProp, {viewHit}));
 
         totalCharge += charge;
 
-        charge *= (l < 0.f) ? -1.0 : 1.0;
+        charge *= (lCoord < 0.f) ? -1.0 : 1.0;
         chargeAsymmetry += charge;
     }
 
@@ -274,7 +274,10 @@ float ShowerVarManager::GetViewChargeAsymmetry(const art::Event &evt, const TVec
 void ShowerVarManager::NormaliseShowerVars(ShowerVarManager::ShowerVars &showerVars) const
 {
     if (showerVars.GetIsNormalised())
-        throw cet::exception("ivysaur::TrackVarManager::NormaliseShowerVars: ") << "shower vars are already normalised!";  
+    {
+        std::cerr << "ivysaurus::ShowerVarManager::NormaliseShowerVars: shower vars are already normalised!" << std::endl;
+        return;
+    }
 
     if (showerVars.GetDisplacement().second)
         showerVars.SetDisplacement(this->NormaliseShowerVar(showerVars.GetDisplacement(), m_displacementMean, m_displacementStd));

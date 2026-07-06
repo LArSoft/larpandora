@@ -1,6 +1,5 @@
 /**
- *
- * @file dunereco/AnaUtils/PandoraClusterUtils.h
+ * @file larpandora/LArPandoraUtils/PandoraClusterUtils.h
  *
  * @brief Utility containing helpful functions for end users to access information about Clusters
 */
@@ -21,9 +20,7 @@
 namespace lar_pandora
 {
 /**
- *
  * @brief PandoraClusterUtils class
- *
 */
 class PandoraClusterUtils:PandoraUtilsBase
 {

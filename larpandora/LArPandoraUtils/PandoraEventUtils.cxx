@@ -1,9 +1,8 @@
 /**
-*
-* @file larpandora/LArPandoraUtils/PandoraEventUtils.cxx
-*
-* @brief Utility containing helpful functions for end users to access products from events
-*/
+ * @file larpandora/LArPandoraUtils/PandoraEventUtils.cxx
+ *
+ * @brief Utility containing helpful functions for end users to access products from events
+ */
 
 #include "larpandora/LArPandoraUtils/PandoraEventUtils.h"
 #include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
@@ -43,7 +42,7 @@ std::vector<art::Ptr<recob::Track>> PandoraEventUtils::GetTracks(const art::Even
 std::vector<art::Ptr<recob::Shower>> PandoraEventUtils::GetShowers(const art::Event &evt, const std::string &label)
 {
     mf::LogWarning("Pandora") << " Please note: accessing PFParticle showers through this method is not the recommended workflow.\n"
-                                 << " Please use PandoraEventUtils::GetPFParticles and access the tracks with PandoraPFParticleUtils::GetShower."
+                                 << " Please use PandoraEventUtils::GetPFParticles and access the showers with PandoraPFParticleUtils::GetShower."
                                  << std::endl;
 
     return PandoraEventUtils::GetProductVector<recob::Shower>(evt,label);

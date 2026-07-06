@@ -1,3 +1,8 @@
+/**
+ *  @file  larpandora/LArPandoraEventBuilding/LArPandoraPID/LArPandoraPIDData/PandoraPIDResult.h
+ *
+ *  @brief A class to hold the scores of various Pandora PID estimators
+ */
 #ifndef PANDORA_PID_RESULT_H
 #define PANDORA_PID_RESULT_H
 
@@ -7,49 +12,110 @@
 
 namespace pandorapid
 {
-    enum ParticleType {
-        MUON,
-        PROTON,
-        PION,
-        KAON,
-        ELECTRON,
-        PHOTON,
-        END
-    };
+enum ParticleType {
+    MUON,
+    PROTON,
+    PION,
+    KAON,
+    ELECTRON,
+    PHOTON,
+    END
+};
 
-    class PandoraPIDResult
-    {
-    public:
-        PandoraPIDResult();
-        std::pair<ParticleType, float> GetPredictedParticleType(const std::map<ParticleType, float> &pidScores) const;
-        
-        std::map<ParticleType, float> m_ivysaurusScores;
-    };
+typedef std::map<ParticleType, float> ParticleTypeScores;
+    
+/**
+ *  @brief  PandoraPIDResult class
+ */        
+class PandoraPIDResult
+{
+public:
+    /**
+     *  @brief  Default constructor 
+     */    
+    PandoraPIDResult();
 
-    inline PandoraPIDResult::PandoraPIDResult()
-    {
-        for (int i = 0; i < static_cast<int>(ParticleType::END); ++i)
-         {
-             auto particleType = static_cast<ParticleType>(i);
-             m_ivysaurusScores.emplace(particleType, -1.f);
-         }
-    }
+    /**
+     *  @brief  Given an input ParticleType->score map, return the ParticleType with the highest score
+     *
+     *  @param  pidScores the input ParticleType->score map
+     *
+     *  @return the predicted ParticleType alongside its score
+     */    
+    std::pair<ParticleType, float> GetPredictedParticleType(const ParticleTypeScores &pidScores) const;
 
-    inline std::pair<ParticleType, float> PandoraPIDResult::GetPredictedParticleType(const std::map<ParticleType, float> &pidScores) const
+    /**
+     *  @brief  Get the Ivysaurus PID ParticleType->score map
+     *
+     *  @return the Ivysaurus PID ParticleType->score map
+     */     
+    ParticleTypeScores GetIvysaurusScores() const;
+    
+    /**
+     *  @brief  Set Ivysaurus PID scores
+     *
+     *  @param  muonScore the muon score
+     *  @param  protonScore the proton score
+     *  @param  pionScore the pion score
+     *  @param  electronScore the electron score
+     *  @param  photonScore the photon score     
+     */     
+    void SetIvysaurusScores(const float muonScore, const float protonScore, const float pionScore,
+        const float electronScore, const float photonScore);
+
+private:    
+    ParticleTypeScores m_ivysaurusScores; ///< The ParticleType->score map for the Ivysaurus PID
+};
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+    
+inline PandoraPIDResult::PandoraPIDResult()
+{
+    for (int i = 0; i < static_cast<int>(ParticleType::END); ++i)
     {
-        std::pair<ParticleType, float> prediction = std::make_pair(ParticleType::END, -1.f);
-        
-        for (const auto &entry : pidScores)
-        {
-            if ((entry.second > prediction.second) &&
-                (std::fabs(entry.second - prediction.second) > std::numeric_limits<float>::epsilon()))              
-            {
-                prediction = entry;
-            }
-         }
-        
-        return prediction;
+        auto particleType = static_cast<ParticleType>(i);
+        m_ivysaurusScores.emplace(particleType, -1.f);
     }
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------    
+
+inline std::pair<ParticleType, float> PandoraPIDResult::GetPredictedParticleType(const ParticleTypeScores &pidScores) const
+{
+    std::pair<ParticleType, float> prediction = std::make_pair(ParticleType::END, -1.f);
+    
+    for (const auto &entry : pidScores)
+    {
+        if ((entry.second > prediction.second) &&
+            (std::fabs(entry.second - prediction.second) > std::numeric_limits<float>::epsilon()))              
+        {
+            prediction = entry;
+        }
+    }
+    
+    return prediction;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------    
+
+inline ParticleTypeScores PandoraPIDResult::GetIvysaurusScores() const
+{
+    return m_ivysaurusScores;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------    
+
+inline void PandoraPIDResult::SetIvysaurusScores(const float muonScore, const float protonScore, const float pionScore,
+    const float electronScore, const float photonScore)
+{
+    m_ivysaurusScores[ParticleType::MUON] = muonScore;
+    m_ivysaurusScores[ParticleType::PROTON] = protonScore;
+    m_ivysaurusScores[ParticleType::PION] = pionScore;
+    m_ivysaurusScores[ParticleType::ELECTRON] = electronScore;
+    m_ivysaurusScores[ParticleType::PHOTON] = photonScore;       
+}
+
+} // namespace pandorapid
+
 #endif
+

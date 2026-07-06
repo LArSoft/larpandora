@@ -1,9 +1,8 @@
 /**
- *
  * @file larpandora/LArPandoraUtils/PandoraShowerUtils.h
  *
  * @brief Utility containing helpful functions for end users to access information about Showers
-*/
+ */
 
 #ifndef PANDORA_SHOWER_UTILS_H
 #define PANDORA_SHOWER_UTILS_H
@@ -66,7 +65,6 @@ public:
 };
 
 } // namespace lar_pandora
-
 
 #endif // PANDORA_SHOWER_UTILS_H
 

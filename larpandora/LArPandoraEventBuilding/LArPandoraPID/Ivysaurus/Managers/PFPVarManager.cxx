@@ -75,7 +75,10 @@ void PFPVarManager::FillN2DHits(const art::Event &evt, const art::Ptr<recob::PFP
 void PFPVarManager::NormalisePFPVars(PFPVarManager::PFPVars &pfpVars) const
 {
     if (pfpVars.GetIsNormalised())
-        throw cet::exception("ivysaur::PFPVarManager::NormalisePFPVars: ") << "pfp vars are already normalised!";  
+    {
+        std::cerr << "ivysaurus::PFPVarManager::NormalisePFPVars: pfp vars are already normalised!" << std::endl;
+        return;
+    }
     
     pfpVars.SetTrackShowerScore(this->NormalisePFPVar(pfpVars.GetTrackShowerScore(), m_trackShowerScoreMean, m_trackShowerScoreStd));
     pfpVars.SetN2DHits(this->NormalisePFPVar(pfpVars.GetN2DHits(), m_n2DHitsMean, m_n2DHitsStd));        

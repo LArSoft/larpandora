@@ -1,6 +1,6 @@
 /**
 *
-* @file dunereco/AnaUtils/PandoraClusterUtils.cxx
+* @file larpandora/LArPandoraUtils/PandoraClusterUtils.cxx
 *
 * @brief Utility containing helpful functions for end users to access information about Clusters
 */
@@ -17,7 +17,6 @@ std::vector<art::Ptr<recob::Hit>> PandoraClusterUtils::GetHits(const art::Ptr<re
 {    
     return PandoraClusterUtils::GetAssocProductVector<recob::Hit>(pCluster,evt,label,label);
 }
-
 
 } // namespace lar_pandora
 

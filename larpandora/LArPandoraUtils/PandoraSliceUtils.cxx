@@ -1,9 +1,8 @@
 /**
-*
-* @file larpandora/LArPandoraUtils/PandoraSliceUtils.cxx
-*
-* @brief Utility containing helpful functions for end users to access information about Slices
-*/
+ * @file larpandora/LArPandoraUtils/PandoraSliceUtils.cxx
+ *
+ * @brief Utility containing helpful functions for end users to access information about Slices
+ */
 
 #include "larpandora/LArPandoraUtils/PandoraSliceUtils.h"
 
@@ -19,3 +18,4 @@ std::vector<art::Ptr<recob::Hit>> PandoraSliceUtils::GetHits(const art::Ptr<reco
 }
 
 } // namespace lar_pandora
+

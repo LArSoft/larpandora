@@ -1,9 +1,8 @@
 /**
-*
-* @file dunereco/AnaUtils/PandoraPFParticleUtils.cxx
-*
-* @brief Utility containing helpful functions for end users to access information about PFParticles
-*/
+ * @file larpandora/LArPandoraUtils/PandoraPFParticleUtils.cxx
+ *
+ * @brief Utility containing helpful functions for end users to access information about PFParticles
+ */
 
 #include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
 

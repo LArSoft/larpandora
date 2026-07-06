@@ -24,6 +24,8 @@ namespace ivysaurus
 class GridManager
 {
   public:
+      typedef std::vector<std::vector<std::pair<float, bool>>> GridValues;
+    
       /**
        *  @brief  Grid class
        */    
@@ -62,7 +64,7 @@ class GridManager
            *
            *  @return the grid entries
            */          
-          std::vector<std::vector<std::pair<float, bool>>> GetGridValues() const;
+          GridManager::GridValues GetGridValues() const;
 
           /**
            *  @brief  Return whether the grid has been normalised
@@ -104,12 +106,12 @@ class GridManager
           float m_integralStep;                  ///< the step size for numerical integration of hit energy
           std::vector<float> m_driftBoundaries;  ///< the bin boundaries for the drift axis
           std::vector<float> m_wireBoundaries;   ///< the bin boundaries for the wire axis
-          std::vector<std::vector<std::pair<float, bool>>> m_gridValues; ///< the grid entries driftBin->wireBin->[energy, isFilled]
+          GridManager::GridValues m_gridValues;  ///< the grid entries driftBin->wireBin->[energy, isFilled]
           bool m_isNormalised;                   ///< whether the grid entried have are normalised
   };
 
     typedef std::map<IvysaurusUtils::PandoraView, Grid> GridMap;
-
+    
     /**
      *  @brief  Default constructor
      */
@@ -267,7 +269,7 @@ inline std::vector<float> GridManager::Grid::GetWireBoundaries() const
 
 //------------------------------------------------------------------------------------------------------------------------------------------    
 
-inline std::vector<std::vector<std::pair<float, bool>>> GridManager::Grid::GetGridValues() const
+inline GridManager::GridValues GridManager::Grid::GetGridValues() const
 { 
     return m_gridValues; 
 }

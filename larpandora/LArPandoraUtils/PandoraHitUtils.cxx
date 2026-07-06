@@ -1,21 +1,18 @@
 /**
-*
-* @file dunereco/AnaUtils/PandoraHitUtils.cxx
+ *
+* @file larpandora/LArPandoraUtils/PandoraHitUtils.cxx
 *
 * @brief Utility containing helpful functions for end users to access information about hits
 */
 
-//STL
 #include <algorithm>
-//ROOT
-//ART
+
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-//LARSOFT
+
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
-//DUNE
 #include "larpandora/LArPandoraUtils/PandoraHitUtils.h"
 
 namespace lar_pandora
@@ -74,3 +71,4 @@ double PandoraHitUtils::LifetimeCorrectedTotalHitCharge(detinfo::DetectorClocksD
 }
 
 } // namespace lar_pandora
+

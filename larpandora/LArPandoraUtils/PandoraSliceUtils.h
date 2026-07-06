@@ -1,5 +1,4 @@
 /**
- *
  * @file larpandora/LArPandoraUtils/PandoraSliceUtils.h
  *
  * @brief Utility containing helpful functions for end users to access information about Slices
@@ -21,10 +20,8 @@
 namespace lar_pandora
 {
 /**
- *
  * @brief DUNEAnaSliceUtils class
- *
-*/
+ */
 class PandoraSliceUtils:PandoraUtilsBase
 {
 public:

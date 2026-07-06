@@ -31,7 +31,10 @@ GridManager::Grid::Grid(const TVector3 origin, const float driftSpan, const floa
         m_nSigmaConsidered(nSigmaConsidered),
         m_integralStep(integralStep)
 {
-    m_gridValues = std::vector<std::vector<std::pair<float, bool>>>(m_axisDimensions, std::vector<std::pair<float, bool>>(m_axisDimensions, std::make_pair(0.f, false)));    
+    if (m_axisDimensions == 0)
+        throw cet::exception("ivysaurus::Grid") << "axisDimensions can't be zero!";
+
+    m_gridValues = GridManager::GridValues(m_axisDimensions, std::vector<std::pair<float, bool>>(m_axisDimensions, std::make_pair(0.f, false)));    
 
     const float driftInterval = driftSpan / m_axisDimensions;
 
@@ -54,8 +57,8 @@ bool GridManager::Grid::IsInsideGrid(const TVector3 &position, const float width
     const float gridMaxWireCoord(std::max(m_wireBoundaries.front(), m_wireBoundaries.back()));
     const float hitWireCoord(position.Z());
 
-    if (((hitWireCoord - gridMinWireCoord) < std::numeric_limits<float>::epsilon()) ||
-        ((gridMaxWireCoord - hitWireCoord) < std::numeric_limits<float>::epsilon()))
+    if (((gridMaxWireCoord - hitWireCoord) < std::numeric_limits<float>::epsilon()) ||
+        ((hitWireCoord - gridMinWireCoord) < std::numeric_limits<float>::epsilon()))
     {
         return false;
     }
@@ -65,8 +68,8 @@ bool GridManager::Grid::IsInsideGrid(const TVector3 &position, const float width
     const float hitMinDriftCoord = (width < std::numeric_limits<float>::epsilon()) ? position.X() : position.X() - (m_nSigmaConsidered * (width / 2.0));
     const float hitMaxDriftCoord = (width < std::numeric_limits<float>::epsilon()) ? position.X() : position.X() + (m_nSigmaConsidered * (width / 2.0));
 
-    if (((hitMaxDriftCoord - gridMinDriftCoord) < std::numeric_limits<float>::epsilon()) ||
-        ((gridMaxDriftCoord - hitMinDriftCoord) < std::numeric_limits<float>::epsilon()))
+    if (((gridMaxDriftCoord - hitMinDriftCoord) < std::numeric_limits<float>::epsilon()) ||
+        ((hitMaxDriftCoord - gridMinDriftCoord) < std::numeric_limits<float>::epsilon()))
     {
         return false;
     }
@@ -149,9 +152,9 @@ void GridManager::Grid::NormaliseGrid(const float mean, const float std)
             if (!m_gridValues[driftIndex][wireIndex].second)
                 continue;
 
-            float gridEntry = m_gridValues[driftIndex][wireIndex].first;
+            float &gridEntry = m_gridValues[driftIndex][wireIndex].first;
             gridEntry = std::log1p(gridEntry);
-            m_gridValues[driftIndex][wireIndex].first = ((gridEntry - mean) / std);
+            gridEntry = ((gridEntry - mean) / std);
         }
     }
 
@@ -203,8 +206,8 @@ GridManager::GridMap GridManager::ObtainGridMap(const art::Event &evt, const art
         const TVector3 projectedPosition1 = ProjectIntoPandoraView(position1, pandoraView);
         const TVector3 projectedSeed = ProjectIntoPandoraView(position2, pandoraView);
 
-        float driftScale(projectedSeed.X() > projectedPosition1.X() ? 1.f : -1.f);
-        float wireScale(projectedSeed.Z() > projectedPosition1.Z() ? 1.f : -1.f);
+        const float driftScale(projectedSeed.X() > projectedPosition1.X() ? 1.f : -1.f);
+        const float wireScale(projectedSeed.Z() > projectedPosition1.Z() ? 1.f : -1.f);
 
         
         const TVector3 projectedPosition2 = TVector3(projectedPosition1.X() + (m_gridSize3D * driftScale),
@@ -337,9 +340,9 @@ void GridManager::GetSpacePointsToConsider(const art::Event &evt, const art::Ptr
     for (const art::Ptr<recob::SpacePoint> &spacepoint : spacepoints)
     {
         TVector3 displacement = spacepoint->XYZ() - position1;
-        float l = direction.Dot(displacement);
+        float lCoord = direction.Dot(displacement);
 
-        if ((l < 0.f) || (l > mag))
+        if ((lCoord < 0.f) || (lCoord > mag))
             continue;
     
         spToConsider.push_back(spacepoint);
@@ -352,9 +355,9 @@ void GridManager::FillGrids(const art::Event &evt, const std::vector<art::Ptr<re
 {
     for (const art::Ptr<recob::SpacePoint> &spacepoint : spToConsider)
     {
-        std::vector<art::Ptr<recob::Hit>> hits = lar_pandora::PandoraSpacePointUtils::GetHits(spacepoint, evt, m_recoModuleLabel);
+        const std::vector<art::Ptr<recob::Hit>> hits = lar_pandora::PandoraSpacePointUtils::GetHits(spacepoint, evt, m_recoModuleLabel);
         if (hits.empty()) { continue; }
-        art::Ptr<recob::Hit> hit = hits.front();
+        const art::Ptr<recob::Hit> hit = hits.front();
         const IvysaurusUtils::PandoraView thisPandoraView = IvysaurusUtils::GetPandora2DView(hit);
         GridManager::Grid &grid = gridMap.at(thisPandoraView);
         

@@ -7,8 +7,8 @@ cet_make_library(
 
 cet_make_library(
   SOURCE 
-    PandoraEventUtils.cxx
     PandoraClusterUtils.cxx
+    PandoraEventUtils.cxx
     PandoraHitUtils.cxx        
     PandoraPFParticleUtils.cxx
     PandoraShowerUtils.cxx
@@ -17,28 +17,14 @@ cet_make_library(
     PandoraTrackUtils.cxx    
   LIBRARIES
     PRIVATE
-      larpandora::PandoraUtilsBase
-      larcorealg::Geometry
-      larcore::Geometry_Geometry_service
-      larsim::Simulation lardataobj::Simulation
-      lardataalg::DetectorInfo
-      lardataobj::RawData
-      lardataobj::RecoBase
-      lardataobj::AnalysisBase
-      lardata::Utilities
-      larpandora::LArPandoraInterface
-      nusimdata::SimulationBase
-      ROOT::Core
       art::Persistency_Common
-      art::Persistency_Provenance
-      art::Utilities
-      canvas::canvas
-      messagefacility::MF_MessageLogger
-      fhiclcpp::fhiclcpp
-      cetlib::cetlib          
+      art::Persistency_Provenance    
+      lardata::Utilities
+      lardataobj::Simulation  
+      lardataobj::RecoBase
+      larpandora::LArPandoraInterface
+      larpandora::PandoraUtilsBase
 )
-
-
 
 install_headers()
 install_fhicl()

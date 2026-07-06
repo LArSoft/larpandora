@@ -1,9 +1,8 @@
 /**
- *
- * @file dunereco/AnaUtils/DUNEAnaPFParticleUtils.h
+ * @file larpandora/LArPandoraUtils/DUNEAnaPFParticleUtils.h
  *
  * @brief Utility containing helpful functions for end users to access information about PFParticles
-*/
+ */
 
 #ifndef PANDORA_PFPARTICLE_UTILS_H
 #define PANDORA_PFPARTICLE_UTILS_H
@@ -30,10 +29,8 @@
 namespace lar_pandora
 {
 /**
- *
  * @brief PandoraPFParticleUtils class
- *
-*/
+ */
 class PandoraPFParticleUtils:PandoraUtilsBase
 {
 public:
@@ -161,6 +158,15 @@ public:
     */
     static art::Ptr<larpandoraobj::PFParticleMetadata> GetMetadata(const art::Ptr<recob::PFParticle> &pParticle, const art::Event &evt, const std::string &label);
 
+    /**
+    * @brief Check if this particle has a reconstructed vertex
+    *
+    * @param pParticle the input particle
+    * @param evt is the underlying art event
+    * @param particleLabel is the label for the PFParticle producer
+    *
+    * @return bool stating if a reconstructed vertex could be found
+    */    
     static bool HasVertex(const art::Ptr<recob::PFParticle> &pParticle, const art::Event &evt, const std::string &particleLabel);
     
     /**

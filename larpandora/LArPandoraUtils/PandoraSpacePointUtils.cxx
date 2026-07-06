@@ -1,9 +1,8 @@
 /**
-*
-* @file larpandora/LArPandoraUtils/PandoraSpacePointUtils.cxx
-*
-* @brief Utility containing helpful functions for end users to access information about SpacePoints
-*/
+ * @file larpandora/LArPandoraUtils/PandoraSpacePointUtils.cxx
+ *
+ * @brief Utility containing helpful functions for end users to access information about SpacePoints
+ */
 
 #include "larpandora/LArPandoraUtils/PandoraSpacePointUtils.h"
 
@@ -19,5 +18,4 @@ std::vector<art::Ptr<recob::Hit>> PandoraSpacePointUtils::GetHits(const art::Ptr
 }
 
 } // namespace lar_pandora
-
 

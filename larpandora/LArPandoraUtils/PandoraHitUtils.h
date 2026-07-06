@@ -8,16 +8,13 @@
 #ifndef PANDORA_HIT_UTILS_H
 #define PANDORA_HIT_UTILS_H
 
-//STL
 #include <cmath>
 #include <string>
 #include <vector>
-//ROOT
-//ART
+
 #include "art/Framework/Principal/Event.h"
-//LARSOFT
+
 #include "lardataobj/RecoBase/Hit.h"
-//DUNE
 #include "larpandora/LArPandoraUtils/PandoraUtilsBase.h"
 
 namespace lar_pandora
@@ -91,5 +88,5 @@ public:
 
 } // namespace lar_pandora
 
-
 #endif // PANDORA_HIT_UTILS_H
+

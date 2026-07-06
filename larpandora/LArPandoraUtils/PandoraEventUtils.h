@@ -1,6 +1,5 @@
 /**
- *
- * @file dunereco/AnaUtils/DUNEAnaEventUtils.h
+ * @file larpandora/LArPandoraUtils/DUNEAnaEventUtils.h
  *
  * @brief Utility containing helpful functions for end users to access products from events
 */
@@ -31,9 +30,7 @@
 namespace lar_pandora
 {
 /**
- *
  * @brief PandoraEventUtils class
- *
 */
 class PandoraEventUtils:PandoraUtilsBase
 {

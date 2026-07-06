@@ -106,6 +106,8 @@ private:
   // Module variables
   float m_completenessThreshold;
   float m_purityThreshold;
+  int m_candidateDRMinHits;
+  float m_candidateDRMaxTrackScore;
   bool m_writeVisualisationInfo;
 };
 
@@ -143,6 +145,8 @@ IvysaurusTrainingFiles::IvysaurusTrainingFiles(fhicl::ParameterSet const &pset) 
     m_showerModuleLabel(pset.get<std::string>("ShowerModuleLabel")),      
     m_completenessThreshold(pset.get<float>("CompletenessThreshold")),
     m_purityThreshold(pset.get<float>("PurityThreshold")),
+    m_candidateDRMinHits(pset.get<int>("CandidateDRMinHits")),
+    m_candidateDRMaxTrackScore(pset.get<float>("CandidateDRMaxTrackScore")),    
     m_writeVisualisationInfo(pset.get<bool>("WriteVisualisationInfo"))
 {
 }
@@ -214,7 +218,7 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
             continue;
 
         // Skip if we think it is a DR
-        std::vector<int> candidateDeltas = this->GetDeltaRays(evt);
+        const std::vector<int> candidateDeltas = this->GetDeltaRays(evt);
         if (std::find(candidateDeltas.begin(), candidateDeltas.end(), pfparticle->Self()) != candidateDeltas.end())
             continue;
         
@@ -391,7 +395,7 @@ std::vector<int> IvysaurusTrainingFiles::GetDeltaRays(const art::Event &evt)
             const std::vector<art::Ptr<recob::Hit>> pfpHits = lar_pandora::PandoraPFParticleUtils::GetHits(deltaCandidate, evt, m_recoModuleLabel);
 
             // Is it small and/or shower-like
-            if (int(pfpHits.size()) < 90) // 30 in each view
+            if (int(pfpHits.size()) < m_candidateDRMinHits) // candidateDRMinHits/3 in each view
             {
                 deltaRays.emplace_back(deltaCandidate->Self());
             }
@@ -404,7 +408,7 @@ std::vector<int> IvysaurusTrainingFiles::GetDeltaRays(const art::Event &evt)
                 if (metaMap.find("TrackScore") != metaMap.end())
                     trackScore = metaMap.at("TrackScore");
 
-                if (trackScore < 0.6f)
+                if (trackScore < m_candidateDRMaxTrackScore)
                     deltaRays.emplace_back(deltaCandidate->Self());
             }
         }

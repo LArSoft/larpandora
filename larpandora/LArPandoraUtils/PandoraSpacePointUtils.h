@@ -1,31 +1,26 @@
 /**
- *
  * @file larpandora/LArPandoraUtils/PandoraSpacePointUtils.h
  *
  * @brief Utility containing helpful functions for end users to access information about SpacePoints
-*/
+ */
 
 #ifndef PANDORA_SPACEPOINT_UTILS_H
 #define PANDORA_SPACEPOINT_UTILS_H
 
 #include "art/Framework/Principal/Event.h"
 
-#include "larpandora/LArPandoraUtils/PandoraUtilsBase.h"
-
 #include <string>
 #include <vector>
 
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
-
+#include "larpandora/LArPandoraUtils/PandoraUtilsBase.h"
 
 namespace lar_pandora
 {
 /**
- *
  * @brief PandoraSpacePointUtils class
- *
-*/
+ */
 class PandoraSpacePointUtils:PandoraUtilsBase
 {
 public:
@@ -42,7 +37,6 @@ public:
 };
 
 } // namespace lar_pandora
-
 
 #endif // PANDORA_SPACEPOINT_UTILS_H
 

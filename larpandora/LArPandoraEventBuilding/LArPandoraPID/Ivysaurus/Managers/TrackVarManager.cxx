@@ -275,7 +275,10 @@ void TrackVarManager::FillTrackMomentum(const art::Ptr<recob::Track> &track,
 void TrackVarManager::NormaliseTrackVars(TrackVarManager::TrackVars &trackVars) const
 {
     if (trackVars.GetIsNormalised())
-        throw cet::exception("ivysaur::TrackVarManager::NormaliseTrackVars: ") << "track vars are already normalised!";        
+    {
+        std::cerr << "ivysaurus::TrackVarManager::NormaliseTrackVars: track vars are already normalised!" << std::endl;
+        return;
+    }
 
     if (trackVars.GetNTrackChildren().second)
         trackVars.SetNTrackChildren(this->NormaliseTrackVar(trackVars.GetNTrackChildren(), m_nTrackChildrenMean, m_nTrackChildrenStd));

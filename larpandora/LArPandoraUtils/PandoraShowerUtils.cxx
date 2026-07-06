@@ -1,9 +1,8 @@
 /**
-*
-* @file larpandora/LArPandoraUtils/PandoraShowerUtils.cxx
-*
-* @brief Utility containing helpful functions for end users to access information about Showers
-*/
+ * @file larpandora/LArPandoraUtils/PandoraShowerUtils.cxx
+ *
+ * @brief Utility containing helpful functions for end users to access information about Showers
+ */
 
 #include "larpandora/LArPandoraUtils/PandoraShowerUtils.h"
 
@@ -39,5 +38,4 @@ art::Ptr<recob::PFParticle> PandoraShowerUtils::GetPFParticle(const art::Ptr<rec
 }    
 
 } // namespace lar_pandora
-
 

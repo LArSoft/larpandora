@@ -1,9 +1,8 @@
 /**
- *
- * @file dunereco/AnaUtils/PandoraUtilsBase.h
+ * @file larpandora/LArPandoraUtils/PandoraUtilsBase.h
  *
  * @brief Base class containing functionality to extract products from the event
-*/
+ */
 
 #ifndef PANDORA_UTILS_BASE_H
 #define PANDORA_UTILS_BASE_H
@@ -19,19 +18,46 @@
 namespace lar_pandora
 {
 /**
- *
  * @brief PandoraUtilsBase class containing some template functions
- *
-*/
+ */
 class PandoraUtilsBase
 {
 protected:
+    /**
+     * @brief Implementation of the template function to get the products from the event
+     *
+     * @param evt is the underlying art event
+     * @param label product producer module label
+     *
+     * @return product vector
+     */
     template <typename T> static std::vector<art::Ptr<T>> GetProductVector(const art::Event &evt, const std::string &label);
+
+    /**
+     * @brief Implementation of the template function to get the associated products from the event
+     *
+     * @param pProd the object for which the associated object is sought
+     * @param evt is the underlying art event 
+     * @param label label of the producer module that created the object
+     * @param assocLabel label of the producer module that created the associated object
+     *
+     * @return vector of associated objects (normally of size==1)
+     */     
     template <typename T, typename U> static std::vector<art::Ptr<T>> GetAssocProductVector(const art::Ptr<U> &part, const art::Event &evt, const std::string &label, const std::string &assocLabel);
+
+    /**
+     * @brief Implementation of the template function to get the associated product from the event
+     *
+     * @param pProd the object for which the associated object is sought
+     * @param evt is the underlying art event 
+     * @param label label of the producer module that created the object
+     * @param assocLabel label of the producer module that created the associated object
+     *
+     * @return the associated object
+     */
     template <typename T, typename U> static art::Ptr<T> GetAssocProduct(const art::Ptr<U> &part, const art::Event &evt, const std::string &label, const std::string &assocLabel); 
 };
 
-// Implementation of the template function to get the products from the event
 template <typename T> std::vector<art::Ptr<T>> PandoraUtilsBase::GetProductVector(const art::Event &evt, const std::string &label)
 {
     auto theseProds = evt.getHandle<std::vector<T>>(label);
@@ -50,7 +76,6 @@ template <typename T> std::vector<art::Ptr<T>> PandoraUtilsBase::GetProductVecto
     return productVector;
 }
 
-// Implementation of the template function to get the associated products from the event
 template <typename T, typename U> std::vector<art::Ptr<T>> PandoraUtilsBase::GetAssocProductVector(const art::Ptr<U> &pProd, const art::Event &evt, const std::string &label, const std::string &assocLabel)
 {
     auto products = evt.getHandle<std::vector<U>>(label);
@@ -66,8 +91,7 @@ template <typename T, typename U> std::vector<art::Ptr<T>> PandoraUtilsBase::Get
 
     return findParticleAssocs.at(pProd.key());
 }
-
-// Implementation of the template function to get the associated product from the event
+ 
 template <typename T, typename U> art::Ptr<T> PandoraUtilsBase::GetAssocProduct(const art::Ptr<U> &pProd, const art::Event &evt, const std::string &label, const std::string &assocLabel)
 {   
     std::vector<art::Ptr<T>> associatedProducts = PandoraUtilsBase::GetAssocProductVector<T>(pProd,evt,label,assocLabel); 
@@ -77,7 +101,6 @@ template <typename T, typename U> art::Ptr<T> PandoraUtilsBase::GetAssocProduct(
     }
     return associatedProducts.at(0);
 }
-
 
 } // namespace lar_pandora
 

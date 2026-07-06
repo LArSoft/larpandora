@@ -1,16 +1,13 @@
 /**
- *
  * @file larpandora/LArPandoraUtils/PandoraTrackUtils.h
  *
  * @brief Utility containing helpful functions for end users to access information about Tracks
-*/
+ */
 
 #ifndef PANDORA_TRACK_UTILS_H
 #define PANDORA_TRACK_UTILS_H
 
 #include "art/Framework/Principal/Event.h"
-
-#include "larpandora/LArPandoraUtils/PandoraUtilsBase.h"
 
 #include <string>
 #include <vector>
@@ -21,6 +18,7 @@
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/AnalysisBase/T0.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
+#include "larpandora/LArPandoraUtils/PandoraUtilsBase.h"
 
 namespace anab
 {
@@ -30,10 +28,8 @@ class Calorimetry;
 namespace lar_pandora
 {
 /**
- *
  * @brief PandoraTrackUtils class
- *
-*/
+ */
 class PandoraTrackUtils:PandoraUtilsBase
 {
 public:
