@@ -116,7 +116,8 @@ namespace ShowerRecoTools {
     }
     else {
       if (fVerbose)
-        mf::LogError("ShowerTrackSpacePointDirection") << "No points found to calculate a direction" << std::endl;
+        mf::LogError("ShowerTrackSpacePointDirection")
+          << "No points found to calculate a direction" << std::endl;
       return 1;
     }
 

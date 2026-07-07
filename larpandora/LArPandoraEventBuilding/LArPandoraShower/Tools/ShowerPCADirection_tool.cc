@@ -85,8 +85,7 @@ namespace ShowerRecoTools {
 
   void ShowerPCADirection::InitialiseProducers()
   {
-    if (!fWritePCAxis)
-      return;
+    if (!fWritePCAxis) return;
     InitialiseProduct<std::vector<recob::PCAxis>>(fShowerPCAOutputLabel);
     InitialiseProduct<art::Assns<recob::Shower, recob::PCAxis>>("ShowerPCAxisAssn");
     InitialiseProduct<art::Assns<recob::PFParticle, recob::PCAxis>>("PFParticlePCAxisAssn");
@@ -277,8 +276,7 @@ namespace ShowerRecoTools {
                                           art::Event& Event,
                                           reco::shower::ShowerElementHolder& ShowerEleHolder)
   {
-    if (!fWritePCAxis)
-      return 0;
+    if (!fWritePCAxis) return 0;
 
     //First check the element has been set
     if (!ShowerEleHolder.CheckElement(fShowerPCAOutputLabel)) {

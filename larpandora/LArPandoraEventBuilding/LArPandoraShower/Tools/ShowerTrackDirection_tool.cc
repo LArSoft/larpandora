@@ -75,7 +75,9 @@ namespace ShowerRecoTools {
 
     if (fUsePositionInfo) {
       geo::Point_t StartPosition;
-      if (fUsePandoraVertex) { ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, StartPosition); }
+      if (fUsePandoraVertex) {
+        ShowerEleHolder.GetElement(fShowerStartPositionInputLabel, StartPosition);
+      }
       else {
         StartPosition = InitialTrack.Start();
       }
