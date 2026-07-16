@@ -8,6 +8,7 @@ showervar_manager:
   TrackModuleLabel:  "pandoraTrack"  
   ShowerModuleLabel: "pandoraShower"
   HitModuleLabel:    "hitfd"
+  PlaneIDForEnergy:  2 
 
   DisplacementMean:    35.9138 # Calculate offline in training pre-processing script
   DisplacementStd:     78.6049
@@ -15,10 +16,10 @@ showervar_manager:
   DCAStd:              53.3346
   TrackStubLengthMean: 47.3008
   TrackStubLengthStd:  63.3723
-  NuVertexAvSeparationMean:    27.9846
-  NuVertexAvSeparationStd:     54.631
-  NuVertexChargeAsymmetryMean: 0.8874
-  NuVertexChargeAsymmetryStd:  0.1908
+  FromParentAvSepMean: 27.9846
+  FromParentAvSepStd:  54.631
+  FromParentChargeAsymMean: 0.8874
+  FromParentChargeAsymStd:  0.1908
 }
 
 END_PROLOG

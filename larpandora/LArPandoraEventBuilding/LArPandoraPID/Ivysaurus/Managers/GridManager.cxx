@@ -168,6 +168,7 @@ GridManager::GridManager(const fhicl::ParameterSet& pset) :
     m_recoModuleLabel(pset.get<std::string>("RecoModuleLabel")),
     m_trackModuleLabel(pset.get<std::string>("TrackModuleLabel")),
     m_showerModuleLabel(pset.get<std::string>("ShowerModuleLabel")),
+    m_shrEndpointLengthFrac(pset.get<float>("ShrEndpointLengthFrac")),
     m_gridSize3D(pset.get<float>("GridSize3D")),
     m_dimensions(pset.get<unsigned int>("GridDimensions")),
     m_gridMean(pset.get<float>("GridMean")),
@@ -309,7 +310,7 @@ bool GridManager::GetEndExtremalPointsShower(const art::Event &evt, const art::P
 
     const TVector3 direction = TVector3(shower->Direction().X(), shower->Direction().Y(), shower->Direction().Z());
     const TVector3 start = TVector3(shower->ShowerStart().X(), shower->ShowerStart().Y(), shower->ShowerStart().Z());
-    const float length = (shower->Length() * 0.9f); // ATTN: Don't put it at the VERY end... 
+    const float length = (shower->Length() * m_shrEndpointLengthFrac); // ATTN: Don't put it at the VERY end... 
     const TVector3 end = start + (length * direction);
 
     const float diagonalLength = sqrt(2.0 * (m_gridSize3D * m_gridSize3D));

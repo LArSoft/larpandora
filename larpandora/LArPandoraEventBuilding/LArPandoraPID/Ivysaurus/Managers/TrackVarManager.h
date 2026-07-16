@@ -86,51 +86,71 @@ class TrackVarManager
 
           /**
            *  @brief  Set whether the track vars have been normalised
+           *
+           *  @param whether the track vars have been normalised
            */
           void SetIsNormalised(const bool isNormalised);
 
           /**
            *  @brief  Set the number of track children
+           *
+           *  @param the number of track children
            */
           void SetNTrackChildren(const float nTrackChildren);
 
           /**
            *  @brief  Set the number of shower children
+           *
+           *  @param the number of shower children
            */
           void SetNShowerChildren(const float nShowerChildren);
 
           /**
            *  @brief  Set the number of grand children
+           *
+           *  @param the number of grand children
            */
           void SetNGrandChildren(const float nGrandChildren);
 
           /**
            *  @brief  Set the number of hits of the highest hit child
+           *
+           *  @param the number of hits of the highest hit child
            */
           void SetNChildHits(const float nChildHits);
 
           /**
            *  @brief  Set the energy of the highest hit child
+           *
+           *  @param the energy of the highest hit child
            */
           void SetChildEnergy(const float childEnergy);
 
           /**
            *  @brief  Set the track score of the highest hit child
+           *
+           *  @param the track score of the highest hit child
            */
           void SetChildTrackScore(const float trackScore);
 
           /**
            *  @brief  Set the track length
+           *
+           *  @param the track length
            */
           void SetTrackLength(const float trackLength);
 
           /**
            *  @brief  Set the std of the defelection along the track (wobble)
+           *
+           *  @param the std of the defelection along the track (wobble)
            */
           void SetWobble(const float wobble);
 
           /**
            *  @brief  Set the fabs(byRange - byMCS)/byMCS comparison value
+           *
+           *  @param the fabs(byRange - byMCS)/byMCS comparison value
            */
           void SetMomentumComparison(const float momComparison);
     private:
@@ -236,6 +256,7 @@ class TrackVarManager
 
     std::string m_recoModuleLabel;         ///< the pandora label
     std::string m_trackModuleLabel;        ///< the track producer label
+    int m_planeIDForEnergy;                ///< ID of plane used in energy-based calculations    
     float m_recombFactor;                  ///< the recombination factor
     calo::CalorimetryAlg m_calorimetryAlg; ///< the calorimetry algorithm used to correct hit energy
     float m_minTrackLengthMCS;             ///< the minimum track length required for the MCS calculation

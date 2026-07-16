@@ -40,6 +40,7 @@ TrackVarManager::TrackVars::TrackVars() :
 TrackVarManager::TrackVarManager(const fhicl::ParameterSet& pset) :
     m_recoModuleLabel(pset.get<std::string>("RecoModuleLabel")),
     m_trackModuleLabel(pset.get<std::string>("TrackModuleLabel")),
+    m_planeIDForEnergy(pset.get<int>("PlaneIDForEnergy")),
     m_recombFactor(pset.get<float>("RecombFactor")),
     m_calorimetryAlg(pset.get<fhicl::ParameterSet>("CalorimetryAlg")),
     m_minTrackLengthMCS(pset.get<float>("MinTrackLengthMCS")),
@@ -151,9 +152,9 @@ float TrackVarManager::GetPFPEnergy(const art::Event &evt, const art::Ptr<recob:
 {
     auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService const>()->DataFor(evt);
     auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataFor(evt, clockData);
-    const std::vector<art::Ptr<recob::Hit>> &pfpHits = lar_pandora::PandoraPFParticleUtils::GetViewHits(pfparticle, evt, m_recoModuleLabel, 2);
+    const std::vector<art::Ptr<recob::Hit>> &pfpHits = lar_pandora::PandoraPFParticleUtils::GetViewHits(pfparticle, evt, m_recoModuleLabel, m_planeIDForEnergy);
     const double charge(lar_pandora::PandoraHitUtils::LifetimeCorrectedTotalHitCharge(clockData, detProp, pfpHits));
-    const double energy = m_calorimetryAlg.ElectronsFromADCArea(charge, 2) / m_recombFactor / util::kGeVToElectrons;
+    const double energy = m_calorimetryAlg.ElectronsFromADCArea(charge, m_planeIDForEnergy) / m_recombFactor / util::kGeVToElectrons;
 
     return energy;
 }

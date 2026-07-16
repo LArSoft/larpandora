@@ -26,8 +26,8 @@ ShowerVarManager::ShowerVars::ShowerVars() :
     m_displacement(std::make_pair(-1.f, false)),
     m_DCA(std::make_pair(-1.f, false)),
     m_trackStubLength(std::make_pair(-1.f, false)),
-    m_nuVertexAvSeparation(std::make_pair(-1.f, false)),
-    m_nuVertexChargeAsymmetry(std::make_pair(-1.f, false))
+    m_fromParentAvSep(std::make_pair(-1.f, false)),
+    m_fromParentChargeAsym(std::make_pair(-1.f, false))
 {
 }
 
@@ -38,16 +38,17 @@ ShowerVarManager::ShowerVarManager(const fhicl::ParameterSet& pset) :
     m_trackModuleLabel(pset.get<std::string>("TrackModuleLabel")),    
     m_showerModuleLabel(pset.get<std::string>("ShowerModuleLabel")),
     m_hitModuleLabel(pset.get<std::string>("HitModuleLabel")),
+    m_planeIDForEnergy(pset.get<int>("PlaneIDForEnergy")),
     m_displacementMean(pset.get<float>("DisplacementMean")),
     m_displacementStd(pset.get<float>("DisplacementStd")),
     m_DCAMean(pset.get<float>("DCAMean")),
     m_DCAStd(pset.get<float>("DCAStd")),
     m_trackStubLengthMean(pset.get<float>("TrackStubLengthMean")),
     m_trackStubLengthStd(pset.get<float>("TrackStubLengthStd")),
-    m_nuVertexAvSeparationMean(pset.get<float>("NuVertexAvSeparationMean")),
-    m_nuVertexAvSeparationStd(pset.get<float>("NuVertexAvSeparationStd")), 
-    m_nuVertexChargeAsymmetryMean(pset.get<float>("NuVertexChargeAsymmetryMean")),
-    m_nuVertexChargeAsymmetryStd(pset.get<float>("NuVertexChargeAsymmetryStd"))    
+    m_fromParentAvSepMean(pset.get<float>("FromParentAvSepMean")),
+    m_fromParentAvSepStd(pset.get<float>("FromParentAvSepStd")), 
+    m_fromParentChargeAsymMean(pset.get<float>("FromParentChargeAsymMean")),
+    m_fromParentChargeAsymStd(pset.get<float>("FromParentChargeAsymStd"))    
 {
 }
 
@@ -173,7 +174,7 @@ void ShowerVarManager::FillAvSeparation(const art::Event &evt, const TVector3 &p
     float totalCharge = 0.f;
     float numeratorSum = 0.f;
 
-    const std::vector<art::Ptr<recob::Hit>> collectionHits = lar_pandora::PandoraPFParticleUtils::GetViewHits(pfparticle, evt, m_recoModuleLabel, 2);
+    const std::vector<art::Ptr<recob::Hit>> collectionHits = lar_pandora::PandoraPFParticleUtils::GetViewHits(pfparticle, evt, m_recoModuleLabel, m_planeIDForEnergy);
 
     for (const art::Ptr<recob::Hit> &hit : collectionHits)
     {
@@ -192,8 +193,8 @@ void ShowerVarManager::FillAvSeparation(const art::Event &evt, const TVector3 &p
         numeratorSum += (transverse * charge);
     }
 
-    const float nuVertexAvSeparation = (totalCharge < std::numeric_limits<float>::epsilon()) ? 0.f : (numeratorSum / totalCharge);
-    showerVars.SetNuVertexAvSeparation(nuVertexAvSeparation);
+    const float fromParentAvSep = (totalCharge < std::numeric_limits<float>::epsilon()) ? 0.f : (numeratorSum / totalCharge);
+    showerVars.SetFromParentAvSep(fromParentAvSep);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -229,7 +230,7 @@ void ShowerVarManager::FillChargeAsymmetry(const art::Event &evt, const TVector3
     const float chargeAsymmetryW = GetViewChargeAsymmetry(evt, parentEndpoint, showerDirection, hitsW, IvysaurusUtils::PandoraView::TPC_VIEW_W);
     const float maxChargeAsymmetry = std::max(std::max(chargeAsymmetryU, chargeAsymmetryV), chargeAsymmetryW);
 
-    showerVars.SetNuVertexChargeAsymmetry(maxChargeAsymmetry);
+    showerVars.SetFromParentChargeAsym(maxChargeAsymmetry);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -288,11 +289,11 @@ void ShowerVarManager::NormaliseShowerVars(ShowerVarManager::ShowerVars &showerV
     if (showerVars.GetTrackStubLength().second)
         showerVars.SetTrackStubLength(this->NormaliseShowerVar(showerVars.GetTrackStubLength(), m_trackStubLengthMean, m_trackStubLengthStd));
 
-    if (showerVars.GetNuVertexAvSeparation().second)
-        showerVars.SetNuVertexAvSeparation(this->NormaliseShowerVar(showerVars.GetNuVertexAvSeparation(), m_nuVertexAvSeparationMean, m_nuVertexAvSeparationStd));
+    if (showerVars.GetFromParentAvSep().second)
+        showerVars.SetFromParentAvSep(this->NormaliseShowerVar(showerVars.GetFromParentAvSep(), m_fromParentAvSepMean, m_fromParentAvSepStd));
 
-    if (showerVars.GetNuVertexChargeAsymmetry().second)
-        showerVars.SetNuVertexChargeAsymmetry(this->NormaliseShowerVar(showerVars.GetNuVertexChargeAsymmetry(), m_nuVertexChargeAsymmetryMean, m_nuVertexChargeAsymmetryStd));
+    if (showerVars.GetFromParentChargeAsym().second)
+        showerVars.SetFromParentChargeAsym(this->NormaliseShowerVar(showerVars.GetFromParentChargeAsym(), m_fromParentChargeAsymMean, m_fromParentChargeAsymStd));
 
     showerVars.SetIsNormalised(true);
 }

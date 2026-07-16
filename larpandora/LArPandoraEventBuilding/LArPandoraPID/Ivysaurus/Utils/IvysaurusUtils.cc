@@ -67,7 +67,7 @@ const PandoraView GetPandora2DView(const art::Ptr<recob::Hit> &hit)
     else if (thisPandoraView == geo::kV)
         return TPC_VIEW_V;
     else
-        throw cet::exception("ivysaur::GridManager") << "wire view not recognised";
+        throw cet::exception("ivysaurus::IvysaurusUtils") << "wire view not recognised";
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

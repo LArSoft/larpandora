@@ -253,10 +253,10 @@ torch::Tensor IvysaurusEvaluator::ObtainInputShowerTensor(const art::Event &evt,
     showerVarTensor[0][3] = (showerVars.GetDCA().second ? 1.f : 0.f);
     showerVarTensor[0][4] = showerVars.GetTrackStubLength().first;
     showerVarTensor[0][5] = (showerVars.GetTrackStubLength().second ? 1.f : 0.f);
-    showerVarTensor[0][6] = showerVars.GetNuVertexAvSeparation().first;
-    showerVarTensor[0][7] = (showerVars.GetNuVertexAvSeparation().second ? 1.f : 0.f);
-    showerVarTensor[0][8] = showerVars.GetNuVertexChargeAsymmetry().first;
-    showerVarTensor[0][9] = (showerVars.GetNuVertexChargeAsymmetry().second ? 1.f : 0.f);
+    showerVarTensor[0][6] = showerVars.GetFromParentAvSep().first;
+    showerVarTensor[0][7] = (showerVars.GetFromParentAvSep().second ? 1.f : 0.f);
+    showerVarTensor[0][8] = showerVars.GetFromParentChargeAsym().first;
+    showerVarTensor[0][9] = (showerVars.GetFromParentChargeAsym().second ? 1.f : 0.f);
 
     return showerVarTensor;
 }

@@ -236,6 +236,7 @@ class GridManager
     std::string m_recoModuleLabel;   ///< the label of pandora
     std::string m_trackModuleLabel;  ///< the label for the track producer
     std::string m_showerModuleLabel; ///< the label for the shower producer
+    float m_shrEndpointLengthFrac;   ///< the shower length fraction that defines the shower endpoint
     float m_gridSize3D;              ///< the 3D length of the region considered for grid filling (the grids are also square with this length)
     unsigned int m_dimensions;       ///< the number of bins along each axis of the square grid
     float m_gridMean;                ///< the mean used to normalise grid entries (calculated offline)

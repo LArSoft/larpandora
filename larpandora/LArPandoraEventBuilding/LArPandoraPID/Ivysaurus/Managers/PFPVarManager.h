@@ -46,16 +46,22 @@ class PFPVarManager
 
           /**
            *  @brief  Set whether the pfp vars have been normalised
+           *
+           *  @param whether the pfp vars have been normalised
            */
           void SetIsNormalised(const bool isNormalised);
 
           /**
            *  @brief  Set the number of 2D hits
+           *
+           *  @param the number of 2D hits           
            */
           void SetN2DHits(const float n2DHits);
 
             /**
              *  @brief  Set the track/shower score
+             *
+             *  @param the track/shower score
              */
           void SetTrackShowerScore(const float trackShowerScore);
 

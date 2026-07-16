@@ -91,8 +91,8 @@ private:
   float m_showerDisplacement;
   float m_DCA;
   float m_trackStubLength;
-  float m_nuVertexAvSeparation;
-  float m_nuVertexChargeAsymmetry;
+  float m_fromParentAvSep;
+  float m_fromParentChargeAsym;
   // Managers
   GridManager m_gridManager;
   PFPVarManager m_pfpVarManager;
@@ -285,8 +285,8 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         m_showerDisplacement = showerVars.GetDisplacement().first;
         m_DCA = showerVars.GetDCA().first;
         m_trackStubLength = showerVars.GetTrackStubLength().first;
-        m_nuVertexAvSeparation = showerVars.GetNuVertexAvSeparation().first;
-        m_nuVertexChargeAsymmetry = showerVars.GetNuVertexChargeAsymmetry().first;
+        m_fromParentAvSep = showerVars.GetFromParentAvSep().first;
+        m_fromParentChargeAsym = showerVars.GetFromParentChargeAsym().first;
 
         // Finally, plotting stuff
         if (m_writeVisualisationInfo)
@@ -478,8 +478,8 @@ void IvysaurusTrainingFiles::Reset()
   m_showerDisplacement = defaultFloat;
   m_DCA = defaultFloat;
   m_trackStubLength = defaultFloat;
-  m_nuVertexAvSeparation = defaultFloat;
-  m_nuVertexChargeAsymmetry = defaultFloat;
+  m_fromParentAvSep = defaultFloat;
+  m_fromParentChargeAsym = defaultFloat;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -542,8 +542,8 @@ void IvysaurusTrainingFiles::beginJob()
     m_tree->Branch("ShowerDisplacement", &m_showerDisplacement);
     m_tree->Branch("ShowerDCA", &m_DCA);
     m_tree->Branch("ShowerTrackStubLength", &m_trackStubLength);
-    m_tree->Branch("ShowerNuVertexAvSeparation", &m_nuVertexAvSeparation);
-    m_tree->Branch("ShowerNuVertexChargeAsymmetry", &m_nuVertexChargeAsymmetry);
+    m_tree->Branch("ShowerFromParentAvSep", &m_fromParentAvSep);
+    m_tree->Branch("ShowerFromParentChargeAsym", &m_fromParentChargeAsym);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -551,7 +551,6 @@ void IvysaurusTrainingFiles::beginJob()
 void IvysaurusTrainingFiles::endJob()
 {
 }
-
 
 } //namespace ivysaurus
 
