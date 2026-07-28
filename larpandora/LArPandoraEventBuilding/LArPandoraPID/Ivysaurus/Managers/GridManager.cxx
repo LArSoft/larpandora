@@ -319,7 +319,7 @@ void GridManager::GetSpacePointsToConsider(const TVector3 &center3D, const std::
 {
     for (const art::Ptr<recob::SpacePoint> &spacepoint : pfpSPs)
     {
-        //if (std::fabs(spacepoint->XYZ()[0] - center3D.X()) < (m_gridSize3D * 0.5f))
+        if (std::fabs(spacepoint->XYZ()[0] - center3D.X()) < (m_gridSize3D * 0.5f))
             spToConsider.emplace_back(spacepoint);
     }
 }
