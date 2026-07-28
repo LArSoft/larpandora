@@ -4,10 +4,10 @@ pfpvar_manager:
 {
   RecoModuleLabel:    "pandora"
   
-  N2DHitsMean:            818.53  # Calculate offline in training pre-processing script
-  N2DHitsStd:             1406.8101
-  TrackShowerScoreMean:   0.5998
-  TrackShowerScoreStd:    0.1783
+  N2DHitsMean:            592.2099 # Calculate offline in training pre-processing script
+  N2DHitsStd:             1215.6621
+  TrackShowerScoreMean:   0.5912
+  TrackShowerScoreStd:    0.1593  
 }
 
 END_PROLOG

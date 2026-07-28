@@ -10,16 +10,16 @@ showervar_manager:
   HitModuleLabel:    "hitfd"
   PlaneIDForEnergy:  2 
 
-  DisplacementMean:    35.9138 # Calculate offline in training pre-processing script
-  DisplacementStd:     78.6049
-  DCAMean:             19.5538
-  DCAStd:              53.3346
-  TrackStubLengthMean: 47.3008
-  TrackStubLengthStd:  63.3723
-  FromParentAvSepMean: 27.9846
-  FromParentAvSepStd:  54.631
-  FromParentChargeAsymMean: 0.8874
-  FromParentChargeAsymStd:  0.1908
+  DisplacementMean:    35.7004 # Calculate offline in training pre-processing script
+  DisplacementStd:     82.8258
+  DCAMean:             23.7716
+  DCAStd:              722.3403
+  TrackStubLengthMean: 38.2381
+  TrackStubLengthStd:  56.1333
+  FromParentAvSepMean:    22.6225
+  FromParentAvSepStd:     49.5967
+  FromParentChargeAsymMean: 0.9123
+  FromParentChargeAsymStd:  0.1745
 }
 
 END_PROLOG

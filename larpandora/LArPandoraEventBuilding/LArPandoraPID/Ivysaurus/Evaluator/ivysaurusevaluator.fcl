@@ -11,8 +11,8 @@ ivysaurus_evaluator:
   PFPVarManager:          @local::pfpvar_manager
   TrackVarManager:        @local::trackvar_manager
   ShowerVarManager:       @local::showervar_manager
-  ContainedNetName:       "my_model_contained_VGG_BN_VARS.pt"
-  ExitingNetName:         "my_model_exiting_VGG_BN_VARS.pt"  
+  ContainedNetName:       "my_model_primary_contained.pt"
+  ExitingNetName:         "my_model_primary_exiting.pt"  
   NTrackVars:              20
   NShowerVars:             10
   RecoModuleLabel:        "pandora"
