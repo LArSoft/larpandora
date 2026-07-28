@@ -132,20 +132,6 @@ namespace IvysaurusUtils
      *  @return the estimated integral
      */    
     float TrapeziumRule(const float lowerLimit, const float upperLimit, const float mean, const float std);
-
-    /**
-     *  @brief  Estimate the initial direction of a track/shower as the average charge-weighted displacement from the vertex
-     *
-     *  @param evt the art event
-     *  @param pfpVertex the vertex of the PFParticle
-     *  @param spacepoints the spacepoints of the PFParticle
-     *  @param recoModuleLabel the pandora label
-     *  @param[out] direction the estimated initial track/shower direction
-     *
-     *  @return whether the estimator was successful
-     */      
-    bool GetInitialDirection(const art::Event &evt, const TVector3 &pfpVertex, const std::vector<art::Ptr<recob::SpacePoint>> &spacepoints, 
-        const std::string &recoModuleLabel, TVector3 &direction);
 }
 
 #endif // IVYSAURUS_UTILS_H

@@ -6,7 +6,7 @@ trackvar_manager:
 {
   RecoModuleLabel:    "pandora"
   TrackModuleLabel:   "pandoraTrack"
-  PlaneIDForEnergy;    2
+  PlaneIDForEnergy:    2
   RecombFactor:        0.63
   CalorimetryAlg:      @local::dune10kt_calorimetryalgmc
   MinTrackLengthMCS:   100.0

@@ -150,69 +150,68 @@ class GridManager
      *  @param evt the art event
      *  @param pfparticle the input PFParticle
      *  @param isStart whether to calculate the grids at the start or end of the PFParticle
-     *  @param[out] position1 the first boundary
-     *  @param[out] position2 the second boundary
+     *  @param[out] center the grid center (in 3D)
      *
      *  @return whether the extremal points could be calculated (sometimes fits/direction estimators fail)
      */
-    bool GetGridExtremalPoints(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, const bool isStart,
-        TVector3 &position1, TVector3 &position2) const;
+    bool GetGridCenter(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, const bool isStart,
+        TVector3 &center) const;
 
     /**
-     *  @brief  Use the PFParticle vertex and IvysaurusUtils fitting tools to find the considered region boundaries
-     *          of the grid at the start of the PFParticle
+     *  @brief  Set the central grid position as the PFParticle vertex
      *
      *  @param evt the art event
-     *  @param spacepointsToConsider the input spacepoints associated with the PFParticle
      *  @param pfparticle the input PFParticle
-     *  @param[out] position1 the first boundary
-     *  @param[out] position2 the second boundary
+     *  @param[out] center the grid center (in 3D)
      *
-     *  @return whether the extremal points could be calculated (sometimes vertexing + direction estimators fail)
+     *  @return whether the extremal points could be calculated (sometimes vertexing fails)
      */
-    bool GetStartExtremalPoints(const art::Event &evt, const std::vector<art::Ptr<recob::SpacePoint>> &spacepointsToConsider,
-        const art::Ptr<recob::PFParticle> &pfparticle, TVector3 &position1, TVector3 &position2) const;
+    bool GetStart(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, TVector3 &center) const;
 
     /**
-     *  @brief  Use the track object to find the considered region boundaries
-     *          of the grid around the end of the PFParticle
+     *  @brief  Set the central grid position as the Track endpoint
      *
      *  @param evt the art event
      *  @param pfparticle the input PFParticle
-     *  @param[out] position1 the first boundary
-     *  @param[out] position2 the second boundary
+     *  @param[out] end the grid center (in 3D)
+     *
+     *  @return whether the endpoint could be calculated (sometimes track fits fail)
+     */
+    bool GetEndTrack(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, TVector3 &end) const;
+
+    /**
+     *  @brief  Set the central grid position as the shifted Track endpoint       
+     *
+     *  @param evt the art event
+     *  @param pfparticle the input PFParticle
+     *  @param[out] end the grid center (in 3D)
      *
      *  @return whether the extremal points could be calculated (sometimes track fits fail)
      */
-    bool GetEndExtremalPointsTrack(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, 
-        TVector3 &position1, TVector3 &position2) const;
+    bool GetEndShower(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, TVector3 &end) const;
 
     /**
-     *  @brief  Use the shower object to find the considered region boundaries
-     *          of the grid around the end of the PFParticle
+     *  @brief  Obtain the spacepoints associated with the PFParticle (incl. parent, and children) that
+     *          potentially live in the grid (apply some generous cuts)
      *
      *  @param evt the art event
      *  @param pfparticle the input PFParticle
-     *  @param[out] position1 the first boundary
-     *  @param[out] position2 the second boundary
-     *
-     *  @return whether the extremal points could be calculated (sometimes shower fits fail)
-     */
-    bool GetEndExtremalPointsShower(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, 
-        TVector3 &position1, TVector3 &position2) const;
-
-    /**
-     *  @brief  Obtain the spacepoints associated with the PFParticle (and its children) that lie between the two input positions
-     *
-     *  @param evt the art event
-     *  @param pfparticle the input PFParticle
-     *  @param position1 the first boundary
-     *  @param position2 the second boundary
+     *  @param center the grid center (in 3D)
      *  @param[out] spToConsider the spacepoints to consider for grid filling
      */
     void GetSpacePointsToConsider(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle,
-        const TVector3 &position1, const TVector3 &position2, std::vector<art::Ptr<recob::SpacePoint>> &spToConsider) const;
+        const TVector3 &center3D, std::vector<art::Ptr<recob::SpacePoint>> &spToConsider) const;
 
+    /**
+     *  @brief  Identify the spacepoints, from an input list, that potentially live in the grid (apply some generous cuts)
+     *
+     *  @param center the grid center (in 3D)
+     *  @param pfpSPs input list of spacepoints to filter
+     *  @param[out] spToConsider the spacepoints to consider for grid filling
+     */
+    void GetSpacePointsToConsider(const TVector3 &center3D, const std::vector<art::Ptr<recob::SpacePoint>> &pfpSPs,
+        std::vector<art::Ptr<recob::SpacePoint>> &spToConsider) const;
+    
     /**
      *  @brief  Fill the grids with the energy of the hits associated with the input spacepoints
      *

@@ -18,12 +18,12 @@ ivysaurus_evaluator:
   RecoModuleLabel:        "pandora"
   TrackModuleLabel:       "pandoraTrack"
   ShowerModuleLabel:      "pandoraShower"  
-  FVMinX:                   -310.0    # FD HD
-  FVMaxX:                    310.0    # FD HD
-  FVMinY:                   -550.0    # FD HD
-  FVMaxY:                    550.0    # FD HD
-  FVMinZ:                    50.0     # FD HD
-  FVMaxZ:                    1244.0   # FD HD
+  FVMinX:                   -350.0     # FD HD
+  FVMaxX:                    350.0    # FD HD
+  FVMinY:                   -590.0    # FD HD
+  FVMaxY:                    590.0    # FD HD
+  FVMinZ:                    10.0     # FD HD
+  FVMaxZ:                    1384.0   # FD HD
 }
 
 END_PROLOG

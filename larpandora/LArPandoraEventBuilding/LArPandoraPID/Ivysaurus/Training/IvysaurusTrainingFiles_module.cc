@@ -45,10 +45,14 @@ private:
   float m_completeness;
   float m_purity;
   int m_nSpacePoints;
-  float m_endX;
-  float m_endY;
-  float m_endZ;
+  float m_trueEndX;
+  float m_trueEndY;
+  float m_trueEndZ;    
+  float m_recoEndX;
+  float m_recoEndY;
+  float m_recoEndZ;
   bool m_isPrimary;
+  bool m_isDeltaRay;    
   // Plotting
   std::vector<std::vector<double>> m_spacePoints;
   std::vector<std::vector<double>> m_projectionsU;
@@ -66,12 +70,12 @@ private:
   std::vector<float> m_endWireBoundariesU;
   std::vector<float> m_endWireBoundariesV;
   std::vector<float> m_endWireBoundariesW;
-  std::vector<std::vector<float>> m_startGridValuesU;
-  std::vector<std::vector<float>> m_startGridValuesV;
-  std::vector<std::vector<float>> m_startGridValuesW;
-  std::vector<std::vector<float>> m_endGridValuesU;
-  std::vector<std::vector<float>> m_endGridValuesV;
-  std::vector<std::vector<float>> m_endGridValuesW;
+  float m_startGridValuesU[576];
+  float m_startGridValuesV[576];
+  float m_startGridValuesW[576];
+  float m_endGridValuesU[576];
+  float m_endGridValuesV[576];
+  float m_endGridValuesW[576];    
   //PFPVars
   float m_pfpN2DHits;
   float m_pfpTrackShowerScore;
@@ -199,7 +203,8 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         if (TruthMatchUtils::Valid(g4id))
         {
             // If it isn't a PDG that we care about, move on...
-            m_truePDG = piServ->ParticleList().at(g4id)->PdgCode();
+            simb::MCParticle* mcParticle = piServ->ParticleList().at(g4id);
+            m_truePDG = mcParticle->PdgCode();
             const int absPDG = std::abs(m_truePDG);
 
             if ((absPDG != 13) && (absPDG != 2212) && (absPDG != 211) && (absPDG != 11) && (absPDG != 22) && (absPDG != 321))
@@ -207,6 +212,7 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
 
             m_completeness = IvysaurusUtils::CompletenessFromTrueParticleID(clockData, pfpHits, eventHitList, g4id);
             m_purity = IvysaurusUtils::HitPurityFromTrueParticleID(clockData, pfpHits, g4id);
+            m_trueEndX = mcParticle->EndX(); m_trueEndY = mcParticle->EndY(); m_trueEndZ = mcParticle->EndZ();
         }
         else
         {
@@ -217,16 +223,15 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         if ((m_completeness < m_completenessThreshold) || (m_purity < m_purityThreshold))
             continue;
 
-        // Skip if we think it is a DR
+        // Note if we think it is a DR
         const std::vector<int> candidateDeltas = this->GetDeltaRays(evt);
-        if (std::find(candidateDeltas.begin(), candidateDeltas.end(), pfparticle->Self()) != candidateDeltas.end())
-            continue;
+        m_isDeltaRay = (std::find(candidateDeltas.begin(), candidateDeltas.end(), pfparticle->Self()) != candidateDeltas.end());
         
         // Fill generic vars
         if (lar_pandora::PandoraPFParticleUtils::HasTrack(pfparticle, evt, m_recoModuleLabel, m_trackModuleLabel))
         {
-            const art::Ptr<recob::Track> track = lar_pandora::PandoraPFParticleUtils::GetTrack(pfparticle, evt, m_recoModuleLabel, m_trackModuleLabel);           
-            m_endX = track->End().X(); m_endY = track->End().Y(); m_endZ = track->End().Z();            
+            const art::Ptr<recob::Track> track = lar_pandora::PandoraPFParticleUtils::GetTrack(pfparticle, evt, m_recoModuleLabel, m_trackModuleLabel);
+            m_recoEndX = track->End().X(); m_recoEndY = track->End().Y(); m_recoEndZ = track->End().Z();
         }
         m_nSpacePoints = spacepoints.size();
 
@@ -241,21 +246,20 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         {
             const GridManager::Grid &startGrid = gridMapStart.at(pandoraView);
             const GridManager::Grid &endGrid = gridMapEnd.at(pandoraView);
-            std::vector<std::vector<float>> &startGridValues = pandoraView == IvysaurusUtils::PandoraView::TPC_VIEW_U ? m_startGridValuesU : 
+            float (&startGridValues)[576] = pandoraView == IvysaurusUtils::PandoraView::TPC_VIEW_U ? m_startGridValuesU : 
                 pandoraView == IvysaurusUtils::PandoraView::TPC_VIEW_V ? m_startGridValuesV : m_startGridValuesW;
-            std::vector<std::vector<float>> &endGridValues = pandoraView == IvysaurusUtils::PandoraView::TPC_VIEW_U ? m_endGridValuesU : 
+            float (&endGridValues)[576] = pandoraView == IvysaurusUtils::PandoraView::TPC_VIEW_U ? m_endGridValuesU : 
                 pandoraView == IvysaurusUtils::PandoraView::TPC_VIEW_V ? m_endGridValuesV : m_endGridValuesW;
-            
-            const unsigned int dimensions = startGrid.GetAxisDimensions();
-            startGridValues = std::vector<std::vector<float>>(dimensions, std::vector<float>(dimensions, 0.f));
-            endGridValues = std::vector<std::vector<float>>(dimensions, std::vector<float>(dimensions, 0.f));            
 
+            const unsigned int dimensions = startGrid.GetAxisDimensions();
             for (unsigned int driftIndex = 0; driftIndex < dimensions; ++driftIndex)
             {
+                const int index = (driftIndex * dimensions);
+                
                 for (unsigned int wireIndex = 0; wireIndex <  dimensions; ++wireIndex)
                 {
-                    startGridValues[driftIndex][wireIndex] = startGrid.GetGridValues().at(driftIndex).at(wireIndex).first;
-                    endGridValues[driftIndex][wireIndex] = endGrid.GetGridValues().at(driftIndex).at(wireIndex).first;
+                    startGridValues[index + wireIndex] = startGrid.GetGridValues().at(driftIndex).at(wireIndex).first;
+                    endGridValues[index + wireIndex] = endGrid.GetGridValues().at(driftIndex).at(wireIndex).first;
                 }
             }
         }
@@ -432,10 +436,14 @@ void IvysaurusTrainingFiles::Reset()
   m_completeness = defaultFloat;
   m_purity = defaultFloat;
   m_nSpacePoints = defaultInt;
-  m_endX = defaultFloat;
-  m_endY = defaultFloat;
-  m_endZ = defaultFloat;
+  m_trueEndX = defaultFloat;
+  m_trueEndY = defaultFloat;
+  m_trueEndZ = defaultFloat;
+  m_recoEndX = defaultFloat;
+  m_recoEndY = defaultFloat;
+  m_recoEndZ = defaultFloat;
   m_isPrimary = false;
+  m_isDeltaRay = false;  
   // Plotting
   m_spacePoints.clear();
   m_projectionsU.clear();
@@ -453,12 +461,12 @@ void IvysaurusTrainingFiles::Reset()
   m_endWireBoundariesU.clear();
   m_endWireBoundariesV.clear();
   m_endWireBoundariesW.clear();
-  m_startGridValuesU.clear();
-  m_startGridValuesV.clear();
-  m_startGridValuesW.clear();
-  m_endGridValuesU.clear();
-  m_endGridValuesV.clear();
-  m_endGridValuesW.clear();
+  std::fill(std::begin(m_startGridValuesU), std::end(m_startGridValuesU), 0.f);
+  std::fill(std::begin(m_startGridValuesV), std::end(m_startGridValuesV), 0.f);
+  std::fill(std::begin(m_startGridValuesW), std::end(m_startGridValuesW), 0.f);
+  std::fill(std::begin(m_endGridValuesU), std::end(m_endGridValuesU), 0.f);
+  std::fill(std::begin(m_endGridValuesV), std::end(m_endGridValuesV), 0.f);
+  std::fill(std::begin(m_endGridValuesW), std::end(m_endGridValuesW), 0.f);
   // PFPVars
   m_pfpN2DHits = defaultFloat;  
   m_pfpTrackShowerScore = defaultFloat;
@@ -496,33 +504,40 @@ void IvysaurusTrainingFiles::beginJob()
     m_tree->Branch("Completeness", &m_completeness);
     m_tree->Branch("Purity", &m_purity);
     m_tree->Branch("NSpacePoints", &m_nSpacePoints);
-    m_tree->Branch("EndX", &m_endX);
-    m_tree->Branch("EndY", &m_endY);
-    m_tree->Branch("EndZ", &m_endZ);    
+    m_tree->Branch("TrueEndX", &m_trueEndX);
+    m_tree->Branch("TrueEndY", &m_trueEndY);
+    m_tree->Branch("TrueEndZ", &m_trueEndZ);           
+    m_tree->Branch("RecoEndX", &m_recoEndX);
+    m_tree->Branch("RecoEndY", &m_recoEndY);
+    m_tree->Branch("RecoEndZ", &m_recoEndZ);    
     m_tree->Branch("IsPrimary", &m_isPrimary, "IsPrimary/O");
+    m_tree->Branch("IsDeltaRay", &m_isDeltaRay, "IsDeltaRay/O");    
     // Plotting
-    m_tree->Branch("SpacePoints", &m_spacePoints);
-    m_tree->Branch("ProjectionsU", &m_projectionsU);
-    m_tree->Branch("ProjectionsV", &m_projectionsV);
-    m_tree->Branch("ProjectionsW", &m_projectionsW);
-    m_tree->Branch("StartDriftBoundariesU", &m_startDriftBoundariesU);
-    m_tree->Branch("StartDriftBoundariesV", &m_startDriftBoundariesV);
-    m_tree->Branch("StartDriftBoundariesW", &m_startDriftBoundariesW);
-    m_tree->Branch("EndDriftBoundariesU", &m_endDriftBoundariesU);
-    m_tree->Branch("EndDriftBoundariesV", &m_endDriftBoundariesV);
-    m_tree->Branch("EndDriftBoundariesW", &m_endDriftBoundariesW);
-    m_tree->Branch("StartWireBoundariesU", &m_startWireBoundariesU);
-    m_tree->Branch("StartWireBoundariesV", &m_startWireBoundariesV);
-    m_tree->Branch("StartWireBoundariesW", &m_startWireBoundariesW);
-    m_tree->Branch("EndWireBoundariesU", &m_endWireBoundariesU);
-    m_tree->Branch("EndWireBoundariesV", &m_endWireBoundariesV);
-    m_tree->Branch("EndWireBoundariesW", &m_endWireBoundariesW);
-    m_tree->Branch("StartGridU", &m_startGridValuesU);
-    m_tree->Branch("StartGridV", &m_startGridValuesV);
-    m_tree->Branch("StartGridW", &m_startGridValuesW);
-    m_tree->Branch("EndGridU", &m_endGridValuesU);
-    m_tree->Branch("EndGridV", &m_endGridValuesV);
-    m_tree->Branch("EndGridW", &m_endGridValuesW);
+    if (m_writeVisualisationInfo)
+    {
+        m_tree->Branch("SpacePoints", &m_spacePoints);
+        m_tree->Branch("ProjectionsU", &m_projectionsU);
+        m_tree->Branch("ProjectionsV", &m_projectionsV);
+        m_tree->Branch("ProjectionsW", &m_projectionsW);
+        m_tree->Branch("StartDriftBoundariesU", &m_startDriftBoundariesU);
+        m_tree->Branch("StartDriftBoundariesV", &m_startDriftBoundariesV);
+        m_tree->Branch("StartDriftBoundariesW", &m_startDriftBoundariesW);
+        m_tree->Branch("EndDriftBoundariesU", &m_endDriftBoundariesU);
+        m_tree->Branch("EndDriftBoundariesV", &m_endDriftBoundariesV);
+        m_tree->Branch("EndDriftBoundariesW", &m_endDriftBoundariesW);
+        m_tree->Branch("StartWireBoundariesU", &m_startWireBoundariesU);
+        m_tree->Branch("StartWireBoundariesV", &m_startWireBoundariesV);
+        m_tree->Branch("StartWireBoundariesW", &m_startWireBoundariesW);
+        m_tree->Branch("EndWireBoundariesU", &m_endWireBoundariesU);
+        m_tree->Branch("EndWireBoundariesV", &m_endWireBoundariesV);
+        m_tree->Branch("EndWireBoundariesW", &m_endWireBoundariesW);
+    }
+    m_tree->Branch("StartGridU", m_startGridValuesU, "StartGridU[576]/F");
+    m_tree->Branch("StartGridV", m_startGridValuesV, "StartGridV[576]/F");
+    m_tree->Branch("StartGridW", m_startGridValuesW, "StartGridW[576]/F");
+    m_tree->Branch("EndGridU", m_endGridValuesU, "EndGridU[576]/F");
+    m_tree->Branch("EndGridV", m_endGridValuesV, "EndGridV[576]/F");
+    m_tree->Branch("EndGridW", m_endGridValuesW, "EndGridW[576]/F");
     // PFPVars
     m_tree->Branch("PFPN2DHits", &m_pfpN2DHits);
     m_tree->Branch("PFPTrackShowerScore", &m_pfpTrackShowerScore);
