@@ -178,3 +178,4 @@ float TrapeziumRule(const float lowerLimit, const float upperLimit, const float 
 }
 
 } // namespace IvysaurusUtils
+

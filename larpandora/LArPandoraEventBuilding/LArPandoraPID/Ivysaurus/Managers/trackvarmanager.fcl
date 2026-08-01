@@ -11,7 +11,7 @@ trackvar_manager:
   CalorimetryAlg:      @local::dune10kt_calorimetryalgmc
   MinTrackLengthMCS:   100.0
   MaxTrackLengthMCS:   1350.0
-  IntTrkMomRange:      0.0  # In recent production, these values are removed (do this here for consistency)
+  IntTrkMomRange:      0.0  # In recent production, these corrections are removed (do this here for consistency)
   GradTrkMomRange:     1.0
   IntTrkMomMCS:        0.0
   GradTrkMomMCS:       1.0                 

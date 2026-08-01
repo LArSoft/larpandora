@@ -78,3 +78,4 @@ void PandoraPID::produce(art::Event& evt)
 } // namespace pandorapid
 
 DEFINE_ART_MODULE(pandorapid::PandoraPID)
+

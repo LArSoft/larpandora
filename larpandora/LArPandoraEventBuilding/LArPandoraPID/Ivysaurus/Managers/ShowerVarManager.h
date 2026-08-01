@@ -334,3 +334,4 @@ inline void ShowerVarManager::ShowerVars::SetIsNormalised(const bool isNormalise
 } // namespace ivysaurus
 
 #endif  // SHOWER_VAR_MANAGER_H
+

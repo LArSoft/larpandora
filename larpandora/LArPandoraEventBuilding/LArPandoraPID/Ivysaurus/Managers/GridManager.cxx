@@ -81,7 +81,6 @@ bool GridManager::Grid::IsInsideGrid(const TVector3 &position, const float width
 
 void GridManager::Grid::AddToGrid(const TVector3 &position, const float width, const float energy)
 {
-    // Do some checks
     if (width < std::numeric_limits<float>::epsilon())
         return;
     

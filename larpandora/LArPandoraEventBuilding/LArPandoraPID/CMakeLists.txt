@@ -14,6 +14,7 @@ cet_build_plugin(PandoraPID art::EDProducer
       larpandora::LArPandoraUtils
       larpandora::LArPandoraEventBuilding_LArPandoraPID_Ivysaurus_Managers    
       larpandora::LArPandoraEventBuilding_LArPandoraPID_Ivysaurus_Evaluator
+      larpandora::LArPandoraEventBuilding_LArPandoraPID_LArPandoraPIDData      
       larpandora::LArPandoraInterface
       larreco::Calorimetry
       torch
