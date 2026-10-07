@@ -30,15 +30,20 @@ class PFPVarManager
           PFPVars();
 
           /**
-           *  @brief  Get the number of 2D hits (value, is set)
+           *  @brief  Get the number of 2D hits
            */
           float GetN2DHits() const;
 
           /**
-           *  @brief  Get the track/shower score (value, is set)
+           *  @brief  Get the track/shower score
            */          
           float GetTrackShowerScore() const;
 
+          /**
+           *  @brief  Get the is primary variable
+           */
+          float GetIsPrimary() const;
+          
           /**
            *  @brief  Return whether the pfp vars have been normalised
            */
@@ -58,6 +63,13 @@ class PFPVarManager
            */
           void SetN2DHits(const float n2DHits);
 
+          /**
+           *  @brief  Set the is primary variable
+           *
+           *  @param whether the pfo is primary    
+           */
+          void SetIsPrimary(const float isPrimary);
+          
             /**
              *  @brief  Set the track/shower score
              *
@@ -69,6 +81,7 @@ class PFPVarManager
           bool m_isNormalised;      ///< whether the pfp vars have been normalised
           float m_n2DHits;          ///< total number of 2D hits
           float m_trackShowerScore; ///< track/shower score (determined by pandora)
+          float m_isPrimary;        ///< whether the pfp was reconstructed as a primary particle
   };
 
     PFPVarManager(const fhicl::ParameterSet& pset);
@@ -110,6 +123,15 @@ class PFPVarManager
     void FillN2DHits(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, PFPVarManager::PFPVars &pfpVars) const;
 
     /**
+     *  @brief Obtain and fill the is primary variable
+     *
+     *  @param evt the art event
+     *  @param pfparticle the input PFParticle
+     *  @param pfpVars[out] pfpVars the pfp variables container
+     */    
+    void FillIsPrimary(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, PFPVarManager::PFPVars &pfpVars) const;
+    
+    /**
      *  @brief Normalise an input pfp variable
      *
      *  @param inputPFPVar the input pfp variable
@@ -150,6 +172,13 @@ inline float PFPVarManager::PFPVars::GetTrackShowerScore() const
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+inline float PFPVarManager::PFPVars::GetIsPrimary() const
+{
+    return m_isPrimary;
+}
+    
+//------------------------------------------------------------------------------------------------------------------------------------------
+
 inline void PFPVarManager::PFPVars::SetIsNormalised(const bool isNormalised)
 {
     m_isNormalised = isNormalised;
@@ -169,6 +198,13 @@ inline void PFPVarManager::PFPVars::SetTrackShowerScore(const float trackShowerS
     m_trackShowerScore = trackShowerScore;
 }    
 
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+inline void PFPVarManager::PFPVars::SetIsPrimary(const float isPrimary)
+{
+    m_isPrimary = isPrimary;
+} 
+    
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 } // namespace ivysaurus

@@ -7,10 +7,12 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 // LArSoft
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/GridManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/PFPVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/TrackVarManager.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/ShowerVarManager.h"
+#include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 // ROOT
 #include "TTree.h"
 
@@ -29,8 +31,6 @@ public:
    void beginJob();
    void endJob();
    void analyze(const art::Event &evt);
-   std::vector<int> GetDeltaRays(const art::Event &evt);
-
    void Reset();
 
 private:
@@ -52,7 +52,8 @@ private:
   float m_recoEndY;
   float m_recoEndZ;
   bool m_isPrimary;
-  bool m_isDeltaRay;    
+  bool m_isDeltaRay;
+  bool m_isMichel;    
   // Plotting
   std::vector<std::vector<double>> m_spacePoints;
   std::vector<std::vector<double>> m_projectionsU;
@@ -90,6 +91,7 @@ private:
   float m_trackLength;
   float m_trackWobble;
   float m_trackMomComparison;
+  float m_trackDistFromEdge;
   // ShowerVars
   int m_showerVarsSuccessful;
   float m_showerDisplacement;
@@ -103,6 +105,7 @@ private:
   TrackVarManager m_trackVarManager;
   ShowerVarManager m_showerVarManager;
   // FCL module labels
+  std::string m_largeantModuleLabel;    
   std::string m_hitModuleLabel;
   std::string m_recoModuleLabel;
   std::string m_trackModuleLabel;
@@ -143,6 +146,7 @@ IvysaurusTrainingFiles::IvysaurusTrainingFiles(fhicl::ParameterSet const &pset) 
     m_pfpVarManager(pset.get<fhicl::ParameterSet>("PFPVarManager")),
     m_trackVarManager(pset.get<fhicl::ParameterSet>("TrackVarManager")),
     m_showerVarManager(pset.get<fhicl::ParameterSet>("ShowerVarManager")),
+    m_largeantModuleLabel(pset.get<std::string>("LArGeantModuleLabel")),    
     m_hitModuleLabel(pset.get<std::string>("HitModuleLabel")),
     m_recoModuleLabel(pset.get<std::string>("RecoModuleLabel")),    
     m_trackModuleLabel(pset.get<std::string>("TrackModuleLabel")),
@@ -165,15 +169,20 @@ IvysaurusTrainingFiles::~IvysaurusTrainingFiles()
 
 void IvysaurusTrainingFiles::analyze(const art::Event &evt)
 {
-    art::ServiceHandle<cheat::ParticleInventoryService> piServ;
     const std::vector<art::Ptr<recob::PFParticle>> pfparticles = lar_pandora::PandoraEventUtils::GetPFParticles(evt, m_recoModuleLabel);
 
     // Get the neutrino PFP
     if (!lar_pandora::PandoraEventUtils::HasNeutrino(evt, m_recoModuleLabel))
         return;
-    
+
     art::Ptr<recob::PFParticle> nuPFP = lar_pandora::PandoraEventUtils::GetNeutrino(evt, m_recoModuleLabel);    
-    const std::vector<art::Ptr<recob::PFParticle>> &nuChildPFPs = lar_pandora::PandoraPFParticleUtils::GetChildParticles(nuPFP, evt, m_recoModuleLabel);
+    const std::vector<art::Ptr<recob::PFParticle>> &nuChildPFPs = lar_pandora::PandoraPFParticleUtils::GetChildParticles(nuPFP, evt, m_recoModuleLabel);    
+
+    // Prepare for truth matching
+    art::ServiceHandle<cheat::ParticleInventoryService> piServ;
+    std::map<int, int> rollUpMap;
+    const std::vector<art::Ptr<simb::MCParticle>> mcParticles = lar_pandora::PandoraEventUtils::GetMCParticles(evt, m_largeantModuleLabel);
+    IvysaurusUtils::PopulateRollUpMap(mcParticles, rollUpMap);
 
     for (const art::Ptr<recob::PFParticle> &pfparticle : pfparticles)
     {
@@ -198,9 +207,9 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         const std::vector<art::Ptr<recob::Hit>> pfpHits = lar_pandora::PandoraPFParticleUtils::GetHits(pfparticle, evt, m_recoModuleLabel);
         const std::vector<art::Ptr<recob::Hit>> eventHitList = lar_pandora::PandoraEventUtils::GetHits(evt, m_hitModuleLabel);
         auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService>()->DataFor(evt);
-        const int g4id = TruthMatchUtils::TrueParticleIDFromTotalRecoHits(clockData, pfpHits, 1);
+        const int g4id = IvysaurusUtils::TrueParticleIDFromTotalRecoHits(clockData, pfpHits, rollUpMap);
 
-        if (TruthMatchUtils::Valid(g4id))
+        if (TruthMatchUtils::Valid(g4id) && (g4id >= 0))
         {
             // If it isn't a PDG that we care about, move on...
             simb::MCParticle* mcParticle = piServ->ParticleList().at(g4id);
@@ -209,9 +218,26 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
 
             if ((absPDG != 13) && (absPDG != 2212) && (absPDG != 211) && (absPDG != 11) && (absPDG != 22) && (absPDG != 321))
                 continue;
+            
+            // Is Michel or DR? (ignore 'primaries')
+            if ((absPDG == 11) && (mcParticle->Mother() != 0))
+            {
+                simb::MCParticle* parentMCParticle = piServ->ParticleList().at(mcParticle->Mother());
+                
+                if (std::abs(parentMCParticle->PdgCode()) == 13)
+                {
+                    m_isDeltaRay = (mcParticle->Process() == "muIoni");
 
-            m_completeness = IvysaurusUtils::CompletenessFromTrueParticleID(clockData, pfpHits, eventHitList, g4id);
-            m_purity = IvysaurusUtils::HitPurityFromTrueParticleID(clockData, pfpHits, g4id);
+                    // Currently a bug with process ID for michels :(
+                    m_isMichel = !m_isDeltaRay && ((mcParticle->Process() == "Decay") ||
+                                  (((parentMCParticle->EndX() - mcParticle->Vx()) < std::numeric_limits<float>::epsilon()) &&
+                                   ((parentMCParticle->EndY() - mcParticle->Vy()) < std::numeric_limits<float>::epsilon()) &&
+                                   ((parentMCParticle->EndZ() - mcParticle->Vz()) < std::numeric_limits<float>::epsilon())));
+                }
+            }
+
+            m_completeness = IvysaurusUtils::CompletenessFromTrueParticleID(clockData, rollUpMap, pfpHits, eventHitList, g4id);
+            m_purity = IvysaurusUtils::HitPurityFromTrueParticleID(clockData, rollUpMap, pfpHits, g4id);
             m_trueEndX = mcParticle->EndX(); m_trueEndY = mcParticle->EndY(); m_trueEndZ = mcParticle->EndZ();
         }
         else
@@ -223,10 +249,6 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         if ((m_completeness < m_completenessThreshold) || (m_purity < m_purityThreshold))
             continue;
 
-        // Note if we think it is a DR
-        const std::vector<int> candidateDeltas = this->GetDeltaRays(evt);
-        m_isDeltaRay = (std::find(candidateDeltas.begin(), candidateDeltas.end(), pfparticle->Self()) != candidateDeltas.end());
-        
         // Fill generic vars
         if (lar_pandora::PandoraPFParticleUtils::HasTrack(pfparticle, evt, m_recoModuleLabel, m_trackModuleLabel))
         {
@@ -282,6 +304,7 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         m_trackLength = trackVars.GetTrackLength().first;
         m_trackWobble = trackVars.GetWobble().first;
         m_trackMomComparison = trackVars.GetMomentumComparison().first;
+        m_trackDistFromEdge = trackVars.GetDistanceToEdge().first;
 
         // Now fill the shower variables
         ShowerVarManager::ShowerVars showerVars;
@@ -346,83 +369,6 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-std::vector<int> IvysaurusTrainingFiles::GetDeltaRays(const art::Event &evt)
-{
-    art::ServiceHandle<cheat::ParticleInventoryService> piServ;
-    auto const clockData = art::ServiceHandle<detinfo::DetectorClocksService>()->DataFor(evt);
-
-    // Find MCParticle 'muon' counts
-    std::vector<int> deltaRays;
-    std::map<int, std::vector<art::Ptr<recob::PFParticle>>> muonTrackIDCounts;
-    const std::vector<art::Ptr<recob::PFParticle>> pfparticles = lar_pandora::PandoraEventUtils::GetPFParticles(evt, m_recoModuleLabel);
-    for (const art::Ptr<recob::PFParticle> &pfparticle : pfparticles)
-    {
-        const std::vector<art::Ptr<recob::Hit>> pfpHits = lar_pandora::PandoraPFParticleUtils::GetHits(pfparticle, evt, m_recoModuleLabel);
-        const int g4id = TruthMatchUtils::TrueParticleIDFromTotalRecoHits(clockData, pfpHits, 1);
-
-        if (TruthMatchUtils::Valid(g4id))
-        {
-            // If it isn't a PDG that we care about, move on...
-            int pdg = std::abs(piServ->ParticleList().at(g4id)->PdgCode());
-
-            if (pdg == 13)
-                muonTrackIDCounts[g4id].emplace_back(pfparticle);
-        }
-    }
-
-    if (muonTrackIDCounts.empty())
-        return deltaRays;
-
-    // Search for repeated 'muons' and rule out 'obvious' delta rays
-    for (const auto &entry : muonTrackIDCounts)
-    {
-        if (entry.second.size() < 2)
-            continue;
-
-        // Make sure we always keep a 'muon'
-        int highestHits(0), highestHitPFP(-1);
-        for (const art::Ptr<recob::PFParticle> &deltaCandidate : entry.second)
-        {
-            const std::vector<art::Ptr<recob::Hit>> pfpHits = lar_pandora::PandoraPFParticleUtils::GetHits(deltaCandidate, evt, m_recoModuleLabel);
-            if (int(pfpHits.size()) > highestHits)
-            {
-                highestHits = pfpHits.size();
-                highestHitPFP = deltaCandidate->Self();
-            }
-        }
-
-        for (const art::Ptr<recob::PFParticle> &deltaCandidate : entry.second)
-        {
-            if (int(deltaCandidate->Self()) == highestHitPFP)
-                continue;
-            
-            const std::vector<art::Ptr<recob::Hit>> pfpHits = lar_pandora::PandoraPFParticleUtils::GetHits(deltaCandidate, evt, m_recoModuleLabel);
-
-            // Is it small and/or shower-like
-            if (int(pfpHits.size()) < m_candidateDRMinHits) // candidateDRMinHits/3 in each view
-            {
-                deltaRays.emplace_back(deltaCandidate->Self());
-            }
-            else
-            {
-                const art::Ptr<larpandoraobj::PFParticleMetadata> &metadata = lar_pandora::PandoraPFParticleUtils::GetMetadata(deltaCandidate, evt, m_recoModuleLabel);
-                const auto metaMap = metadata->GetPropertiesMap();
-
-                float trackScore = -1.f;
-                if (metaMap.find("TrackScore") != metaMap.end())
-                    trackScore = metaMap.at("TrackScore");
-
-                if (trackScore < m_candidateDRMaxTrackScore)
-                    deltaRays.emplace_back(deltaCandidate->Self());
-            }
-        }
-    }
-
-    return deltaRays;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-
 void IvysaurusTrainingFiles::Reset()
 {
   const int defaultInt = -999;
@@ -443,7 +389,8 @@ void IvysaurusTrainingFiles::Reset()
   m_recoEndY = defaultFloat;
   m_recoEndZ = defaultFloat;
   m_isPrimary = false;
-  m_isDeltaRay = false;  
+  m_isDeltaRay = false;
+  m_isMichel = false;  
   // Plotting
   m_spacePoints.clear();
   m_projectionsU.clear();
@@ -481,6 +428,7 @@ void IvysaurusTrainingFiles::Reset()
   m_trackLength = defaultFloat;
   m_trackWobble = defaultFloat;
   m_trackMomComparison = defaultFloat;
+  m_trackDistFromEdge = defaultFloat;
   // ShowerVars
   m_showerVarsSuccessful = 0;
   m_showerDisplacement = defaultFloat;
@@ -511,7 +459,8 @@ void IvysaurusTrainingFiles::beginJob()
     m_tree->Branch("RecoEndY", &m_recoEndY);
     m_tree->Branch("RecoEndZ", &m_recoEndZ);    
     m_tree->Branch("IsPrimary", &m_isPrimary, "IsPrimary/O");
-    m_tree->Branch("IsDeltaRay", &m_isDeltaRay, "IsDeltaRay/O");    
+    m_tree->Branch("IsDeltaRay", &m_isDeltaRay, "IsDeltaRay/O");
+    m_tree->Branch("IsMichel", &m_isMichel, "IsMichel/O");        
     // Plotting
     if (m_writeVisualisationInfo)
     {
@@ -552,6 +501,7 @@ void IvysaurusTrainingFiles::beginJob()
     m_tree->Branch("TrackLength", &m_trackLength);
     m_tree->Branch("TrackWobble", &m_trackWobble);    
     m_tree->Branch("TrackMomComparison", &m_trackMomComparison);
+    m_tree->Branch("TrackDistFromEdge", &m_trackDistFromEdge);
     // ShowerVars
     m_tree->Branch("ShowerVarsSuccessful", &m_showerVarsSuccessful);
     m_tree->Branch("ShowerDisplacement", &m_showerDisplacement);

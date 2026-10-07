@@ -9,8 +9,10 @@
 #include "art/Framework/Principal/Event.h"
 // LArSoft
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
+#include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 // ROOT
 #include "TVector3.h"
 //C++
@@ -82,31 +84,73 @@ namespace IvysaurusUtils
     float YZToW(const float yCoord, const float zCoord);
 
     /**
-     *  @brief  Determine the completeness of a MCParticle specified by an input TrackID
-     *          from a group of input hits 
+     *  @brief  Populate a mapping of trackIDs to the folded trackID, folding back the EM hierarchies where appropriate
+     *
+     *  @param mcParticles the input MCParticles
+     *  @param rollUpMap the output mapping of trackIDs to the folded trackID
+     */
+    void PopulateRollUpMap(const std::vector<art::Ptr<simb::MCParticle>> &mcParticles, std::map<int, int> &rollUpMap);
+
+    /**
+     *  @brief  Determine whether a MCParticle is an EM particle
+     *
+     *  @param mcParticle the input MCParticle
+     *
+     *  @return boolean indicating whether the MCParticle is an EM particle
+     */
+    bool IsEM(const art::Ptr<simb::MCParticle> &mcParticle);
+
+    /**
+     *  @brief  Obtain the trackID of the leading EM particle in a MCParticle hierarchy
+     *
+     *  @param mcParticle the input MCParticle
+     *  @param mcParticleMap the mapping of trackIDs to MCParticles
+     *
+     *  @return the trackID of the leading EM particle in the hierarchy
+     */
+    int GetLeadEMTrackID(const art::Ptr<simb::MCParticle> &mcParticle, const lar_pandora::MCParticleMap &mcParticleMap);
+
+    /**
+     *  @brief  Identify the true particle ID of a MCParticle from a group of input hits,
+     *          folding back the EM hierarchies where appropriate 
      *
      *  @param clockData the clock data service
+     *  @param selectedHits the input group of hits
+     *  @param rollUpMap the mapping of trackIDs to the folded trackID
+     *
+     *  @return the completeness
+     */
+    int TrueParticleIDFromTotalRecoHits(detinfo::DetectorClocksData const& clockData, const std::vector<art::Ptr<recob::Hit>> &selectedHits,
+         const std::map<int, int> &rollUpMap);
+
+    /**
+     *  @brief  Determine the completeness of a MCParticle specified by an input TrackID
+     *          from a group of input hits, folding back the EM hierarchies where appropriate 
+     *
+     *  @param clockData the clock data service
+     *  @param rollUpMap the mapping of trackIDs to the folded trackID
      *  @param selectedHits the input group of hits
      *  @param eventHits the hits of the event
      *  @param trackID the trackID of the target MCParticle
      *
      *  @return the completeness
-     */    
-    double CompletenessFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::vector<art::Ptr<recob::Hit>> &selectedHits, 
-        const std::vector<art::Ptr<recob::Hit>> &eventHits, const int trackID);
+     */   
+    double CompletenessFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::map<int, int> &rollUpMap,
+        const std::vector<art::Ptr<recob::Hit>> &selectedHits, const std::vector<art::Ptr<recob::Hit>> &eventHits, const int trackID);
 
     /**
      *  @brief  Determine the purity of a MCParticle specified by an input TrackID
-     *          from a group of input hits 
+     *          from a group of input hits, folding back the EM hierarchies where appropriate
      *
      *  @param clockData the clock data service
+     *  @param rollUpMap the mapping of trackIDs to the folded trackID
      *  @param selectedHits the input group of hits
      *  @param trackID the trackID of the target MCParticle
      *
      *  @return the purity
-     */        
-    double HitPurityFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::vector<art::Ptr<recob::Hit>> &selectedHits,
-        const int trackID);
+     */
+    double HitPurityFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::map<int, int> &rollUpMap,
+        const std::vector<art::Ptr<recob::Hit>> &selectedHits, const int trackID);
 
     /**
      *  @brief  Apply the trapezium rule to estimate the integral of Gaussian between two limits with a given step size

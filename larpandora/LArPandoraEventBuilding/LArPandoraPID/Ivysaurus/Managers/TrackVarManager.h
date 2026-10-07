@@ -78,6 +78,11 @@ class TrackVarManager
           std::pair<float, bool> GetMomentumComparison() const;
 
           /**
+           *  @brief  Get the distance from the track endpoint to the detector edge (value, is set)
+           */
+          std::pair<float, bool> GetDistanceToEdge() const;          
+
+          /**
            *  @brief  Return whether the track vars have been normalised
            *
            *  @return whether the track vars have been normalised
@@ -153,6 +158,14 @@ class TrackVarManager
            *  @param the fabs(byRange - byMCS)/byMCS comparison value
            */
           void SetMomentumComparison(const float momComparison);
+
+          /**
+           *  @brief  Set the distance from the track endpoint to the detector edge
+           *
+           *  @param the distance from the track endpoint to the detector edge
+           */
+          void SetDistanceToEdge(const float momComparison);
+          
     private:
           bool m_isNormalised;                         ///< whether the track vars have been normalised
           std::pair<float, bool> m_nTrackChildren;     ///< the number of track children (value, is set)
@@ -164,6 +177,7 @@ class TrackVarManager
           std::pair<float, bool> m_trackLength;        ///< the track length (value, is set)
           std::pair<float, bool> m_wobble;             ///< the std of the defelection along the track (value, is set)
           std::pair<float, bool> m_momentumComparison; ///< the fabs(byRange - byMCS)/byMCS comparison (value, is set)
+          std::pair<float, bool> m_distanceToEdge;     ///< the distance from the track endpoint to the detector edge
   };
 
     TrackVarManager(const fhicl::ParameterSet& pset);
@@ -244,6 +258,14 @@ class TrackVarManager
     void FillTrackMomentum(const art::Ptr<recob::Track> &track, TrackVarManager::TrackVars &trackVars) const;
 
     /**
+     *  @brief Calculate the minimum distance from the track endpoint to the detector boundaries
+     *
+     *  @param track the input track
+     *  @param [out] trackVars the track variable container to fill
+     */
+    void FillDistanceToEdge(const art::Ptr<recob::Track> &track, TrackVarManager::TrackVars &trackVars) const;
+
+    /**
      *  @brief Normalise an input track variable, throw an error if the variable has not been filled
      *
      *  @param inputTrackVar the input track variable (variable, has been filled)
@@ -265,6 +287,12 @@ class TrackVarManager
     float m_gradTrkMomRange;               ///< the gradient for the y=mx+c correction of the range-based estimated momentum
     float m_intTrkMomMCS;                  ///< the intercept for the y=mx+c correction of the MCS-based estimated momentum
     float m_gradTrkMomMCS;                 ///< the gradient for the y=mx+c correction of the range-based estimated momentum
+    float m_detectorMinX;                  ///< the minimum X coordinate of the detector boundaries
+    float m_detectorMaxX;                  ///< the maximum X coordinate of the detector boundaries
+    float m_detectorMinY;                  ///< the minimum Y coordinate of the detector boundaries
+    float m_detectorMaxY;                  ///< the maximum Y coordinate of the detector boundaries
+    float m_detectorMinZ;                  ///< the minimum Z coordinate of the detector boundaries
+    float m_detectorMaxZ;                  ///< the maximum Z coordinate of the detector boundaries           
     float m_nTrackChildrenMean;            ///< mean for the nTrackChildren normalisation (calc offline)
     float m_nTrackChildrenStd;             ///< std for the nTrackChildren normalisation (calc offline)
     float m_nShowerChildrenMean;           ///< mean for the nShowerChildren normalisation (calc offline)
@@ -283,6 +311,8 @@ class TrackVarManager
     float m_wobbleStd;                     ///< std for the wobble normalisation (calc offline)
     float m_momentumComparisonMean;        ///< mean for the momComparison normalisation (calc offline)
     float m_momentumComparisonStd;         ///< std for the momComparison normalisation (calc offline)
+    float m_distanceToEdgeMean;            ///< mean for the distanceToEdge normalisation (calc offline)
+    float m_distanceToEdgeStd;             ///< std for the distanceToEdge normalisation (calc offline)    
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------    
@@ -354,6 +384,13 @@ inline std::pair<float, bool> TrackVarManager::TrackVars::GetMomentumComparison(
 {
     return m_momentumComparison;
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+inline std::pair<float, bool> TrackVarManager::TrackVars::GetDistanceToEdge() const
+{
+    return m_distanceToEdge;
+}    
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -433,6 +470,14 @@ inline void TrackVarManager::TrackVars::SetMomentumComparison(const float momCom
     m_momentumComparison.first = momComparison;
     m_momentumComparison.second = true;
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+inline void TrackVarManager::TrackVars::SetDistanceToEdge(const float distanceToEdge)
+{
+    m_distanceToEdge.first = distanceToEdge;
+    m_distanceToEdge.second = true;
+}    
 
 } // namespace ivysaurus
 

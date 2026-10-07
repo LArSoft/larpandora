@@ -31,7 +31,8 @@ TrackVarManager::TrackVars::TrackVars() :
         m_childTrackScore(std::make_pair(-1.f, false)),
         m_trackLength(std::make_pair(-1.f, false)),
         m_wobble(std::make_pair(-1.f, false)),
-        m_momentumComparison(std::make_pair(-1.f, false))
+        m_momentumComparison(std::make_pair(-1.f, false)),
+        m_distanceToEdge(std::make_pair(-1.f, false))        
 {
 }
 
@@ -49,6 +50,12 @@ TrackVarManager::TrackVarManager(const fhicl::ParameterSet& pset) :
     m_gradTrkMomRange(pset.get<float>("GradTrkMomRange")),
     m_intTrkMomMCS(pset.get<float>("IntTrkMomMCS")),
     m_gradTrkMomMCS(pset.get<float>("GradTrkMomMCS")),
+    m_detectorMinX(pset.get<float>("DetectorMinX")),
+    m_detectorMaxX(pset.get<float>("DetectorMaxX")),    
+    m_detectorMinY(pset.get<float>("DetectorMinY")),
+    m_detectorMaxY(pset.get<float>("DetectorMaxY")),
+    m_detectorMinZ(pset.get<float>("DetectorMinZ")),
+    m_detectorMaxZ(pset.get<float>("DetectorMaxZ")),
     m_nTrackChildrenMean(pset.get<float>("NTrackChildrenMean")),
     m_nTrackChildrenStd(pset.get<float>("NTrackChildrenStd")),    
     m_nShowerChildrenMean(pset.get<float>("NShowerChildrenMean")),
@@ -66,7 +73,9 @@ TrackVarManager::TrackVarManager(const fhicl::ParameterSet& pset) :
     m_wobbleMean(pset.get<float>("WobbleMean")),
     m_wobbleStd(pset.get<float>("WobbleStd")),
     m_momentumComparisonMean(pset.get<float>("MomentumComparisonMean")),
-    m_momentumComparisonStd(pset.get<float>("MomentumComparisonStd"))
+    m_momentumComparisonStd(pset.get<float>("MomentumComparisonStd")),
+    m_distanceToEdgeMean(pset.get<float>("DistanceToEdgeMean")),
+    m_distanceToEdgeStd(pset.get<float>("DistanceToEdgeStd"))    
 {
 }
 
@@ -90,6 +99,7 @@ bool TrackVarManager::EvaluateTrackVars(const art::Event &evt, const art::Ptr<re
     FillTrackLength(track, trackVars);
     FillWobble(track, trackVars);
     FillTrackMomentum(track, trackVars);
+    FillDistanceToEdge(track, trackVars);
 
     return true;
 }
@@ -273,6 +283,26 @@ void TrackVarManager::FillTrackMomentum(const art::Ptr<recob::Track> &track,
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+void TrackVarManager::FillDistanceToEdge(const art::Ptr<recob::Track> &track, 
+    TrackVarManager::TrackVars &trackVars) const
+{
+    const float recoEndX(track->End().X());
+    const float recoEndY(track->End().Y());
+    const float recoEndZ(track->End().Z());
+
+    const float distanceToEdge(std::min({
+            std::fabs(recoEndX - m_detectorMinX),
+            std::fabs(recoEndX - m_detectorMaxX),
+            std::fabs(recoEndY - m_detectorMinY),
+            std::fabs(recoEndY - m_detectorMaxY),
+            std::fabs(recoEndZ - m_detectorMinZ),
+            std::fabs(recoEndZ - m_detectorMaxZ)}));            
+
+    trackVars.SetDistanceToEdge(distanceToEdge);
+}
+    
+//------------------------------------------------------------------------------------------------------------------------------------------
+
 void TrackVarManager::NormaliseTrackVars(TrackVarManager::TrackVars &trackVars) const
 {
     if (trackVars.GetIsNormalised())
@@ -307,6 +337,9 @@ void TrackVarManager::NormaliseTrackVars(TrackVarManager::TrackVars &trackVars) 
 
     if (trackVars.GetMomentumComparison().second)
         trackVars.SetMomentumComparison(this->NormaliseTrackVar(trackVars.GetMomentumComparison(), m_momentumComparisonMean, m_momentumComparisonStd));
+
+    if (trackVars.GetDistanceToEdge().second)
+        trackVars.SetDistanceToEdge(this->NormaliseTrackVar(trackVars.GetDistanceToEdge(), m_distanceToEdgeMean, m_distanceToEdgeStd));    
     
     trackVars.SetIsNormalised(true);
 }

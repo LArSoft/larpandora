@@ -37,12 +37,13 @@ public:
         float m_protonScore;   ///< Proton PID score
         float m_pionScore;     ///< Pion PID score
         float m_electronScore; ///< Electron PID score
+        float m_michelDRScore; ///< Michel/DR PID score        
         float m_photonScore;   ///< Photon PID score
 
         /**
          *  @brief  Default constructor
          */        
-        IvysaurusScores() : m_muonScore(-1.f), m_protonScore(-1.f), m_pionScore(-1.f), m_electronScore(-1.f), m_photonScore(-1.f) {};
+        IvysaurusScores() : m_muonScore(-1.f), m_protonScore(-1.f), m_pionScore(-1.f), m_electronScore(-1.f), m_michelDRScore(-1.f), m_photonScore(-1.f) {};
     };
 
     /**
@@ -138,4 +139,3 @@ private:
 } // namespace ivysaurus
 
 #endif // IVYSAURUS_EVALUATOR_H
-

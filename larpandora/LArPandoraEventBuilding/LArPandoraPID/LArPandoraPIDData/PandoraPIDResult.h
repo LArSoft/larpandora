@@ -18,6 +18,7 @@ enum ParticleType {
     PION,
     KAON,
     ELECTRON,
+    MICHELDR,
     PHOTON,
     END
 };
@@ -58,10 +59,11 @@ public:
      *  @param  protonScore the proton score
      *  @param  pionScore the pion score
      *  @param  electronScore the electron score
+     *  @param  michelDRScore the michel/DR score     
      *  @param  photonScore the photon score     
      */     
     void SetIvysaurusScores(const float muonScore, const float protonScore, const float pionScore,
-        const float electronScore, const float photonScore);
+        const float electronScore, const float michelDRScore, const float photonScore);
 
 private:    
     ParticleTypeScores m_ivysaurusScores; ///< The ParticleType->score map for the Ivysaurus PID

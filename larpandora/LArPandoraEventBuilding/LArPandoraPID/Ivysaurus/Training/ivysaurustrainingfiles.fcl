@@ -13,6 +13,7 @@ ivysaurus_training_files:
   PFPVarManager:           @local::pfpvar_manager
   TrackVarManager:         @local::trackvar_manager
   ShowerVarManager:        @local::showervar_manager
+  LArGeantModuleLabel:     'largeant'
   HitModuleLabel:          'hitfd'
   RecoModuleLabel:         'pandora'
   TrackModuleLabel:        'pandoraTrack'

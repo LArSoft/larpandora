@@ -33,12 +33,13 @@ std::pair<ParticleType, float> PandoraPIDResult::GetPredictedParticleType(const 
 //------------------------------------------------------------------------------------------------------------------------------------------    
 
 void PandoraPIDResult::SetIvysaurusScores(const float muonScore, const float protonScore, const float pionScore,
-    const float electronScore, const float photonScore)
+    const float electronScore, const float michelDRScore, const float photonScore)
 {
     m_ivysaurusScores[ParticleType::MUON] = muonScore;
     m_ivysaurusScores[ParticleType::PROTON] = protonScore;
     m_ivysaurusScores[ParticleType::PION] = pionScore;
     m_ivysaurusScores[ParticleType::ELECTRON] = electronScore;
+    m_ivysaurusScores[ParticleType::MICHELDR] = michelDRScore;
     m_ivysaurusScores[ParticleType::PHOTON] = photonScore;       
 }
     

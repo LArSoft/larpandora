@@ -6,6 +6,7 @@
 //LArSoft
 #include "larcore/Geometry/WireReadout.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "larpandora/LArPandoraUtils/PandoraHitUtils.h"
@@ -14,6 +15,7 @@
 #include "larpandora/LArPandoraInterface/Detectors/GetDetectorType.h"
 #include "larpandora/LArPandoraInterface/Detectors/LArPandoraDetectorType.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
+#include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
 #include "larsim/Utils/TruthMatchUtils.h"
 //ROOT
 #include "TVector3.h"
@@ -102,22 +104,123 @@ float YZToW(const float yCoord, const float zCoord)
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-double CompletenessFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::vector<art::Ptr<recob::Hit>> &selectedHits, 
-  const std::vector<art::Ptr<recob::Hit>> &eventHits, const int trackID)
+int TrueParticleIDFromTotalRecoHits(detinfo::DetectorClocksData const& clockData, const std::vector<art::Ptr<recob::Hit>> &selectedHits,
+    const std::map<int, int> &rollUpMap)
+{
+    int trueParticleID(-9999);
+    std::map<int, int> particleCounts;
+    std::map<int, float> particleCharge;    
+
+    for (const art::Ptr<recob::Hit> &hit : selectedHits)
+    {
+        const int matchedID = TruthMatchUtils::TrueParticleID(clockData, hit, 0);
+
+        if (rollUpMap.find(matchedID) == rollUpMap.end())
+            continue;
+
+        const int foldedID = rollUpMap.at(matchedID);
+
+        if (particleCounts.find(foldedID) == particleCounts.end())
+        {
+            particleCounts[foldedID] = 1;
+            particleCharge[foldedID] = hit->Integral();
+        }
+        else
+        {
+            ++particleCounts[foldedID];
+            particleCharge[foldedID] += hit->Integral();
+        }
+    }
+
+    int highestHits(0);
+    float highestCharge(0);
+    
+    for (const auto &entry : particleCounts)
+    {
+        if (((entry.second == highestHits) && (particleCharge.at(entry.first) > highestCharge)) ||
+            (entry.second > highestHits))
+        {
+            highestHits = entry.second;
+            highestCharge = particleCharge.at(entry.first);
+            trueParticleID = entry.first;
+        }
+    }
+    
+    return trueParticleID;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+void PopulateRollUpMap(const std::vector<art::Ptr<simb::MCParticle>> &mcParticles, std::map<int, int> &rollUpMap)
+{
+    lar_pandora::MCParticleMap mcParticleMap;    
+    lar_pandora::LArPandoraHelper::BuildMCParticleMap(mcParticles, mcParticleMap);
+    
+    for (const art::Ptr<simb::MCParticle> &mcParticle : mcParticles)
+    {
+        if (IsEM(mcParticle))
+        {
+            const int leadEMTrackID(GetLeadEMTrackID(mcParticle, mcParticleMap));
+            rollUpMap[mcParticle->TrackId()] = leadEMTrackID;
+        }
+        else
+        {
+            rollUpMap[mcParticle->TrackId()] = mcParticle->TrackId();
+        }
+    }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------    
+
+bool IsEM(const art::Ptr<simb::MCParticle> &mcParticle)
+{
+    return ((std::abs(mcParticle->PdgCode()) == 11) || (mcParticle->PdgCode() == 22));
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+int GetLeadEMTrackID(const art::Ptr<simb::MCParticle> &mcParticle, const lar_pandora::MCParticleMap &mcParticleMap)
+{
+    int trackID = mcParticle->TrackId();
+    art::Ptr<simb::MCParticle> motherMCParticle = mcParticle;
+
+    do
+    {
+        trackID = motherMCParticle->TrackId();
+        const int motherID = motherMCParticle->Mother();
+
+        if (mcParticleMap.find(motherID) == mcParticleMap.end())
+            break;
+
+        motherMCParticle = mcParticleMap.at(motherID);
+    }
+    while (IsEM(motherMCParticle));
+
+    return trackID;
+}    
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+double CompletenessFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::map<int, int> &rollUpMap,
+    const std::vector<art::Ptr<recob::Hit>> &selectedHits, const std::vector<art::Ptr<recob::Hit>> &eventHits, const int trackID)
 {
     int nMatchesInSelHits = 0;
     int nMatchesInAllHits = 0;
 
     for (art::Ptr<recob::Hit> hit : selectedHits)
     {
-        const int matchedID = TruthMatchUtils::TrueParticleID(clockData, hit, 1); 
-        if (matchedID == trackID) nMatchesInSelHits++;
+        const int matchedID = TruthMatchUtils::TrueParticleID(clockData, hit, 0);
+        if (rollUpMap.find(matchedID) == rollUpMap.end()) { continue; }
+        const int foldedID = rollUpMap.at(matchedID);     
+        if (foldedID == trackID) nMatchesInSelHits++;
     }
 
     for (art::Ptr<recob::Hit> hit : eventHits)
     {
-        const int matchedID = TruthMatchUtils::TrueParticleID(clockData, hit, 1);
-        if (matchedID == trackID) nMatchesInAllHits++;
+        const int matchedID = TruthMatchUtils::TrueParticleID(clockData, hit, 0);
+        if (rollUpMap.find(matchedID) == rollUpMap.end()) { continue; }
+        const int foldedID = rollUpMap.at(matchedID);        
+        if (foldedID == trackID) nMatchesInAllHits++;
     }
 
     const double completeness = (nMatchesInAllHits > 0) ? static_cast<double>(nMatchesInSelHits) / static_cast<double>(nMatchesInAllHits) : 0.0;
@@ -127,22 +230,24 @@ double CompletenessFromTrueParticleID(detinfo::DetectorClocksData const& clockDa
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-double HitPurityFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::vector<art::Ptr<recob::Hit>> &selectedHits,
-    const int trackID)
+double HitPurityFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::map<int, int> &rollUpMap,
+    const std::vector<art::Ptr<recob::Hit>> &selectedHits, const int trackID)
 {
     int nMatchesInSelHits = 0;
 
     for (art::Ptr<recob::Hit> hit : selectedHits)
     {
-        const int matchedID = TruthMatchUtils::TrueParticleID(clockData, hit, 1);
-        if (matchedID == trackID) nMatchesInSelHits++;
+        const int matchedID = TruthMatchUtils::TrueParticleID(clockData, hit, 0);
+        if (rollUpMap.find(matchedID) == rollUpMap.end()) { continue; }
+        const int foldedID = rollUpMap.at(matchedID);        
+        if (foldedID == trackID) nMatchesInSelHits++;
     }
 
     const double purity = (selectedHits.size() > 0) ? static_cast<double>(nMatchesInSelHits) / static_cast<double>(selectedHits.size()) : 0.0;
 
     return purity;
 }
-
+   
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 float IntegrateGaussian(const float limitA, const float limitB, const float mean, const float std, const float stepSize)

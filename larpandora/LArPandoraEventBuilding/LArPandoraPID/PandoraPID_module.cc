@@ -65,7 +65,7 @@ void PandoraPID::produce(art::Event& evt)
 
         PandoraPIDResult pandoraPIDResult;
         pandoraPIDResult.SetIvysaurusScores(ivyScores.m_muonScore, ivyScores.m_protonScore, ivyScores.m_pionScore,
-            ivyScores.m_electronScore, ivyScores.m_photonScore);  
+            ivyScores.m_electronScore, ivyScores.m_michelDRScore, ivyScores.m_photonScore);  
 
         pandoraPIDResults->push_back(pandoraPIDResult);
         util::CreateAssn(evt, *pandoraPIDResults, pfp, *pfpAssns);

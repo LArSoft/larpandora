@@ -119,7 +119,8 @@ ivysaurus::IvysaurusEvaluator::IvysaurusScores ivysaurus::IvysaurusEvaluator::Iv
     ivysaurusScores.m_protonScore = probs[0][1].item<float>();
     ivysaurusScores.m_pionScore = probs[0][2].item<float>();
     ivysaurusScores.m_electronScore = probs[0][3].item<float>();
-    ivysaurusScores.m_photonScore = probs[0][4].item<float>();
+    ivysaurusScores.m_michelDRScore = probs[0][4].item<float>();    
+    ivysaurusScores.m_photonScore = probs[0][5].item<float>();
 
     return ivysaurusScores;
 }
@@ -166,9 +167,9 @@ std::map<IvysaurusUtils::PandoraView, torch::Tensor> IvysaurusEvaluator::ObtainI
             }
         }
 
-        tensorViewMap[pandoraView] = gridTensor;
+        tensorViewMap[pandoraView] = gridTensor;      
     }
-
+    
     return tensorViewMap;
 }
 
@@ -232,7 +233,10 @@ torch::Tensor IvysaurusEvaluator::ObtainInputTrackTensor(const art::Event &evt, 
     trackVarTensor[0][16] = trackVars.GetMomentumComparison().first;
     trackVarTensor[0][17] = (trackVars.GetMomentumComparison().second ? 1.f : 0.f);
     trackVarTensor[0][18] = pfpVars.GetN2DHits();
-    trackVarTensor[0][19] = pfpVars.GetTrackShowerScore();    
+    trackVarTensor[0][19] = pfpVars.GetTrackShowerScore();
+    trackVarTensor[0][20] = trackVars.GetDistanceToEdge().first;
+    trackVarTensor[0][21] = pfpVars.GetIsPrimary();
+    
     return trackVarTensor;
 }
 
@@ -257,7 +261,7 @@ torch::Tensor IvysaurusEvaluator::ObtainInputShowerTensor(const art::Event &evt,
     showerVarTensor[0][7] = (showerVars.GetFromParentAvSep().second ? 1.f : 0.f);
     showerVarTensor[0][8] = showerVars.GetFromParentChargeAsym().first;
     showerVarTensor[0][9] = (showerVars.GetFromParentChargeAsym().second ? 1.f : 0.f);
-
+    
     return showerVarTensor;
 }
 

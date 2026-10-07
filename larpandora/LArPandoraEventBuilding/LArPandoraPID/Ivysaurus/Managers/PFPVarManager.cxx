@@ -10,6 +10,7 @@
 #include "lardataobj/RecoBase/PFParticle.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/PFPVarManager.h"
+#include "larpandora/LArPandoraUtils/PandoraEventUtils.h"
 #include "larpandora/LArPandoraUtils/PandoraPFParticleUtils.h"
 
 namespace ivysaurus
@@ -46,6 +47,7 @@ void PFPVarManager::EvaluatePFPVars(const art::Event &evt, const art::Ptr<recob:
 {
     FillTrackShowerScore(evt, pfparticle, pfpVars);
     FillN2DHits(evt, pfparticle, pfpVars);
+    FillIsPrimary(evt, pfparticle, pfpVars);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -68,6 +70,23 @@ void PFPVarManager::FillN2DHits(const art::Event &evt, const art::Ptr<recob::PFP
 {
     const std::vector<art::Ptr<recob::Hit>> pfpHits = lar_pandora::PandoraPFParticleUtils::GetHits(pfparticle, evt, m_recoModuleLabel);
     pfpVars.SetN2DHits(pfpHits.size());
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+void PFPVarManager::FillIsPrimary(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, PFPVarManager::PFPVars &pfpVars) const
+{
+    if (!lar_pandora::PandoraEventUtils::HasNeutrino(evt, m_recoModuleLabel))
+    {
+        pfpVars.SetIsPrimary(0.f);
+    }
+    else
+    {
+        art::Ptr<recob::PFParticle> nuPFP = lar_pandora::PandoraEventUtils::GetNeutrino(evt, m_recoModuleLabel);    
+        const std::vector<art::Ptr<recob::PFParticle>> &nuChildPFPs = lar_pandora::PandoraPFParticleUtils::GetChildParticles(nuPFP, evt, m_recoModuleLabel);
+
+        pfpVars.SetIsPrimary(std::find(nuChildPFPs.begin(), nuChildPFPs.end(), pfparticle) != nuChildPFPs.end() ? 1.f : 0.f);
+    }
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
