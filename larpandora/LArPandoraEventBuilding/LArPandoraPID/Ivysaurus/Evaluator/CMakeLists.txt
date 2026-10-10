@@ -10,6 +10,7 @@ cet_make_library(
       larreco::RecoAlg
       larpandora::LArPandoraUtils
       larpandora::LArPandoraEventBuilding_LArPandoraPID_Ivysaurus_Managers
+      larpandora::LArPandoraEventBuilding_LArPandoraPID_Ivysaurus_Utils
 )
 
 install_headers()

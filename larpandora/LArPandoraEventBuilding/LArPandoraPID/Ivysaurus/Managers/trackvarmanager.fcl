@@ -15,12 +15,6 @@ trackvar_manager:
   GradTrkMomRange:     1.0
   IntTrkMomMCS:        0.0
   GradTrkMomMCS:       1.0
-  DetectorMinX:       -360  # FD_HD
-  DetectorMaxX:        360  # FD_HD
-  DetectorMinY:       -600  # FD_HD
-  DetectorMaxY:        600  # FD_HD
-  DetectorMinZ:        0    # FD_HD
-  DetectorMaxZ:        1394 # FD_HD
   NTrackChildrenMean:     0.1725  # Calculate offline in training pre-processing script
   NTrackChildrenStd:      0.4825 
   NShowerChildrenMean:    0.1007

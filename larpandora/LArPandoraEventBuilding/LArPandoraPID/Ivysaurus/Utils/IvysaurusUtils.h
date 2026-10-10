@@ -23,6 +23,21 @@ namespace IvysaurusUtils
     enum PandoraView {TPC_VIEW_U, TPC_VIEW_V, TPC_VIEW_W};
 
     /**
+    *  @brief  DetectorBoundaries struct
+    */
+    struct DetectorBoundaries
+    {
+        double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
+    };
+
+    /**
+     *  @brief  Get the detector boundaries in x, y and z
+     *
+     *  @param[out] detectorBoundaries the output detector boundaries
+     */
+    void GetDetectorBoundaries(DetectorBoundaries &detectorBoundaries);
+
+    /**
      *  @brief  Project a 3D coordinate, or LArSoft hit coordinate into an input Pandora 2D view
      *
      *  @param inputPosition the input coordinate

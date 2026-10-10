@@ -4,6 +4,7 @@
  *  @brief  Helpers used by the Ivysaurus PID
  */
 //LArSoft
+#include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/WireReadout.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
@@ -22,6 +23,45 @@
 
 namespace IvysaurusUtils
 {
+
+void GetDetectorBoundaries(DetectorBoundaries &detectorBoundaries)
+{
+    art::ServiceHandle<geo::Geometry const> geom;
+
+    double xmin =  std::numeric_limits<double>::max();
+    double xmax = -std::numeric_limits<double>::max();
+    double ymin =  std::numeric_limits<double>::max();
+    double ymax = -std::numeric_limits<double>::max();
+    double zmin =  std::numeric_limits<double>::max();
+    double zmax = -std::numeric_limits<double>::max();
+
+    for (unsigned int c = 0; c < geom->Ncryostats(); ++c) 
+    {
+        auto const& cryo = geom->Cryostat(geo::CryostatID{c});
+
+        for (unsigned int t = 0; t < cryo.NTPC(); ++t) 
+        {
+            auto const& tpc = cryo.TPC(t);
+
+            xmin = std::min(xmin, tpc.MinX());
+            xmax = std::max(xmax, tpc.MaxX());
+
+            ymin = std::min(ymin, tpc.MinY());
+            ymax = std::max(ymax, tpc.MaxY());
+
+            zmin = std::min(zmin, tpc.MinZ());
+            zmax = std::max(zmax, tpc.MaxZ());
+        }
+    }
+
+    detectorBoundaries.m_xmin = xmin;
+    detectorBoundaries.m_xmax = xmax;
+    detectorBoundaries.m_ymin = ymin;
+    detectorBoundaries.m_ymax = ymax;
+    detectorBoundaries.m_zmin = zmin;
+    detectorBoundaries.m_zmax = zmax;
+}
+//------------------------------------------------------------------------------------------------------------------------------------------
 
 void ObtainPandoraHitPositionAndWidth(const art::Event &evt, const art::Ptr<recob::Hit> hit, 
     const PandoraView hitType, TVector3 &pandoraHitPosition, float &width)

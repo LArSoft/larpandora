@@ -12,6 +12,7 @@
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/Shower.h"
 #include "larreco/Calorimetry/CalorimetryAlg.h"
+#include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
 
 namespace ivysaurus
 {
@@ -187,12 +188,14 @@ class TrackVarManager
      *  @brief  Root function to call to fill the track variables for a given PFParticle
      *
      *  @param evt the art event
+     *  @param detectorBoundaries the detector boundaries
      *  @param pfparticle the input PFParticle
      *  @param[out] trackVars the track variables to fill
      *
      *  @return whether the track variables could be evaluated (sometimes track fits fail)
      */
-    bool EvaluateTrackVars(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, TrackVarManager::TrackVars &trackVars) const;
+    bool EvaluateTrackVars(const art::Event &evt, const IvysaurusUtils::DetectorBoundaries &detectorBoundaries, 
+        const art::Ptr<recob::PFParticle> &pfparticle, TrackVarManager::TrackVars &trackVars) const;
 
     /**
      *  @brief  Normalise the track variables
@@ -261,9 +264,10 @@ class TrackVarManager
      *  @brief Calculate the minimum distance from the track endpoint to the detector boundaries
      *
      *  @param track the input track
+     *  @param detectorBoundaries the detector boundaries
      *  @param [out] trackVars the track variable container to fill
      */
-    void FillDistanceToEdge(const art::Ptr<recob::Track> &track, TrackVarManager::TrackVars &trackVars) const;
+    void FillDistanceToEdge(const art::Ptr<recob::Track> &track, const IvysaurusUtils::DetectorBoundaries &detectorBoundaries, TrackVarManager::TrackVars &trackVars) const;
 
     /**
      *  @brief Normalise an input track variable, throw an error if the variable has not been filled
@@ -286,13 +290,7 @@ class TrackVarManager
     float m_intTrkMomRange;                ///< the intercept for the y=mx+c correction of the range-based estimated momentum
     float m_gradTrkMomRange;               ///< the gradient for the y=mx+c correction of the range-based estimated momentum
     float m_intTrkMomMCS;                  ///< the intercept for the y=mx+c correction of the MCS-based estimated momentum
-    float m_gradTrkMomMCS;                 ///< the gradient for the y=mx+c correction of the range-based estimated momentum
-    float m_detectorMinX;                  ///< the minimum X coordinate of the detector boundaries
-    float m_detectorMaxX;                  ///< the maximum X coordinate of the detector boundaries
-    float m_detectorMinY;                  ///< the minimum Y coordinate of the detector boundaries
-    float m_detectorMaxY;                  ///< the maximum Y coordinate of the detector boundaries
-    float m_detectorMinZ;                  ///< the minimum Z coordinate of the detector boundaries
-    float m_detectorMaxZ;                  ///< the maximum Z coordinate of the detector boundaries           
+    float m_gradTrkMomMCS;                 ///< the gradient for the y=mx+c correction of the range-based estimated momentum         
     float m_nTrackChildrenMean;            ///< mean for the nTrackChildren normalisation (calc offline)
     float m_nTrackChildrenStd;             ///< std for the nTrackChildren normalisation (calc offline)
     float m_nShowerChildrenMean;           ///< mean for the nShowerChildren normalisation (calc offline)

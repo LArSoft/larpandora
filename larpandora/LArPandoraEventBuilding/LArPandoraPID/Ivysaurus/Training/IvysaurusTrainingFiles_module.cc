@@ -226,13 +226,30 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
                 
                 if (std::abs(parentMCParticle->PdgCode()) == 13)
                 {
-                    m_isDeltaRay = (mcParticle->Process() == "muIoni");
+                    if (mcParticle->Process() == "muIoni")
+                    {
+                        m_isDeltaRay = true;
+                    }
+                    else
+                    {
+                        bool hasNumu = false, hasNue = false, hasElectron = false;
 
-                    // Currently a bug with process ID for michels :(
-                    m_isMichel = !m_isDeltaRay && ((mcParticle->Process() == "Decay") ||
-                                  (((parentMCParticle->EndX() - mcParticle->Vx()) < std::numeric_limits<float>::epsilon()) &&
-                                   ((parentMCParticle->EndY() - mcParticle->Vy()) < std::numeric_limits<float>::epsilon()) &&
-                                   ((parentMCParticle->EndZ() - mcParticle->Vz()) < std::numeric_limits<float>::epsilon())));
+                        for (int iChild = 0; iChild < parentMCParticle->NumberDaughters(); ++iChild)
+                        {
+                            const int childTrackId = parentMCParticle->Daughter(iChild);
+                            simb::MCParticle* childMCParticle = piServ->ParticleList().at(childTrackId);       
+                            const int childPDG = std::abs(childMCParticle->PdgCode());
+
+                            if (childPDG == 11)
+                                hasElectron = true;
+                            else if (childPDG == 12)
+                                hasNue = true;
+                            else if (childPDG == 14)
+                                hasNumu = true;
+                        }
+
+                        m_isMichel = (hasNumu && hasNue && hasElectron);
+                    }
                 }
             }
 
@@ -293,8 +310,10 @@ void IvysaurusTrainingFiles::analyze(const art::Event &evt)
         m_pfpTrackShowerScore = pfpVars.GetTrackShowerScore();
 
         // Now fill the track variables
+        IvysaurusUtils::DetectorBoundaries detectorBoundaries;
+        IvysaurusUtils::GetDetectorBoundaries(detectorBoundaries);
         TrackVarManager::TrackVars trackVars;
-        m_trackVarsSuccessful = m_trackVarManager.EvaluateTrackVars(evt, pfparticle, trackVars) ? 1 : 0;
+        m_trackVarsSuccessful = m_trackVarManager.EvaluateTrackVars(evt, detectorBoundaries, pfparticle, trackVars) ? 1 : 0;
         m_nTrackChildren = trackVars.GetNTrackChildren().first;
         m_nShowerChildren = trackVars.GetNShowerChildren().first;
         m_nGrandChildren = trackVars.GetNGrandChildren().first;

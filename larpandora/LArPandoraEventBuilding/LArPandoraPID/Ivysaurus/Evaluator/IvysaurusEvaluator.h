@@ -102,20 +102,8 @@ private:
      *  @return the model input torch tensor of shower variables
      */        
     torch::Tensor ObtainInputShowerTensor(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle);
-
-    /**
-     *  @brief  Return whether an input PFParticle is contained(true) or exiting(false).
-     *          Boundaries are defined in ivysaurusevaluator.fcl
-     *
-     *  @param evt the art event
-     *  @param pfparticle the PFParticle
-     *
-     *  @return whether the input PFParticle is contained(true) or exiting(false)
-     */    
-    bool IsContained(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle);
     
-    std::string m_containedNetName;      ///< The name of the network used for contained particles
-    std::string m_exitingNetName;        ///< The name of the network used for exiting particles
+    std::string m_netName;      ///< The name of the PID network
     GridManager m_gridManager;           ///< The GridManager instance
     PFPVarManager m_pfpVarManager;       ///< The PFPVarManager instance
     TrackVarManager m_trackVarManager;   ///< The TrackVarManager instance
@@ -125,15 +113,8 @@ private:
     std::string m_showerModuleLabel;     ///< The shower producer label
     int m_nTrackVars;   ///< The number of track+pfp variables that enter the network
     int m_nShowerVars;  ///< The number of shower variables that enter the network
-    float m_fvMinX;     ///< The minimum x-coordinate of the 'is contained' region
-    float m_fvMaxX;     ///< The maximum x-coordinate of the 'is contained' region
-    float m_fvMinY;     ///< The minimum y-coordinate of the 'is contained' region
-    float m_fvMaxY;     ///< The maximum y-coordinate of the 'is contained' region
-    float m_fvMinZ;     ///< The minimum z-coordinate of the 'is contained' region
-    float m_fvMaxZ;     ///< The maximum z-coordinate of the 'is contained' region
 
-    torch::jit::script::Module m_containedModel; ///< The network used for contained particles
-    torch::jit::script::Module m_exitingModel;   ///< The network used for exiting particles
+    torch::jit::script::Module m_model; ///< The PID model
 };
 
 } // namespace ivysaurus

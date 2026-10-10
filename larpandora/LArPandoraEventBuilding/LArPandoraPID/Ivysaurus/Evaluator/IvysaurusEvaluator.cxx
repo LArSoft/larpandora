@@ -23,8 +23,7 @@ namespace ivysaurus
 {
 
 IvysaurusEvaluator::IvysaurusEvaluator(fhicl::ParameterSet const &pset) :
-    m_containedNetName(pset.get<std::string>("ContainedNetName")),
-    m_exitingNetName(pset.get<std::string>("ExitingNetName")),     
+    m_netName(pset.get<std::string>("NetName")),   
     m_gridManager(pset.get<fhicl::ParameterSet>("GridManager")),
     m_pfpVarManager(pset.get<fhicl::ParameterSet>("PFPVarManager")),
     m_trackVarManager(pset.get<fhicl::ParameterSet>("TrackVarManager")),
@@ -33,29 +32,20 @@ IvysaurusEvaluator::IvysaurusEvaluator(fhicl::ParameterSet const &pset) :
     m_trackModuleLabel(pset.get<std::string>("TrackModuleLabel")),
     m_showerModuleLabel(pset.get<std::string>("ShowerModuleLabel")),        
     m_nTrackVars(pset.get<int>("NTrackVars")),
-    m_nShowerVars(pset.get<int>("NShowerVars")),
-    m_fvMinX(pset.get<float>("FVMinX")),
-    m_fvMaxX(pset.get<float>("FVMaxX")),
-    m_fvMinY(pset.get<float>("FVMinY")),
-    m_fvMaxY(pset.get<float>("FVMaxY")),
-    m_fvMinZ(pset.get<float>("FVMinZ")),
-    m_fvMaxZ(pset.get<float>("FVMaxZ"))
+    m_nShowerVars(pset.get<int>("NShowerVars"))
 {  
     try
     {
-        std::string containedNetPath, exitingNetPath;
+        std::string netPath;
         cet::search_path sP("FW_SEARCH_PATH");
-        sP.find_file(m_containedNetName, containedNetPath);
-        sP.find_file(m_exitingNetName, exitingNetPath);        
+        sP.find_file(m_netName, netPath);      
         
-        m_containedModel = torch::jit::load(containedNetPath);
-        m_exitingModel = torch::jit::load(exitingNetPath);        
+        m_model = torch::jit::load(netPath);       
 
         // Set the model to evaluation mode.
         // This should have been done during the model export, but we do it here just in case.
         // This ensures that layers like dropout and batch normalization behave correctly during inference.
-        m_containedModel.eval();
-        m_exitingModel.eval();        
+        m_model.eval();     
     }
     catch (const std::exception &e)
     {
@@ -104,10 +94,8 @@ ivysaurus::IvysaurusEvaluator::IvysaurusScores ivysaurus::IvysaurusEvaluator::Iv
     
     torch::Tensor trackVarTensor = ObtainInputTrackTensor(evt, pfparticle);
     torch::Tensor showerVarTensor = ObtainInputShowerTensor(evt, pfparticle);
-    const bool isContained = this->IsContained(evt, pfparticle);
-    torch::jit::script::Module &ivysaurus = isContained ? m_containedModel : m_exitingModel;
     torch::NoGradGuard guard;
-    torch::Tensor output = ivysaurus.forward({startGridTensorMap.at(IvysaurusUtils::TPC_VIEW_U), startMaskMap.at(IvysaurusUtils::TPC_VIEW_U),
+    torch::Tensor output = m_model.forward({startGridTensorMap.at(IvysaurusUtils::TPC_VIEW_U), startMaskMap.at(IvysaurusUtils::TPC_VIEW_U),
             endGridTensorMap.at(IvysaurusUtils::TPC_VIEW_U), endMaskMap.at(IvysaurusUtils::TPC_VIEW_U),
             startGridTensorMap.at(IvysaurusUtils::TPC_VIEW_V), startMaskMap.at(IvysaurusUtils::TPC_VIEW_V),
             endGridTensorMap.at(IvysaurusUtils::TPC_VIEW_V), endMaskMap.at(IvysaurusUtils::TPC_VIEW_V),
@@ -123,28 +111,6 @@ ivysaurus::IvysaurusEvaluator::IvysaurusScores ivysaurus::IvysaurusEvaluator::Iv
     ivysaurusScores.m_photonScore = probs[0][5].item<float>();
 
     return ivysaurusScores;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------    
-
-bool IvysaurusEvaluator::IsContained(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle)
-{
-    if (!lar_pandora::PandoraPFParticleUtils::HasTrack(pfparticle, evt, m_recoModuleLabel, m_trackModuleLabel))
-        return false;
-
-    const art::Ptr<recob::Track> track = lar_pandora::PandoraPFParticleUtils::GetTrack(pfparticle, evt, m_recoModuleLabel, m_trackModuleLabel);
-    const float endX(track->End().X()), endY(track->End().Y()), endZ(track->End().Z());
-
-    if ((endX < m_fvMinX) || (endX > m_fvMaxX))
-        return false;
-
-    if ((endY < m_fvMinY) || (endY > m_fvMaxY))
-        return false;
-
-    if ((endZ < m_fvMinZ) || (endZ > m_fvMaxZ))
-        return false;
-
-    return true;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------    
@@ -209,8 +175,10 @@ torch::Tensor IvysaurusEvaluator::ObtainInputTrackTensor(const art::Event &evt, 
     m_pfpVarManager.EvaluatePFPVars(evt, pfparticle, pfpVars);
     m_pfpVarManager.NormalisePFPVars(pfpVars);
     
+    IvysaurusUtils::DetectorBoundaries detectorBoundaries;
+    IvysaurusUtils::GetDetectorBoundaries(detectorBoundaries);
     TrackVarManager::TrackVars trackVars;
-    m_trackVarManager.EvaluateTrackVars(evt, pfparticle, trackVars);
+    m_trackVarManager.EvaluateTrackVars(evt, detectorBoundaries, pfparticle, trackVars);
     m_trackVarManager.NormaliseTrackVars(trackVars);
 
     // ATTN: Order is important!
