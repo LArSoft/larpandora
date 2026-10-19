@@ -7,16 +7,17 @@
 
 #include "larpandora/LArPandoraUtils/PandoraClusterUtils.h"
 
-#include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Cluster.h"
+#include "lardataobj/RecoBase/Hit.h"
 
-namespace lar_pandora
-{
+namespace lar_pandora {
 
-std::vector<art::Ptr<recob::Hit>> PandoraClusterUtils::GetHits(const art::Ptr<recob::Cluster> &pCluster, const art::Event &evt, const std::string &label)
-{    
-    return PandoraClusterUtils::GetAssocProductVector<recob::Hit>(pCluster,evt,label,label);
-}
+  std::vector<art::Ptr<recob::Hit>> PandoraClusterUtils::GetHits(
+    const art::Ptr<recob::Cluster>& pCluster,
+    const art::Event& evt,
+    const std::string& label)
+  {
+    return PandoraClusterUtils::GetAssocProductVector<recob::Hit>(pCluster, evt, label, label);
+  }
 
 } // namespace lar_pandora
-

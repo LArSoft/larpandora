@@ -1,7 +1,7 @@
 /**
  *  @file  larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Managers/ShowerVarManager.h
  *
- *  @brief A class to manage the Ivysaurus shower variables input 
+ *  @brief A class to manage the Ivysaurus shower variables input
  *
  */
 #ifndef SHOWER_VAR_MANAGER_H
@@ -13,110 +13,111 @@
 #include "lardataobj/RecoBase/Shower.h"
 #include "larpandora/LArPandoraEventBuilding/LArPandoraPID/Ivysaurus/Utils/IvysaurusUtils.h"
 
-namespace ivysaurus
-{
-/**
+namespace ivysaurus {
+  /**
  *  @brief  ShowerVarManager class
  */
-class ShowerVarManager
-{
+  class ShowerVarManager {
   public:
-      /**
+    /**
        *  @brief  TrackVars class
-       */        
-      class ShowerVars
-      {
-      public:
-          /**
+       */
+    class ShowerVars {
+    public:
+      /**
            *  @brief  Default constructor
-           */          
-          ShowerVars();
-          
-          /**
+           */
+      ShowerVars();
+
+      /**
            *  @brief  Return whether the shower vars have been normalised
            *
            *  @return whether the shower vars have been normalised
-           */          
-          bool GetIsNormalised() const;
+           */
+      bool GetIsNormalised() const;
 
-          /**
+      /**
            *  @brief Get the displacement (value, is set)
            */
-          std::pair<float, bool> GetDisplacement() const;
+      std::pair<float, bool> GetDisplacement() const;
 
-          /**
+      /**
            *  @brief Get the distance of closest approach (value, is set)
-           */          
-          std::pair<float, bool> GetDCA() const;
+           */
+      std::pair<float, bool> GetDCA() const;
 
-          /**
+      /**
            *  @brief Get the length of the track stub (value, is set)
-           */          
-          std::pair<float, bool> GetTrackStubLength() const;
+           */
+      std::pair<float, bool> GetTrackStubLength() const;
 
-          /**
+      /**
            *  @brief Get the average separation of the PFParticle's spacepoints from a central axis
            *         defined by the particles startpoint and the parent's endpoint (value, is set)
-           */                    
-          std::pair<float, bool> GetFromParentAvSep() const;
+           */
+      std::pair<float, bool> GetFromParentAvSep() const;
 
-          /**
+      /**
            *  @brief Get the asymmetry of charge distributed around a central axis
            *         defined by the particles startpoint and the parent's endpoint (value, is set)
            *         calculated in 2D, maximum value across the 2D views is taken
            */
-          std::pair<float, bool> GetFromParentChargeAsym() const;
+      std::pair<float, bool> GetFromParentChargeAsym() const;
 
-          /**
+      /**
            *  @brief  Set whether the shower vars have been normalised
            *
            *  @param whether the shower vars have been normalised
            */
-          void SetIsNormalised(const bool isNormalised);
+      void SetIsNormalised(const bool isNormalised);
 
-          /**
+      /**
            *  @brief Set the displacement
            *
            *  @param the displacement
            */
-          void SetDisplacement(const float displacement);
+      void SetDisplacement(const float displacement);
 
-          /**
+      /**
            *  @brief Set the distance of closest approach
            *
            *  @param the distance of closest approach
            */
-          void SetDCA(const float dca);
+      void SetDCA(const float dca);
 
-          /**
+      /**
            *  @brief Set the track stub length
            *
            *  @param the track stub length
            */
-          void SetTrackStubLength(const float trackStubLength);
+      void SetTrackStubLength(const float trackStubLength);
 
-          /**
+      /**
            *  @brief Set the 'from parent' average separation
            *
            *  @param the 'from parent' average separation
-           */          
-          void SetFromParentAvSep(const float fromParentAvSep);
+           */
+      void SetFromParentAvSep(const float fromParentAvSep);
 
-          /**
+      /**
            *  @brief Set the 'from parent' charge asymmetry
            *
            *  @param the 'from parent' charge asymmetry
            */
-          void SetFromParentChargeAsym(const float fromParentChargeAsym);
-      
+      void SetFromParentChargeAsym(const float fromParentChargeAsym);
+
     private:
-          bool m_isNormalised;                           ///< whether the shower variables have been normalised
-          std::pair<float, bool> m_displacement;         ///< the displacement from the parent endpoint (value, is set)
-          std::pair<float, bool> m_DCA;                  ///< the distance of closest approach to the parent endpoint (value, is set)
-          std::pair<float, bool> m_trackStubLength;      ///< the track stub length (value, is set)
-          std::pair<float, bool> m_fromParentAvSep;      ///< the parent endpoint aveage separation (value, is set)
-          std::pair<float, bool> m_fromParentChargeAsym; ///< the parent charge asymmetry (value, is set)
-  };
+      bool m_isNormalised; ///< whether the shower variables have been normalised
+      std::pair<float, bool>
+        m_displacement; ///< the displacement from the parent endpoint (value, is set)
+      std::pair<float, bool>
+        m_DCA; ///< the distance of closest approach to the parent endpoint (value, is set)
+      std::pair<float, bool> m_trackStubLength; ///< the track stub length (value, is set)
+      std::pair<float, bool>
+        m_fromParentAvSep; ///< the parent endpoint aveage separation (value, is set)
+      std::pair<float, bool>
+        m_fromParentChargeAsym; ///< the parent charge asymmetry (value, is set)
+    };
 
     ShowerVarManager(const fhicl::ParameterSet& pset);
     ~ShowerVarManager();
@@ -129,18 +130,19 @@ class ShowerVarManager
      *  @param[out] showerVars the shower variables to fill
      *
      *  @return whether the shower variables could be evaluated (sometimes shower fits fail)
-     */    
-    bool EvaluateShowerVars(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, ShowerVarManager::ShowerVars &showerVars) const;
+     */
+    bool EvaluateShowerVars(const art::Event& evt,
+                            const art::Ptr<recob::PFParticle>& pfparticle,
+                            ShowerVarManager::ShowerVars& showerVars) const;
 
     /**
      *  @brief  Normalise the shower variables
      *
      *  @param[out] showerVars the shower variables to normalise
-     */    
-    void NormaliseShowerVars(ShowerVars &showerVars) const;
+     */
+    void NormaliseShowerVars(ShowerVars& showerVars) const;
 
   private:
-
     /**
      *  @brief  Identify the endpoint of the parent particle (neutrino vertex is pfparticle is primary)
      *
@@ -150,7 +152,9 @@ class ShowerVarManager
      *
      *  @return whether the parent endpoint could be identified (sometimes track fits fail)
      */
-    bool GetParentEndpoint(const art::Event &evt, const art::Ptr<recob::PFParticle> &pfparticle, TVector3 &parentEnd) const;
+    bool GetParentEndpoint(const art::Event& evt,
+                           const art::Ptr<recob::PFParticle>& pfparticle,
+                           TVector3& parentEnd) const;
 
     /**
      *  @brief Calculate and fill the displacement varaible
@@ -159,8 +163,11 @@ class ShowerVarManager
      *  @param parentEndpoint the endpoint of the parent PFParticle
      *  @param shower the input shower
      *  @param[out] the shower variable container
-     */   
-    void FillDisplacement(const art::Event &evt, const TVector3 &parentEndpoint, const art::Ptr<recob::Shower> &shower, ShowerVarManager::ShowerVars &showerVars) const;
+     */
+    void FillDisplacement(const art::Event& evt,
+                          const TVector3& parentEndpoint,
+                          const art::Ptr<recob::Shower>& shower,
+                          ShowerVarManager::ShowerVars& showerVars) const;
 
     /**
      *  @brief Calculate and fill the track stub length varaible
@@ -168,9 +175,10 @@ class ShowerVarManager
      *  @param evt the art event
      *  @param shower the input shower
      *  @param[out] the shower variable container
-     */   
-    void FillTrackStub(const art::Event &evt, const art::Ptr<recob::Shower> shower, 
-        ShowerVarManager::ShowerVars &showerVars) const;
+     */
+    void FillTrackStub(const art::Event& evt,
+                       const art::Ptr<recob::Shower> shower,
+                       ShowerVarManager::ShowerVars& showerVars) const;
 
     /**
      *  @brief Calculate (and fill) the average separation of the PFParticle's spacepoints from a central axis
@@ -182,8 +190,11 @@ class ShowerVarManager
      *  @param shower the input shower
      *  @param[out] the shower variable container
      */
-     void FillAvSeparation(const art::Event &evt, const TVector3 &parentEndpoint, const art::Ptr<recob::PFParticle> &pfparticle, 
-        const art::Ptr<recob::Shower> &shower, ShowerVarManager::ShowerVars &showerVars) const;
+    void FillAvSeparation(const art::Event& evt,
+                          const TVector3& parentEndpoint,
+                          const art::Ptr<recob::PFParticle>& pfparticle,
+                          const art::Ptr<recob::Shower>& shower,
+                          ShowerVarManager::ShowerVars& showerVars) const;
 
     /**
      *  @brief Calculate (and fill) the asymmetry of the charge around a central axis
@@ -195,8 +206,10 @@ class ShowerVarManager
      *  @param shower the input shower
      *  @param[out] the shower variable container
      */
-    void FillChargeAsymmetry(const art::Event &evt, const TVector3 &parentEndpoint, const art::Ptr<recob::Shower> &shower, 
-        ShowerVarManager::ShowerVars &showerVars) const;
+    void FillChargeAsymmetry(const art::Event& evt,
+                             const TVector3& parentEndpoint,
+                             const art::Ptr<recob::Shower>& shower,
+                             ShowerVarManager::ShowerVars& showerVars) const;
 
     /**
      *  @brief Calculate the asymmetry of the charge around a central axis
@@ -211,8 +224,11 @@ class ShowerVarManager
      *
      *  @return the charge asymmetry in the specified view
      */
-    float GetViewChargeAsymmetry(const art::Event &evt, const TVector3 &parentEndpoint, const TVector3 &showerStart, 
-        const std::vector<art::Ptr<recob::Hit>> &viewHits, const IvysaurusUtils::PandoraView &pandoraView) const;
+    float GetViewChargeAsymmetry(const art::Event& evt,
+                                 const TVector3& parentEndpoint,
+                                 const TVector3& showerStart,
+                                 const std::vector<art::Ptr<recob::Hit>>& viewHits,
+                                 const IvysaurusUtils::PandoraView& pandoraView) const;
 
     /**
      *  @brief Normalise an input shower variable, throw an error if the variable has not been filled
@@ -222,116 +238,120 @@ class ShowerVarManager
      *  @param std the standard deviation of the variable (calculated offline)
      *
      *  @return the normalised value
-     */    
-    float NormaliseShowerVar(const std::pair<float, bool> &inputShowerVar, const float mean, const float std) const;    
+     */
+    float NormaliseShowerVar(const std::pair<float, bool>& inputShowerVar,
+                             const float mean,
+                             const float std) const;
 
-    std::string m_recoModuleLabel;    ///< the pandora label
-    std::string m_trackModuleLabel;   ///< the track producer label
-    std::string m_showerModuleLabel;  ///< the shower producer label
-    std::string m_hitModuleLabel;     ///< the hit producer label
-    int m_planeIDForEnergy;           ///< ID of plane used in energy-based calculations
-    float m_displacementMean;         ///< mean for the displacement normalisation (calc offline)
-    float m_displacementStd;          ///< std for the displacement normalisation (calc offline)
-    float m_DCAMean;                  ///< mean for the DCA normalisation (calc offline)
-    float m_DCAStd;                   ///< std for the DCA normalisation (calc offline)
-    float m_trackStubLengthMean;      ///< mean for the track stub normalisation (calc offline)
-    float m_trackStubLengthStd;       ///< std for the track stub normalisation (calc offline)
-    float m_fromParentAvSepMean;      ///< mean for the fromParentAvSep normalisation (calc offline)
-    float m_fromParentAvSepStd;       ///< std for the fromParentAvSep normalisation (calc offline)
-    float m_fromParentChargeAsymMean; ///< mean for the fromParentChargeAsym normalisation (calc offline)
-    float m_fromParentChargeAsymStd;  ///< std for the fromParentChargeAsym normalisation (calc offline)
-};
+    std::string m_recoModuleLabel;   ///< the pandora label
+    std::string m_trackModuleLabel;  ///< the track producer label
+    std::string m_showerModuleLabel; ///< the shower producer label
+    std::string m_hitModuleLabel;    ///< the hit producer label
+    int m_planeIDForEnergy;          ///< ID of plane used in energy-based calculations
+    float m_displacementMean;        ///< mean for the displacement normalisation (calc offline)
+    float m_displacementStd;         ///< std for the displacement normalisation (calc offline)
+    float m_DCAMean;                 ///< mean for the DCA normalisation (calc offline)
+    float m_DCAStd;                  ///< std for the DCA normalisation (calc offline)
+    float m_trackStubLengthMean;     ///< mean for the track stub normalisation (calc offline)
+    float m_trackStubLengthStd;      ///< std for the track stub normalisation (calc offline)
+    float m_fromParentAvSepMean;     ///< mean for the fromParentAvSep normalisation (calc offline)
+    float m_fromParentAvSepStd;      ///< std for the fromParentAvSep normalisation (calc offline)
+    float
+      m_fromParentChargeAsymMean; ///< mean for the fromParentChargeAsym normalisation (calc offline)
+    float
+      m_fromParentChargeAsymStd; ///< std for the fromParentChargeAsym normalisation (calc offline)
+  };
 
-//------------------------------------------------------------------------------------------------------------------------------------------
-    
-inline bool ShowerVarManager::ShowerVars::GetIsNormalised() const
-{
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  inline bool ShowerVarManager::ShowerVars::GetIsNormalised() const
+  {
     return m_isNormalised;
-}
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetDisplacement() const
-{
+  inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetDisplacement() const
+  {
     return m_displacement;
-}
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetDCA() const
-{
+  inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetDCA() const
+  {
     return m_DCA;
-}
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetTrackStubLength() const
-{
+  inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetTrackStubLength() const
+  {
     return m_trackStubLength;
-}
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetFromParentAvSep() const
-{
+  inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetFromParentAvSep() const
+  {
     return m_fromParentAvSep;
-}
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetFromParentChargeAsym() const
-{
+  inline std::pair<float, bool> ShowerVarManager::ShowerVars::GetFromParentChargeAsym() const
+  {
     return m_fromParentChargeAsym;
-}
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline void ShowerVarManager::ShowerVars::SetDisplacement(const float displacement) 
-{
+  inline void ShowerVarManager::ShowerVars::SetDisplacement(const float displacement)
+  {
     m_displacement.first = displacement;
-    m_displacement.second = true;    
-}
+    m_displacement.second = true;
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline void ShowerVarManager::ShowerVars::SetDCA(const float dca)
-{
+  inline void ShowerVarManager::ShowerVars::SetDCA(const float dca)
+  {
     m_DCA.first = dca;
     m_DCA.second = true;
-}
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline void ShowerVarManager::ShowerVars::SetTrackStubLength(const float trackStubLength)
-{
+  inline void ShowerVarManager::ShowerVars::SetTrackStubLength(const float trackStubLength)
+  {
     m_trackStubLength.first = trackStubLength;
-    m_trackStubLength.second = true;    
-}
+    m_trackStubLength.second = true;
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline void ShowerVarManager::ShowerVars::SetFromParentAvSep(const float fromParentAvSep)
-{
+  inline void ShowerVarManager::ShowerVars::SetFromParentAvSep(const float fromParentAvSep)
+  {
     m_fromParentAvSep.first = fromParentAvSep;
-    m_fromParentAvSep.second = true;    
-}
+    m_fromParentAvSep.second = true;
+  }
 
-//------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline void ShowerVarManager::ShowerVars::SetFromParentChargeAsym(const float fromParentChargeAsym)
-{
+  inline void ShowerVarManager::ShowerVars::SetFromParentChargeAsym(
+    const float fromParentChargeAsym)
+  {
     m_fromParentChargeAsym.first = fromParentChargeAsym;
-    m_fromParentChargeAsym.second = true;    
-}
-    
-//------------------------------------------------------------------------------------------------------------------------------------------
+    m_fromParentChargeAsym.second = true;
+  }
 
-inline void ShowerVarManager::ShowerVars::SetIsNormalised(const bool isNormalised)
-{
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  inline void ShowerVarManager::ShowerVars::SetIsNormalised(const bool isNormalised)
+  {
     m_isNormalised = isNormalised;
-}
+  }
 
 } // namespace ivysaurus
 
-#endif  // SHOWER_VAR_MANAGER_H
-
+#endif // SHOWER_VAR_MANAGER_H

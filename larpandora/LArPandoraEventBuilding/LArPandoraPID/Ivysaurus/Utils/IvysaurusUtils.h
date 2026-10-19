@@ -9,54 +9,53 @@
 #include "art/Framework/Principal/Event.h"
 // LArSoft
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "larpandora/LArPandoraInterface/LArPandoraHelper.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 // ROOT
 #include "TVector3.h"
 //C++
 #include <vector>
 
-namespace IvysaurusUtils
-{
-    enum PandoraView {TPC_VIEW_U, TPC_VIEW_V, TPC_VIEW_W};
+namespace IvysaurusUtils {
+  enum PandoraView { TPC_VIEW_U, TPC_VIEW_V, TPC_VIEW_W };
 
-    /**
+  /**
     *  @brief  DetectorBoundaries struct
     */
-    struct DetectorBoundaries
-    {
-        double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
-    };
+  struct DetectorBoundaries {
+    double m_xmin, m_xmax, m_ymin, m_ymax, m_zmin, m_zmax;
+  };
 
-    /**
+  /**
      *  @brief  Get the detector boundaries in x, y and z
      *
      *  @param[out] detectorBoundaries the output detector boundaries
      */
-    void GetDetectorBoundaries(DetectorBoundaries &detectorBoundaries);
+  void GetDetectorBoundaries(DetectorBoundaries& detectorBoundaries);
 
-    /**
+  /**
      *  @brief  Project a 3D coordinate, or LArSoft hit coordinate into an input Pandora 2D view
      *
      *  @param inputPosition the input coordinate
      *  @param pandoraView the input Pandora 2D view
      *
      *  @return the projected 2D position
-     */        
-    const TVector3 ProjectIntoPandoraView(const TVector3 &inputPosition3D, const PandoraView pandoraView);
+     */
+  const TVector3 ProjectIntoPandoraView(const TVector3& inputPosition3D,
+                                        const PandoraView pandoraView);
 
-    /**
+  /**
      *  @brief  Obtain the Pandora view of a LArSoft hit
      *
      *  @param hit the input LArSoft hit
      *
      *  @return the Pandora view
-     */ 
-    const PandoraView GetPandora2DView(const art::Ptr<recob::Hit> &hit);
+     */
+  const PandoraView GetPandora2DView(const art::Ptr<recob::Hit>& hit);
 
-    /**
+  /**
      *  @brief  Obtain the position and width of a LArSoft hit in Pandora coordinates
      *
      *  @param evt the art event
@@ -64,11 +63,14 @@ namespace IvysaurusUtils
      *  @param hitType the input Pandora coordinates
      *  @param[out] pandoraHitPosition the output position in pandora coordinates
      *  @param[out] width the output width in pandora coordinates
-     */     
-    void ObtainPandoraHitPositionAndWidth(const art::Event &evt, const art::Ptr<recob::Hit> hit, 
-        const PandoraView hitType, TVector3 &pandoraHitPosition, float &width);
+     */
+  void ObtainPandoraHitPositionAndWidth(const art::Event& evt,
+                                        const art::Ptr<recob::Hit> hit,
+                                        const PandoraView hitType,
+                                        TVector3& pandoraHitPosition,
+                                        float& width);
 
-    /**
+  /**
      *  @brief  Obtain Pandora U-coordinate from input y+z coordinates
      *
      *  @param yCoord the input y-coordinate
@@ -76,19 +78,19 @@ namespace IvysaurusUtils
      *
      *  @return the output U-coordinate
      */
-    float YZToU(const float yCoord, const float zCoord);
+  float YZToU(const float yCoord, const float zCoord);
 
-    /**
+  /**
      *  @brief  Obtain Pandora V-coordinate from input y+z coordinates
      *
      *  @param yCoord the input y-coordinate
      *  @param zCoord the input z-coordinate
      *
      *  @return the output V-coordinate
-     */    
-    float YZToV(const float yCoord, const float zCoord);
+     */
+  float YZToV(const float yCoord, const float zCoord);
 
-    /**
+  /**
      *  @brief  Obtain Pandora W-coordinate from input y+z coordinates
      *
      *  @param yCoord the input y-coordinate
@@ -96,26 +98,27 @@ namespace IvysaurusUtils
      *
      *  @return the output W-coordinate
      */
-    float YZToW(const float yCoord, const float zCoord);
+  float YZToW(const float yCoord, const float zCoord);
 
-    /**
+  /**
      *  @brief  Populate a mapping of trackIDs to the folded trackID, folding back the EM hierarchies where appropriate
      *
      *  @param mcParticles the input MCParticles
      *  @param rollUpMap the output mapping of trackIDs to the folded trackID
      */
-    void PopulateRollUpMap(const std::vector<art::Ptr<simb::MCParticle>> &mcParticles, std::map<int, int> &rollUpMap);
+  void PopulateRollUpMap(const std::vector<art::Ptr<simb::MCParticle>>& mcParticles,
+                         std::map<int, int>& rollUpMap);
 
-    /**
+  /**
      *  @brief  Determine whether a MCParticle is an EM particle
      *
      *  @param mcParticle the input MCParticle
      *
      *  @return boolean indicating whether the MCParticle is an EM particle
      */
-    bool IsEM(const art::Ptr<simb::MCParticle> &mcParticle);
+  bool IsEM(const art::Ptr<simb::MCParticle>& mcParticle);
 
-    /**
+  /**
      *  @brief  Obtain the trackID of the leading EM particle in a MCParticle hierarchy
      *
      *  @param mcParticle the input MCParticle
@@ -123,11 +126,12 @@ namespace IvysaurusUtils
      *
      *  @return the trackID of the leading EM particle in the hierarchy
      */
-    int GetLeadEMTrackID(const art::Ptr<simb::MCParticle> &mcParticle, const lar_pandora::MCParticleMap &mcParticleMap);
+  int GetLeadEMTrackID(const art::Ptr<simb::MCParticle>& mcParticle,
+                       const lar_pandora::MCParticleMap& mcParticleMap);
 
-    /**
+  /**
      *  @brief  Identify the true particle ID of a MCParticle from a group of input hits,
-     *          folding back the EM hierarchies where appropriate 
+     *          folding back the EM hierarchies where appropriate
      *
      *  @param clockData the clock data service
      *  @param selectedHits the input group of hits
@@ -135,12 +139,13 @@ namespace IvysaurusUtils
      *
      *  @return the completeness
      */
-    int TrueParticleIDFromTotalRecoHits(detinfo::DetectorClocksData const& clockData, const std::vector<art::Ptr<recob::Hit>> &selectedHits,
-         const std::map<int, int> &rollUpMap);
+  int TrueParticleIDFromTotalRecoHits(detinfo::DetectorClocksData const& clockData,
+                                      const std::vector<art::Ptr<recob::Hit>>& selectedHits,
+                                      const std::map<int, int>& rollUpMap);
 
-    /**
+  /**
      *  @brief  Determine the completeness of a MCParticle specified by an input TrackID
-     *          from a group of input hits, folding back the EM hierarchies where appropriate 
+     *          from a group of input hits, folding back the EM hierarchies where appropriate
      *
      *  @param clockData the clock data service
      *  @param rollUpMap the mapping of trackIDs to the folded trackID
@@ -149,11 +154,14 @@ namespace IvysaurusUtils
      *  @param trackID the trackID of the target MCParticle
      *
      *  @return the completeness
-     */   
-    double CompletenessFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::map<int, int> &rollUpMap,
-        const std::vector<art::Ptr<recob::Hit>> &selectedHits, const std::vector<art::Ptr<recob::Hit>> &eventHits, const int trackID);
+     */
+  double CompletenessFromTrueParticleID(detinfo::DetectorClocksData const& clockData,
+                                        const std::map<int, int>& rollUpMap,
+                                        const std::vector<art::Ptr<recob::Hit>>& selectedHits,
+                                        const std::vector<art::Ptr<recob::Hit>>& eventHits,
+                                        const int trackID);
 
-    /**
+  /**
      *  @brief  Determine the purity of a MCParticle specified by an input TrackID
      *          from a group of input hits, folding back the EM hierarchies where appropriate
      *
@@ -164,34 +172,42 @@ namespace IvysaurusUtils
      *
      *  @return the purity
      */
-    double HitPurityFromTrueParticleID(detinfo::DetectorClocksData const& clockData, const std::map<int, int> &rollUpMap,
-        const std::vector<art::Ptr<recob::Hit>> &selectedHits, const int trackID);
+  double HitPurityFromTrueParticleID(detinfo::DetectorClocksData const& clockData,
+                                     const std::map<int, int>& rollUpMap,
+                                     const std::vector<art::Ptr<recob::Hit>>& selectedHits,
+                                     const int trackID);
 
-    /**
+  /**
      *  @brief  Apply the trapezium rule to estimate the integral of Gaussian between two limits with a given step size
      *
      *  @param limitA the lower limit
      *  @param limitB the upper limit
      *  @param mean the mean of the gaussian
-     *  @param std the standard deviation of the gaussian 
+     *  @param std the standard deviation of the gaussian
      *  @param stepSize the step size used by the integral estimator
      *
      *  @return the estimated integral
-     */    
-    float IntegrateGaussian(const float limitA, const float limitB, const float mean, const float std, const float stepSize);
+     */
+  float IntegrateGaussian(const float limitA,
+                          const float limitB,
+                          const float mean,
+                          const float std,
+                          const float stepSize);
 
-    /**
+  /**
      *  @brief  Implementation of the trapezium rule to calculate a segment of the integral of a defined Gaussian
      *
      *  @param limitA the lower limit
      *  @param limitB the upper limit
      *  @param mean the mean of the gaussian
-     *  @param std the standard deviation of the gaussian 
+     *  @param std the standard deviation of the gaussian
      *
      *  @return the estimated integral
-     */    
-    float TrapeziumRule(const float lowerLimit, const float upperLimit, const float mean, const float std);
+     */
+  float TrapeziumRule(const float lowerLimit,
+                      const float upperLimit,
+                      const float mean,
+                      const float std);
 }
 
 #endif // IVYSAURUS_UTILS_H
-

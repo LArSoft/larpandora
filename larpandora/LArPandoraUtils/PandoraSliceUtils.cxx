@@ -9,13 +9,13 @@
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Slice.h"
 
-namespace lar_pandora
-{
+namespace lar_pandora {
 
-std::vector<art::Ptr<recob::Hit>> PandoraSliceUtils::GetHits(const art::Ptr<recob::Slice> &pSlice, const art::Event &evt, const std::string &label)
-{    
-    return PandoraSliceUtils::GetAssocProductVector<recob::Hit>(pSlice,evt,label,label);
-}
+  std::vector<art::Ptr<recob::Hit>> PandoraSliceUtils::GetHits(const art::Ptr<recob::Slice>& pSlice,
+                                                               const art::Event& evt,
+                                                               const std::string& label)
+  {
+    return PandoraSliceUtils::GetAssocProductVector<recob::Hit>(pSlice, evt, label, label);
+  }
 
 } // namespace lar_pandora
-

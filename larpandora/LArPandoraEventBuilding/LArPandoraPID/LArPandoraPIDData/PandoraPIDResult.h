@@ -6,34 +6,23 @@
 #ifndef PANDORA_PID_RESULT_H
 #define PANDORA_PID_RESULT_H
 
-#include <map>
 #include <cmath>
 #include <limits>
+#include <map>
 
-namespace pandorapid
-{
-enum ParticleType {
-    MUON,
-    PROTON,
-    PION,
-    KAON,
-    ELECTRON,
-    MICHELDR,
-    PHOTON,
-    END
-};
+namespace pandorapid {
+  enum ParticleType { MUON, PROTON, PION, KAON, ELECTRON, MICHELDR, PHOTON, END };
 
-typedef std::map<ParticleType, float> ParticleTypeScores;
-    
-/**
+  typedef std::map<ParticleType, float> ParticleTypeScores;
+
+  /**
  *  @brief  PandoraPIDResult class
- */        
-class PandoraPIDResult
-{
-public:
+ */
+  class PandoraPIDResult {
+  public:
     /**
-     *  @brief  Default constructor 
-     */    
+     *  @brief  Default constructor
+     */
     PandoraPIDResult();
 
     /**
@@ -42,16 +31,17 @@ public:
      *  @param  pidScores the input ParticleType->score map
      *
      *  @return the predicted ParticleType alongside its score
-     */    
-    std::pair<ParticleType, float> GetPredictedParticleType(const ParticleTypeScores &pidScores) const;
+     */
+    std::pair<ParticleType, float> GetPredictedParticleType(
+      const ParticleTypeScores& pidScores) const;
 
     /**
      *  @brief  Get the Ivysaurus PID ParticleType->score map
      *
      *  @return the Ivysaurus PID ParticleType->score map
-     */     
+     */
     const ParticleTypeScores& GetIvysaurusScores() const;
-    
+
     /**
      *  @brief  Set Ivysaurus PID scores
      *
@@ -59,24 +49,27 @@ public:
      *  @param  protonScore the proton score
      *  @param  pionScore the pion score
      *  @param  electronScore the electron score
-     *  @param  michelDRScore the michel/DR score     
-     *  @param  photonScore the photon score     
-     */     
-    void SetIvysaurusScores(const float muonScore, const float protonScore, const float pionScore,
-        const float electronScore, const float michelDRScore, const float photonScore);
+     *  @param  michelDRScore the michel/DR score
+     *  @param  photonScore the photon score
+     */
+    void SetIvysaurusScores(const float muonScore,
+                            const float protonScore,
+                            const float pionScore,
+                            const float electronScore,
+                            const float michelDRScore,
+                            const float photonScore);
 
-private:    
+  private:
     ParticleTypeScores m_ivysaurusScores; ///< The ParticleType->score map for the Ivysaurus PID
-};
+  };
 
-//------------------------------------------------------------------------------------------------------------------------------------------
-    
-inline const ParticleTypeScores& PandoraPIDResult::GetIvysaurusScores() const
-{
+  //------------------------------------------------------------------------------------------------------------------------------------------
+
+  inline const ParticleTypeScores& PandoraPIDResult::GetIvysaurusScores() const
+  {
     return m_ivysaurusScores;
-}
+  }
 
 } // namespace pandorapid
 
 #endif
-
